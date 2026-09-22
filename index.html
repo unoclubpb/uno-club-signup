@@ -295,7 +295,7 @@ flex:1
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-22-02";
+const APP_VERSION="2026-09-22-03";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -394,6 +394,12 @@ return String(s??"")
 '"':"&quot;",
 "'":"&#39;"
 })[m]);
+
+}
+
+function countLabel(count,singular,plural){
+
+return `${count} ${count===1?singular:plural}`;
 
 }
 
@@ -558,7 +564,7 @@ Player List
 </h2>
 
 <span class="count">
-${regularPlayers.length} players / ${alternatePlayers.length} alternates
+${countLabel(regularPlayers.length,"Player","Players")} / ${countLabel(alternatePlayers.length,"Alternate","Alternates")}
 </span>
 
 </div>
