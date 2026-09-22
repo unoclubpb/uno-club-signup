@@ -16,9 +16,7 @@
 
 <style>
 
-*{
-box-sizing:border-box
-}
+*{box-sizing:border-box}
 
 body{
 margin:0;
@@ -27,9 +25,7 @@ color:#0b0b0b;
 font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
 }
 
-button,input{
-font:inherit
-}
+button,input{font:inherit}
 
 header{
 min-height:118px;
@@ -47,9 +43,7 @@ font-size:.76rem;
 letter-spacing:.16em
 }
 
-.headertext{
-flex:1
-}
+.headertext{flex:1}
 
 .headerlogo{
 width:78px;
@@ -99,6 +93,28 @@ min-height:76px;
 font-size:1.35rem
 }
 
+/* Game buttons with player count */
+.game{
+position:relative
+}
+
+.gamecount{
+position:absolute;
+top:9px;
+right:11px;
+min-width:27px;
+height:27px;
+padding:0 7px;
+border-radius:14px;
+background:#fff;
+color:#1e5acb;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:.85rem;
+font-weight:900
+}
+
 form{
 background:#fff;
 border:1px solid #d9d9d9;
@@ -121,9 +137,7 @@ border-radius:8px;
 padding:.6rem
 }
 
-.add{
-min-height:50px
-}
+.add{min-height:50px}
 
 .red,.error{
 color:#b42318;
@@ -138,9 +152,7 @@ gap:.75rem;
 margin:1.5rem 0 .65rem
 }
 
-.head h2{
-margin:0
-}
+.head h2{margin:0}
 
 .listactions{
 display:flex;
@@ -256,9 +268,7 @@ background:#fff;
 border:1px solid #1e5acb
 }
 
-.save{
-border:0
-}
+.save{border:0}
 
 .count{
 color:#666;
@@ -295,7 +305,7 @@ flex:1
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-22-03";
+const APP_VERSION="2026-09-22-04";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -338,9 +348,7 @@ if(r.error){
 
 error="Could not load the player list.";
 
-}
-
-else{
+}else{
 
 players=r.data||[];
 
@@ -354,6 +362,14 @@ const current=()=>
 players.filter(
 p=>p.day===day&&p.game===game
 );
+
+function gameCount(d,g){
+
+return players.filter(
+p=>p.day===d&&p.game===g
+).length;
+
+}
 
 function shown(){
 
@@ -470,15 +486,28 @@ h+=`
 <section class="menu">
 
 ${games[day]
-.map(x=>
+.map(x=>{
 
-`<button
+const total=
+gameCount(day,x);
+
+return `
+
+<button
 class="big game"
 data-v="${x}">
-${x}
-</button>`
 
-).join("")}
+${x}
+
+<span class="gamecount">
+${total}
+</span>
+
+</button>
+
+`;
+
+}).join("")}
 
 </section>
 
@@ -626,9 +655,7 @@ ${p.alt?"A":p.num}
 <button
 class="name"
 data-id="${p.id}">
-
 ${esc(p.player_name)}
-
 </button>
 
 ${
@@ -1101,9 +1128,7 @@ r.error.code==="23505"
 
 :r.error.message;
 
-}
-
-else{
+}else{
 
 players.push(r.data);
 
@@ -1130,9 +1155,7 @@ String(p.id)!==
 String(id)
 );
 
-}
-
-else{
+}else{
 
 error=
 r.error.message;
@@ -1169,9 +1192,7 @@ p.game===game
 )
 );
 
-}
-
-else{
+}else{
 
 error=
 r.error.message;
@@ -1205,9 +1226,7 @@ if(r.error){
 error=
 r.error.message;
 
-}
-
-else{
+}else{
 
 players=
 players.map(
