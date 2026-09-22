@@ -1,17 +1,24 @@
 <!doctype html>
 <html>
 <head>
+
 <link rel="apple-touch-icon" href="uno-logo.PNG">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B0B0B">
+
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+
 <title>Uno Club Lists</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+box-sizing:border-box
+}
 
 body{
 margin:0;
@@ -20,7 +27,9 @@ color:#0b0b0b;
 font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
 }
 
-button,input{font:inherit}
+button,input{
+font:inherit
+}
 
 header{
 min-height:118px;
@@ -38,7 +47,9 @@ font-size:.76rem;
 letter-spacing:.16em
 }
 
-.headertext{flex:1}
+.headertext{
+flex:1
+}
 
 .headerlogo{
 width:78px;
@@ -110,7 +121,9 @@ border-radius:8px;
 padding:.6rem
 }
 
-.add{min-height:50px}
+.add{
+min-height:50px
+}
 
 .red,.error{
 color:#b42318;
@@ -121,11 +134,13 @@ font-weight:800
 display:flex;
 justify-content:space-between;
 align-items:center;
-margin:1.5rem 0 .65rem;
-gap:.75rem
+gap:.75rem;
+margin:1.5rem 0 .65rem
 }
 
-.head h2{margin:0}
+.head h2{
+margin:0
+}
 
 .listactions{
 display:flex;
@@ -241,7 +256,9 @@ background:#fff;
 border:1px solid #1e5acb
 }
 
-.save{border:0}
+.save{
+border:0
+}
 
 .count{
 color:#666;
@@ -250,17 +267,22 @@ font-size:.9rem
 }
 
 @media(max-width:430px){
+
 .head{
 align-items:flex-start;
 flex-direction:column
 }
+
 .listactions{
 width:100%
 }
+
 .textlist,.clear{
 flex:1
 }
+
 }
+
 </style>
 </head>
 
@@ -273,7 +295,7 @@ flex:1
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-22-01";
+const APP_VERSION="2026-09-22-02";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -290,6 +312,10 @@ const limit=g=>
 g==="Hold Em"?10:
 g==="Omaha"?9:
 20;
+
+const maxPreferredSeat=g=>
+g==="Omaha"?9:
+10;
 
 const late=n=>
 /\b(?:late|later)\b/i.test(n||"");
@@ -308,10 +334,17 @@ const r=await sb
 .order("created_at")
 .order("id");
 
-if(r.error)
-error="Could not load the sign-up list.";
-else
+if(r.error){
+
+error="Could not load the player list.";
+
+}
+
+else{
+
 players=r.data||[];
+
+}
 
 render();
 
@@ -383,7 +416,9 @@ ${day||game
 
 <b>UNO CLUB</b>
 
-<h1>${esc(game||day||"Uno Club Lists")}</h1>
+<h1>
+${esc(game||day||"Uno Club Lists")}
+</h1>
 
 ${game
 ?`<small>${day} Night</small>`
@@ -449,8 +484,14 @@ else{
 
 const sh=shown();
 
+const regularPlayers=
+sh.filter(p=>!p.alt);
+
+const alternatePlayers=
+sh.filter(p=>p.alt);
+
 const rc=
-sh.filter(p=>!p.alt).length;
+regularPlayers.length;
 
 h+=`
 
@@ -471,9 +512,14 @@ rc<limit(game)
 ?`
 
 <label>
+
 Preferred Seat
 <small>(optional)</small>
-<input id="seat" inputmode="numeric">
+
+<input
+id="seat"
+inputmode="numeric">
+
 </label>
 
 `
@@ -483,9 +529,12 @@ Preferred Seat
 }
 
 <label>
+
 Notes
 <small>(optional)</small>
+
 <input id="notes">
+
 </label>
 
 <div id="altmsg"></div>
@@ -504,10 +553,12 @@ ${error
 
 <div>
 
-<h2>Sign-Up List</h2>
+<h2>
+Player List
+</h2>
 
 <span class="count">
-${current().length} players
+${regularPlayers.length} players / ${alternatePlayers.length} alternates
 </span>
 
 </div>
@@ -515,7 +566,9 @@ ${current().length} players
 <div class="listactions">
 
 ${current().length
+
 ?`
+
 <button
 class="textlist"
 id="textlist">
@@ -527,8 +580,12 @@ class="clear"
 id="clear">
 Clear List
 </button>
+
 `
-:""}
+
+:""
+
+}
 
 </div>
 
@@ -563,7 +620,9 @@ ${p.alt?"A":p.num}
 <button
 class="name"
 data-id="${p.id}">
+
 ${esc(p.player_name)}
+
 </button>
 
 ${
@@ -895,11 +954,9 @@ return;
 const message=
 buildTextList();
 
-const url=
+window.location.href=
 "sms:&body="+
 encodeURIComponent(message);
-
-window.location.href=url;
 
 }
 
@@ -924,7 +981,8 @@ document
 const sh=shown();
 
 const rc=
-sh.filter(p=>!p.alt).length;
+sh.filter(p=>!p.alt)
+.length;
 
 const alt=
 late(notes)||
@@ -951,6 +1009,7 @@ error=
 "That player is already on this list.";
 
 render();
+
 return;
 
 }
@@ -961,16 +1020,20 @@ game!=="Tournament" &&
 seat
 ){
 
+const maxSeat=
+maxPreferredSeat(game);
+
 if(
 !/^\d+$/.test(seat) ||
 +seat<1 ||
-+seat>10
++seat>maxSeat
 ){
 
 error=
-"Invalid response. Preferred seat must be a number from 1 to 10.";
+`Invalid response. Preferred seat must be a number from 1 to ${maxSeat}.`;
 
 render();
+
 return;
 
 }
@@ -989,6 +1052,7 @@ error=
 "That preferred seat is already taken. Choose another seat or leave the seat blank.";
 
 render();
+
 return;
 
 }
@@ -1151,14 +1215,11 @@ String(id)
 }
 
 edit=null;
+
 render();
 
 }
 
-/*
-Helps an iPhone Home Screen copy pick up newer
-GitHub Pages versions without deleting the icon.
-*/
 async function checkForUpdate(){
 
 try{
@@ -1166,7 +1227,8 @@ try{
 const response=
 await fetch(
 window.location.pathname+
-"?updatecheck="+Date.now(),
+"?updatecheck="+
+Date.now(),
 {
 cache:"no-store"
 }
