@@ -5,6 +5,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B0B0B">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Uno Club Lists</title>
 
 <style>
@@ -35,9 +38,7 @@ font-size:.76rem;
 letter-spacing:.16em
 }
 
-.headertext{
-flex:1
-}
+.headertext{flex:1}
 
 .headerlogo{
 width:78px;
@@ -74,7 +75,7 @@ gap:1rem;
 padding-top:2rem
 }
 
-.big,.add,.save{
+.big,.add,.save,.textlist{
 border:0;
 background:#1e5acb;
 color:#fff;
@@ -109,9 +110,7 @@ border-radius:8px;
 padding:.6rem
 }
 
-.add{
-min-height:50px
-}
+.add{min-height:50px}
 
 .red,.error{
 color:#b42318;
@@ -122,11 +121,21 @@ font-weight:800
 display:flex;
 justify-content:space-between;
 align-items:center;
-margin:1.5rem 0 .65rem
+margin:1.5rem 0 .65rem;
+gap:.75rem
 }
 
-.head h2{
-margin:0
+.head h2{margin:0}
+
+.listactions{
+display:flex;
+gap:.5rem;
+align-items:center
+}
+
+.textlist{
+padding:.65rem .8rem;
+white-space:nowrap
 }
 
 .clear{
@@ -134,7 +143,8 @@ background:#fff;
 color:#b42318;
 border:1px solid #e5b7b2;
 border-radius:8px;
-padding:.55rem
+padding:.65rem .8rem;
+white-space:nowrap
 }
 
 .list{
@@ -231,14 +241,25 @@ background:#fff;
 border:1px solid #1e5acb
 }
 
-.save{
-border:0
-}
+.save{border:0}
 
 .count{
 color:#666;
 font-weight:700;
 font-size:.9rem
+}
+
+@media(max-width:430px){
+.head{
+align-items:flex-start;
+flex-direction:column
+}
+.listactions{
+width:100%
+}
+.textlist,.clear{
+flex:1
+}
 }
 </style>
 </head>
@@ -251,6 +272,8 @@ font-size:.9rem
 
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const APP_VERSION="2026-09-22-01";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -291,6 +314,7 @@ else
 players=r.data||[];
 
 render();
+
 }
 
 const current=()=>
@@ -359,9 +383,7 @@ ${day||game
 
 <b>UNO CLUB</b>
 
-<h1>
-${esc(game||day||"Uno Club Lists")}
-</h1>
+<h1>${esc(game||day||"Uno Club Lists")}</h1>
 
 ${game
 ?`<small>${day} Night</small>`
@@ -449,14 +471,9 @@ rc<limit(game)
 ?`
 
 <label>
-
 Preferred Seat
 <small>(optional)</small>
-
-<input
-id="seat"
-inputmode="numeric">
-
+<input id="seat" inputmode="numeric">
 </label>
 
 `
@@ -466,12 +483,9 @@ inputmode="numeric">
 }
 
 <label>
-
 Notes
 <small>(optional)</small>
-
 <input id="notes">
-
 </label>
 
 <div id="altmsg"></div>
@@ -483,18 +497,14 @@ Add Player
 </form>
 
 ${error
-?`<p class="error">
-${esc(error)}
-</p>`
+?`<p class="error">${esc(error)}</p>`
 :""}
 
 <div class="head">
 
 <div>
 
-<h2>
-Sign-Up List
-</h2>
+<h2>Sign-Up List</h2>
 
 <span class="count">
 ${current().length} players
@@ -502,21 +512,25 @@ ${current().length} players
 
 </div>
 
-${current().length
+<div class="listactions">
 
+${current().length
 ?`
+<button
+class="textlist"
+id="textlist">
+Text List
+</button>
 
 <button
 class="clear"
 id="clear">
-
 Clear List
-
 </button>
-
 `
-
 :""}
+
+</div>
 
 </div>
 
@@ -549,9 +563,7 @@ ${p.alt?"A":p.num}
 <button
 class="name"
 data-id="${p.id}">
-
 ${esc(p.player_name)}
-
 </button>
 
 ${
@@ -574,8 +586,7 @@ p.preferred_seat
 ?`
 
 <span>
-Preferred seat:
-${p.preferred_seat}
+Preferred seat: ${p.preferred_seat}
 </span>
 
 `
@@ -591,8 +602,7 @@ p.notes
 ?`
 
 <span class="note">
-Note:
-${esc(p.notes)}
+Note: ${esc(p.notes)}
 </span>
 
 `
@@ -618,17 +628,13 @@ value="${esc(p.notes||"")}">
 <button
 class="save"
 data-save="${p.id}">
-
 Save Note
-
 </button>
 
 <button
 class="cancel"
 id="cancel">
-
 Cancel
-
 </button>
 
 </div>
@@ -646,9 +652,7 @@ Cancel
 <button
 class="del"
 data-del="${p.id}">
-
 ×
-
 </button>
 
 </div>
@@ -680,7 +684,6 @@ document
 b.onclick=()=>{
 
 day=b.dataset.v;
-
 render();
 
 };
@@ -694,7 +697,6 @@ document
 b.onclick=()=>{
 
 game=b.dataset.v;
-
 render();
 
 };
@@ -774,7 +776,6 @@ document
 b.onclick=()=>{
 
 edit=b.dataset.id;
-
 render();
 
 };
@@ -789,7 +790,6 @@ if(c)
 c.onclick=()=>{
 
 edit=null;
-
 render();
 
 };
@@ -808,6 +808,98 @@ document.querySelector("#clear");
 
 if(cl)
 cl.onclick=clear;
+
+const tl=
+document.querySelector("#textlist");
+
+if(tl)
+tl.onclick=textList;
+
+}
+
+function buildTextList(){
+
+const sh=shown();
+
+const regular=
+sh.filter(p=>!p.alt);
+
+const alternates=
+sh.filter(p=>p.alt);
+
+let lines=[];
+
+lines.push(`Uno Club – ${day} ${game}`);
+lines.push("");
+
+regular.forEach(p=>{
+
+let line=
+`${p.num}. ${p.player_name}`;
+
+if(
+game!=="Tournament" &&
+p.preferred_seat
+){
+
+line+=
+` — Preferred Seat ${p.preferred_seat}`;
+
+}
+
+if(p.notes){
+
+line+=
+` — Note: ${p.notes}`;
+
+}
+
+lines.push(line);
+
+});
+
+if(alternates.length){
+
+if(regular.length)
+lines.push("");
+
+lines.push("Alternates");
+
+alternates.forEach(p=>{
+
+let line=
+`A. ${p.player_name}`;
+
+if(p.notes){
+
+line+=
+` — Note: ${p.notes}`;
+
+}
+
+lines.push(line);
+
+});
+
+}
+
+return lines.join("\n");
+
+}
+
+function textList(){
+
+if(!current().length)
+return;
+
+const message=
+buildTextList();
+
+const url=
+"sms:&body="+
+encodeURIComponent(message);
+
+window.location.href=url;
 
 }
 
@@ -859,7 +951,6 @@ error=
 "That player is already on this list.";
 
 render();
-
 return;
 
 }
@@ -880,7 +971,6 @@ error=
 "Invalid response. Preferred seat must be a number from 1 to 10.";
 
 render();
-
 return;
 
 }
@@ -899,7 +989,6 @@ error=
 "That preferred seat is already taken. Choose another seat or leave the seat blank.";
 
 render();
-
 return;
 
 }
@@ -1062,10 +1151,76 @@ String(id)
 }
 
 edit=null;
-
 render();
 
 }
+
+/*
+Helps an iPhone Home Screen copy pick up newer
+GitHub Pages versions without deleting the icon.
+*/
+async function checkForUpdate(){
+
+try{
+
+const response=
+await fetch(
+window.location.pathname+
+"?updatecheck="+Date.now(),
+{
+cache:"no-store"
+}
+);
+
+const html=
+await response.text();
+
+const match=
+html.match(
+/const APP_VERSION="([^"]+)"/
+);
+
+if(
+match &&
+match[1] &&
+match[1]!==APP_VERSION
+){
+
+window.location.replace(
+window.location.pathname+
+"?v="+
+encodeURIComponent(match[1])
+);
+
+}
+
+}catch(e){}
+
+}
+
+document.addEventListener(
+"visibilitychange",
+()=>{
+
+if(
+document.visibilityState==="visible"
+){
+
+checkForUpdate();
+
+}
+
+}
+);
+
+window.addEventListener(
+"pageshow",
+()=>{
+
+checkForUpdate();
+
+}
+);
 
 load();
 
