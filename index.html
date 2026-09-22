@@ -1,0 +1,463 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B0B0B">
+<title>Uno Club Sign-Up</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f6f8;color:#0b0b0b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+header{min-height:118px;background:#0b0b0b;color:#fff;display:flex;align-items:center;gap:.8rem;padding:1.2rem max(1rem,calc((100vw - 620px)/2 + 1rem))}
+header b{color:#79a5f4;font-size:.76rem;letter-spacing:.16em}
+h1{margin:.15rem 0 0;font-size:clamp(2rem,8vw,2.7rem);line-height:1}
+.back{width:46px;height:46px;border:1px solid #3d3d3d;background:#171717;color:#fff;border-radius:10px}
+.menu,.content{max-width:620px;margin:auto;padding:1.25rem 1rem 4rem}
+.menu{display:grid;gap:1rem;padding-top:2rem}
+.big,.add,.save{border:0;background:#1e5acb;color:#fff;border-radius:10px;font-weight:800}
+.big{min-height:76px;font-size:1.35rem}
+form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;display:grid;gap:1rem}
+label{display:grid;gap:.45rem;font-weight:700}
+input{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem}
+.add{min-height:50px}
+.red,.error{color:#b42318;font-weight:800}
+.head{display:flex;justify-content:space-between;align-items:center;margin:1.5rem 0 .65rem}
+.head h2{margin:0}
+.clear{background:#fff;color:#b42318;border:1px solid #e5b7b2;border-radius:8px;padding:.55rem}
+.list{display:grid;gap:.55rem}
+.empty,.row{background:#fff;border:1px solid #d9d9d9;border-radius:10px}
+.empty{padding:1.5rem;text-align:center;color:#666}
+.row{min-height:64px;display:flex;align-items:center;gap:.75rem;padding:.65rem}
+.num{width:30px;height:30px;border-radius:50%;background:#eaf0fb;color:#1e5acb;display:grid;place-items:center;font-weight:800;flex:none}
+.info{min-width:0;flex:1;display:grid;gap:.15rem}
+.info span{font-size:.84rem;color:#666}
+.name{width:fit-content;padding:0;border:0;background:transparent;font-weight:800;text-decoration:underline}
+.del{width:44px;height:44px;border:0;border-radius:9px;background:#f5e8e7;color:#b42318;font-size:22px}
+.note{font-style:italic!important;color:#333!important}
+.editor{display:grid;gap:.4rem;margin-top:.3rem}
+.editor div{display:flex;gap:.4rem}
+.editor button{padding:.5rem .7rem;border-radius:8px}
+.cancel{background:#fff;border:1px solid #1e5acb}
+.save{border:0}
+.count{color:#666;font-weight:700;font-size:.9rem}
+</style>
+</head>
+
+<body>
+<div id="app"></div>
+
+<script type="module">
+import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const sb=createClient(
+"https://dugemciflvwboiyneufa.supabase.co",
+"sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK"
+);
+
+const games={
+ Monday:["Hold Em","Omaha"],
+ Wednesday:["Tournament","Omaha"],
+ Thursday:["Hold Em","Omaha"]
+};
+
+const limit=g=>g==="Hold Em"?10:g==="Omaha"?9:20;
+const late=n=>/\b(?:late|later)\b/i.test(n||"");
+
+let day=null;
+let game=null;
+let players=[];
+let edit=null;
+let error="";
+
+async function load(){
+ const r=await sb.from("signup_players")
+   .select("*")
+   .order("created_at")
+   .order("id");
+
+ if(r.error) error="Could not load the sign-up list.";
+ else players=r.data||[];
+
+ render();
+}
+
+const current=()=>players.filter(p=>p.day===day&&p.game===game);
+
+function shown(){
+ if(!game)return[];
+
+ let n=0;
+
+ const a=current().map(p=>{
+   const alt=late(p.notes)||n>=limit(game);
+   if(!alt)n++;
+
+   return {...p,alt,num:alt?null:n};
+ });
+
+ return [
+   ...a.filter(p=>!p.alt),
+   ...a.filter(p=>p.alt)
+ ];
+}
+
+function esc(s){
+ return String(s??"").replace(/[&<>"']/g,m=>({
+   "&":"&amp;",
+   "<":"&lt;",
+   ">":"&gt;",
+   '"':"&quot;",
+   "'":"&#39;"
+ })[m]);
+}
+
+function render(){
+ const a=document.querySelector("#app");
+
+ let h=`
+ <header>
+ ${day||game?'<button class="back" id="back">←</button>':""}
+ <div>
+   <b>UNO CLUB</b>
+   <h1>${esc(game||day||"Sign-Up")}</h1>
+   ${game?`<small>${day} Night</small>`:""}
+ </div>
+ </header>`;
+
+ if(!day){
+   h+=`<section class="menu">
+   ${Object.keys(games).map(x=>
+     `<button class="big day" data-v="${x}">${x}</button>`
+   ).join("")}
+   </section>`;
+ }
+
+ else if(!game){
+   h+=`<section class="menu">
+   ${games[day].map(x=>
+     `<button class="big game" data-v="${x}">${x}</button>`
+   ).join("")}
+   </section>`;
+ }
+
+ else{
+   const sh=shown();
+   const rc=sh.filter(p=>!p.alt).length;
+
+   h+=`
+   <section class="content">
+
+   <form id="form">
+
+   <label>
+   Player Name
+   <input id="name">
+   </label>
+
+   ${
+     game!=="Tournament"&&rc<limit(game)
+     ? `<label>
+        Preferred Seat <small>(optional)</small>
+        <input id="seat" inputmode="numeric">
+        </label>`
+     : ""
+   }
+
+   <label>
+   Notes <small>(optional)</small>
+   <input id="notes">
+   </label>
+
+   <div id="altmsg"></div>
+
+   <button class="add">Add Player</button>
+   </form>
+
+   ${error?`<p class="error">${esc(error)}</p>`:""}
+
+   <div class="head">
+     <div>
+       <h2>Sign-Up List</h2>
+       <span class="count">${current().length} players</span>
+     </div>
+
+     ${current().length
+       ? '<button class="clear" id="clear">Clear List</button>'
+       : ""}
+   </div>
+
+   <div class="list">
+
+   ${
+     !sh.length
+     ? '<div class="empty">No players added yet.</div>'
+     : sh.map(p=>`
+
+       <div class="row">
+
+       <div class="num">${p.alt?"A":p.num}</div>
+
+       <div class="info">
+
+       <button class="name" data-id="${p.id}">
+       ${esc(p.player_name)}
+       </button>
+
+       ${
+         p.alt
+         ? '<span class="red">ALTERNATE</span>'
+         : game!=="Tournament"&&p.preferred_seat
+           ? `<span>Preferred seat: ${p.preferred_seat}</span>`
+           : ""
+       }
+
+       ${p.notes
+         ? `<span class="note">Note: ${esc(p.notes)}</span>`
+         : ""}
+
+       ${
+         edit==p.id
+         ? `<div class="editor">
+              <input id="editnote" value="${esc(p.notes||"")}">
+              <div>
+                <button class="save" data-save="${p.id}">
+                Save Note
+                </button>
+
+                <button class="cancel" id="cancel">
+                Cancel
+                </button>
+              </div>
+            </div>`
+         : ""
+       }
+
+       </div>
+
+       <button class="del" data-del="${p.id}">×</button>
+
+       </div>
+
+     `).join("")
+   }
+
+   </div>
+   </section>`;
+ }
+
+ a.innerHTML=h;
+ wire();
+}
+
+function wire(){
+
+ document.querySelectorAll(".day").forEach(b=>{
+   b.onclick=()=>{
+     day=b.dataset.v;
+     render();
+   };
+ });
+
+ document.querySelectorAll(".game").forEach(b=>{
+   b.onclick=()=>{
+     game=b.dataset.v;
+     render();
+   };
+ });
+
+ const back=document.querySelector("#back");
+
+ if(back) back.onclick=()=>{
+   error="";
+
+   if(game) game=null;
+   else day=null;
+
+   render();
+ };
+
+ const form=document.querySelector("#form");
+
+ if(form){
+
+   const notes=document.querySelector("#notes");
+   const alt=document.querySelector("#altmsg");
+
+   notes.oninput=()=>{
+
+     const rc=shown().filter(p=>!p.alt).length;
+
+     alt.innerHTML=
+       late(notes.value)||rc>=limit(game)
+       ? '<span class="red">This player will be added as an ALTERNATE.</span>'
+       : "";
+   };
+
+   form.onsubmit=add;
+ }
+
+ document.querySelectorAll("[data-del]").forEach(b=>{
+   b.onclick=()=>del(b.dataset.del);
+ });
+
+ document.querySelectorAll(".name").forEach(b=>{
+   b.onclick=()=>{
+     edit=b.dataset.id;
+     render();
+   };
+ });
+
+ const c=document.querySelector("#cancel");
+
+ if(c) c.onclick=()=>{
+   edit=null;
+   render();
+ };
+
+ document.querySelectorAll("[data-save]").forEach(b=>{
+   b.onclick=()=>save(b.dataset.save);
+ });
+
+ const cl=document.querySelector("#clear");
+
+ if(cl) cl.onclick=clear;
+}
+
+async function add(e){
+
+ e.preventDefault();
+ error="";
+
+ const name=document.querySelector("#name").value.trim();
+ const notes=document.querySelector("#notes").value.trim();
+
+ const sh=shown();
+ const rc=sh.filter(p=>!p.alt).length;
+
+ const alt=late(notes)||rc>=limit(game);
+
+ const se=document.querySelector("#seat");
+ const seat=se?se.value.trim():"";
+
+ if(!name)return;
+
+ if(current().some(p=>p.player_name===name)){
+   error="That player is already on this list.";
+   render();
+   return;
+ }
+
+ if(game!=="Tournament"&&!alt&&seat){
+
+   if(!/^\d+$/.test(seat)||+seat<1||+seat>10){
+     error="Invalid response. Preferred seat must be a number from 1 to 10.";
+     render();
+     return;
+   }
+
+   if(current().some(
+     p=>String(p.preferred_seat??"")===String(+seat)
+   )){
+     error="That preferred seat is already taken. Choose another seat or leave the seat blank.";
+     render();
+     return;
+   }
+ }
+
+ const r=await sb.from("signup_players").insert({
+   day,
+   game,
+   player_name:name,
+   preferred_seat:
+     game==="Tournament"||alt
+     ? null
+     : (seat?+seat:null),
+   notes:notes||null
+ }).select().single();
+
+ if(r.error){
+   error=
+     r.error.code==="23505"
+     ? "That player name or preferred seat is already on this list."
+     : r.error.message;
+ }
+ else{
+   players.push(r.data);
+ }
+
+ render();
+}
+
+async function del(id){
+
+ const r=await sb.from("signup_players")
+   .delete()
+   .eq("id",id);
+
+ if(!r.error){
+   players=players.filter(
+     p=>String(p.id)!==String(id)
+   );
+ }
+ else{
+   error=r.error.message;
+ }
+
+ render();
+}
+
+async function clear(){
+
+ if(!confirm(
+   `Clear the entire ${day} ${game} list?`
+ )) return;
+
+ const r=await sb.from("signup_players")
+   .delete()
+   .eq("day",day)
+   .eq("game",game);
+
+ if(!r.error){
+   players=players.filter(
+     p=>!(p.day===day&&p.game===game)
+   );
+ }
+ else{
+   error=r.error.message;
+ }
+
+ render();
+}
+
+async function save(id){
+
+ const note=document.querySelector("#editnote")
+   .value.trim();
+
+ const r=await sb.from("signup_players")
+   .update({notes:note||null})
+   .eq("id",id)
+   .select()
+   .single();
+
+ if(r.error){
+   error=r.error.message;
+ }
+ else{
+   players=players.map(
+     p=>String(p.id)===String(id)
+     ? r.data
+     : p
+   );
+ }
+
+ edit=null;
+ render();
+}
+
+load();
+</script>
+</body>
+</html>
