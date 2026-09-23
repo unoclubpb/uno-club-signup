@@ -83,7 +83,7 @@ padding-top:2rem
 }
 
 .todoMenuButton{
-margin-top:12rem
+margin-top:80px
 }
 
 .big,.add,.save,.textlist{
@@ -378,7 +378,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-22-06";
+const APP_VERSION="2026-09-22-07";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -1820,8 +1820,7 @@ document.addEventListener(
 ()=>{
 
 if(
-document.visibilityState==="visible"
-){
+document.visibilityState==="visible"){
 
 checkForUpdate();
 
