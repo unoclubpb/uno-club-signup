@@ -25,7 +25,7 @@ color:#0b0b0b;
 font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
 }
 
-button,input{font:inherit}
+button,input,textarea{font:inherit}
 
 header{
 min-height:118px;
@@ -82,6 +82,10 @@ gap:1rem;
 padding-top:2rem
 }
 
+.todoMenuButton{
+margin-top:2rem
+}
+
 .big,.add,.save,.textlist{
 border:0;
 background:#1e5acb;
@@ -131,11 +135,18 @@ gap:.45rem;
 font-weight:700
 }
 
-input{
+input,textarea{
 min-height:44px;
 border:1px solid #d9d9d9;
 border-radius:8px;
-padding:.6rem
+padding:.6rem;
+background:#fff;
+color:#0b0b0b
+}
+
+textarea{
+min-height:82px;
+resize:vertical
 }
 
 .add{min-height:50px}
@@ -180,7 +191,7 @@ display:grid;
 gap:.55rem
 }
 
-.empty,.row{
+.empty,.row,.todoRow{
 background:#fff;
 border:1px solid #d9d9d9;
 border-radius:10px
@@ -240,7 +251,8 @@ border:0;
 border-radius:9px;
 background:#f5e8e7;
 color:#b42318;
-font-size:22px
+font-size:22px;
+flex:none
 }
 
 .note{
@@ -277,6 +289,61 @@ font-weight:700;
 font-size:.9rem
 }
 
+/* TO-DO */
+
+.todoSectionTitle{
+margin:1.5rem 0 .65rem
+}
+
+.todoSectionTitle h2{
+margin:0
+}
+
+.todoRow{
+display:flex;
+align-items:flex-start;
+gap:.75rem;
+padding:.85rem
+}
+
+.todoInfo{
+flex:1;
+min-width:0;
+display:grid;
+gap:.3rem
+}
+
+.todoText{
+font-weight:800;
+font-size:1rem;
+overflow-wrap:anywhere
+}
+
+.todoTime{
+font-size:.78rem;
+color:#666
+}
+
+.completedRow{
+opacity:.78
+}
+
+.completedText{
+text-decoration:line-through;
+text-decoration-color:#999
+}
+
+.completedBadge{
+display:inline-block;
+width:fit-content;
+font-size:.72rem;
+font-weight:800;
+color:#2e7d32;
+background:#e7f4e8;
+border-radius:999px;
+padding:.2rem .5rem
+}
+
 @media(max-width:430px){
 
 .head{
@@ -311,7 +378,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-22-05";
+const APP_VERSION="2026-09-22-06";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -338,25 +405,51 @@ const late=n=>
 
 let day=null;
 let game=null;
+let page="main";
+
 let players=[];
+let todos=[];
+
 let edit=null;
 let error="";
 
 async function load(){
 
-const r=await sb
+const [
+playerResult,
+todoResult
+]=await Promise.all([
+
+sb
 .from("signup_players")
 .select("*")
 .order("created_at")
-.order("id");
+.order("id"),
 
-if(r.error){
+sb
+.from("todo_items")
+.select("*")
+.order("created_at")
+
+]);
+
+if(playerResult.error){
 
 error="Could not load the player list.";
 
 }else{
 
-players=r.data||[];
+players=playerResult.data||[];
+
+}
+
+if(todoResult.error){
+
+error="Could not load the To-Do list.";
+
+}else{
+
+todos=todoResult.data||[];
 
 }
 
@@ -425,16 +518,32 @@ return `${count} ${count===1?singular:plural}`;
 
 }
 
-function render(){
+function formatDateTime(value){
 
-const a=
-document.querySelector("#app");
+if(!value)return "";
 
-let h=`
+const d=new Date(value);
+
+return d.toLocaleString(
+undefined,
+{
+month:"numeric",
+day:"numeric",
+year:"2-digit",
+hour:"numeric",
+minute:"2-digit"
+}
+);
+
+}
+
+function renderHeader(title,subtitle=""){
+
+return `
 
 <header>
 
-${day||game
+${page!=="main" || day || game
 ?'<button class="back" id="back">←</button>'
 :""}
 
@@ -443,11 +552,11 @@ ${day||game
 <b>UNO CLUB</b>
 
 <h1>
-${esc(game||day||"Uno Club Lists")}
+${esc(title)}
 </h1>
 
-${game
-?`<small>${day} Night</small>`
+${subtitle
+?`<small>${esc(subtitle)}</small>`
 :""}
 
 </div>
@@ -460,6 +569,34 @@ alt="Uno Club Lists">
 </header>
 
 `;
+
+}
+
+function render(){
+
+const a=
+document.querySelector("#app");
+
+let h="";
+
+if(page==="todo"){
+
+h+=renderHeader("To-Do");
+
+h+=renderTodoPage();
+
+a.innerHTML=h;
+
+wireTodo();
+
+return;
+
+}
+
+h+=renderHeader(
+game||day||"Uno Club Lists",
+game?`${day} Night`:""
+);
 
 if(!day){
 
@@ -477,6 +614,12 @@ ${x}
 </button>`
 
 ).join("")}
+
+<button
+class="big todoMenuButton"
+id="todoMenuButton">
+To-Do
+</button>
 
 </section>
 
@@ -772,6 +915,178 @@ wire();
 
 }
 
+function renderTodoPage(){
+
+const active=
+todos
+.filter(t=>!t.completed_at)
+.sort(
+(a,b)=>
+new Date(a.created_at)-
+new Date(b.created_at)
+);
+
+const completed=
+todos
+.filter(t=>t.completed_at)
+.sort(
+(a,b)=>
+new Date(b.completed_at)-
+new Date(a.completed_at)
+)
+.slice(0,25);
+
+return `
+
+<section class="content">
+
+<form id="todoForm">
+
+<label>
+
+To-Do Item
+
+<textarea
+id="todoNote"
+maxlength="500"></textarea>
+
+</label>
+
+<button class="add">
+Add To-Do
+</button>
+
+</form>
+
+${error
+?`<p class="error">${esc(error)}</p>`
+:""}
+
+<div class="todoSectionTitle">
+
+<h2>
+To-Do
+</h2>
+
+<span class="count">
+${countLabel(active.length,"Item","Items")}
+</span>
+
+</div>
+
+<div class="list">
+
+${
+
+!active.length
+
+?`
+
+<div class="empty">
+Nothing currently needs to be done.
+</div>
+
+`
+
+:
+
+active.map(t=>`
+
+<div class="todoRow">
+
+<div class="todoInfo">
+
+<div class="todoText">
+${esc(t.note)}
+</div>
+
+<div class="todoTime">
+Entered: ${formatDateTime(t.created_at)}
+</div>
+
+</div>
+
+<button
+class="del"
+data-complete="${t.id}"
+aria-label="Complete item">
+×
+</button>
+
+</div>
+
+`).join("")
+
+}
+
+</div>
+
+<div class="todoSectionTitle">
+
+<h2>
+Completed
+</h2>
+
+<span class="count">
+Most recent 25
+</span>
+
+</div>
+
+<div class="list">
+
+${
+
+!completed.length
+
+?`
+
+<div class="empty">
+No completed items yet.
+</div>
+
+`
+
+:
+
+completed.map(t=>`
+
+<div class="todoRow completedRow">
+
+<div class="todoInfo">
+
+<span class="completedBadge">
+COMPLETED
+</span>
+
+<div class="todoText completedText">
+${esc(t.note)}
+</div>
+
+<div class="todoTime">
+Entered: ${formatDateTime(t.created_at)}
+</div>
+
+<div class="todoTime">
+Completed: ${formatDateTime(t.completed_at)}
+</div>
+
+</div>
+
+</div>
+
+`).join("")
+
+}
+
+</div>
+
+</section>
+
+`;
+
+}
+
 function wire(){
 
 document
@@ -781,6 +1096,7 @@ document
 b.onclick=()=>{
 
 day=b.dataset.v;
+
 render();
 
 };
@@ -794,11 +1110,27 @@ document
 b.onclick=()=>{
 
 game=b.dataset.v;
+
 render();
 
 };
 
 });
+
+const todoButton=
+document.querySelector("#todoMenuButton");
+
+if(todoButton){
+
+todoButton.onclick=()=>{
+
+page="todo";
+error="";
+render();
+
+};
+
+}
 
 const back=
 document.querySelector("#back");
@@ -809,10 +1141,19 @@ back.onclick=()=>{
 
 error="";
 
-if(game)
+if(game){
+
 game=null;
-else
+
+}else if(day){
+
 day=null;
+
+}else{
+
+page="main";
+
+}
 
 render();
 
@@ -873,6 +1214,7 @@ document
 b.onclick=()=>{
 
 edit=b.dataset.id;
+
 render();
 
 };
@@ -887,6 +1229,7 @@ if(c)
 c.onclick=()=>{
 
 edit=null;
+
 render();
 
 };
@@ -914,6 +1257,48 @@ tl.onclick=textList;
 
 }
 
+function wireTodo(){
+
+const back=
+document.querySelector("#back");
+
+if(back){
+
+back.onclick=()=>{
+
+page="main";
+error="";
+render();
+
+};
+
+}
+
+const todoForm=
+document.querySelector("#todoForm");
+
+if(todoForm){
+
+todoForm.onsubmit=addTodo;
+
+}
+
+document
+.querySelectorAll("[data-complete]")
+.forEach(b=>{
+
+b.onclick=()=>{
+
+completeTodo(
+b.dataset.complete
+);
+
+};
+
+});
+
+}
+
 function buildTextList(){
 
 const sh=shown();
@@ -926,7 +1311,10 @@ sh.filter(p=>p.alt);
 
 let lines=[];
 
-lines.push(`Uno Club – ${day} ${game}`);
+lines.push(
+`Uno Club – ${day} ${game}`
+);
+
 lines.push("");
 
 regular.forEach(p=>{
@@ -1247,6 +1635,143 @@ String(id)
 edit=null;
 
 render();
+
+}
+
+async function addTodo(e){
+
+e.preventDefault();
+
+error="";
+
+const note=
+document
+.querySelector("#todoNote")
+.value
+.trim();
+
+if(!note)return;
+
+const r=
+await sb
+.from("todo_items")
+.insert({
+note
+})
+.select()
+.single();
+
+if(r.error){
+
+error=
+"Could not add the To-Do item.";
+
+}else{
+
+todos.push(r.data);
+
+}
+
+render();
+
+}
+
+async function completeTodo(id){
+
+const item=
+todos.find(
+t=>String(t.id)===String(id)
+);
+
+if(!item)return;
+
+const confirmed=
+confirm(
+`Mark this item completed?\n\n${item.note}`
+);
+
+if(!confirmed)return;
+
+const completedAt=
+new Date().toISOString();
+
+const r=
+await sb
+.from("todo_items")
+.update({
+completed_at:completedAt
+})
+.eq("id",id)
+.select()
+.single();
+
+if(r.error){
+
+error=
+"Could not complete that item.";
+
+render();
+
+return;
+
+}
+
+todos=
+todos.map(
+t=>
+String(t.id)===String(id)
+?r.data
+:t
+);
+
+await trimCompletedTodos();
+
+render();
+
+}
+
+async function trimCompletedTodos(){
+
+const completed=
+todos
+.filter(t=>t.completed_at)
+.sort(
+(a,b)=>
+new Date(b.completed_at)-
+new Date(a.completed_at)
+);
+
+if(completed.length<=25)
+return;
+
+const oldItems=
+completed.slice(25);
+
+const oldIds=
+oldItems.map(t=>t.id);
+
+const r=
+await sb
+.from("todo_items")
+.delete()
+.in("id",oldIds);
+
+if(!r.error){
+
+const removeSet=
+new Set(
+oldIds.map(String)
+);
+
+todos=
+todos.filter(
+t=>
+!removeSet.has(
+String(t.id)
+)
+);
+
+}
 
 }
 
