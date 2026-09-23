@@ -153,10 +153,20 @@ display:grid;
 gap:1rem
 }
 
-label{
+.fieldwrap{
 display:grid;
 gap:.45rem;
 font-weight:700
+}
+
+.fieldlabel{
+font-weight:700
+}
+
+.fieldhint{
+font-size:.83rem;
+font-weight:400;
+color:#666
 }
 
 input,textarea{
@@ -317,8 +327,6 @@ font-weight:700;
 font-size:.9rem
 }
 
-/* TO-DO */
-
 .todoSectionTitle{
 margin:1.5rem 0 .65rem
 }
@@ -440,7 +448,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-23-01";
+const APP_VERSION="2026-09-23-02";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -634,8 +642,7 @@ alt="Uno Club Lists">
 
 function render(){
 
-const a=
-document.querySelector("#app");
+const a=document.querySelector("#app");
 
 let h="";
 
@@ -695,8 +702,7 @@ h+=`
 ${games[day]
 .map(x=>{
 
-const total=
-gameCount(day,x);
+const total=gameCount(day,x);
 
 return `
 
@@ -741,16 +747,24 @@ h+=`
 
 <form id="form" autocomplete="off">
 
-<label>
+<div class="fieldwrap">
+
+<div class="fieldlabel">
 Player Name
+</div>
+
 <input
-id="name"
-name="player-entry"
-autocomplete="off"
+id="unoEntryA"
+name="uea"
+type="text"
+autocomplete="new-password"
 autocorrect="off"
 autocapitalize="words"
-spellcheck="false">
-</label>
+spellcheck="false"
+data-lpignore="true"
+data-1p-ignore="true">
+
+</div>
 
 ${
 
@@ -759,20 +773,28 @@ rc<limit(game)
 
 ?`
 
-<label>
+<div class="fieldwrap">
 
+<div class="fieldlabel">
 Preferred Seat
-<small>(optional)</small>
+</div>
+
+<div class="fieldhint">
+(optional)
+</div>
 
 <input
-id="seat"
-name="preferred-seat-entry"
+id="unoEntryB"
+name="ueb"
+type="text"
 inputmode="numeric"
-autocomplete="off"
+autocomplete="new-password"
 autocorrect="off"
-spellcheck="false">
+spellcheck="false"
+data-lpignore="true"
+data-1p-ignore="true">
 
-</label>
+</div>
 
 `
 
@@ -780,19 +802,27 @@ spellcheck="false">
 
 }
 
-<label>
+<div class="fieldwrap">
 
+<div class="fieldlabel">
 Notes
-<small>(optional)</small>
+</div>
+
+<div class="fieldhint">
+(optional)
+</div>
 
 <input
-id="notes"
-name="player-notes-entry"
-autocomplete="off"
+id="unoEntryC"
+name="uec"
+type="text"
+autocomplete="new-password"
 autocorrect="off"
-spellcheck="false">
+spellcheck="false"
+data-lpignore="true"
+data-1p-ignore="true">
 
-</label>
+</div>
 
 <div id="altmsg"></div>
 
@@ -934,12 +964,15 @@ edit==p.id
 <div class="editor">
 
 <input
-id="editnote"
-name="edit-player-note"
+id="unoEntryD"
+name="ued"
+type="text"
 value="${esc(p.notes||"")}"
-autocomplete="off"
+autocomplete="new-password"
 autocorrect="off"
-spellcheck="false">
+spellcheck="false"
+data-lpignore="true"
+data-1p-ignore="true">
 
 <div>
 
@@ -1020,19 +1053,23 @@ return `
 
 <form id="todoForm" autocomplete="off">
 
-<label>
+<div class="fieldwrap">
 
+<div class="fieldlabel">
 To-Do Item
+</div>
 
 <textarea
-id="todoNote"
-name="todo-entry"
+id="unoEntryE"
+name="uee"
 maxlength="500"
-autocomplete="off"
+autocomplete="new-password"
 autocorrect="off"
-spellcheck="false"></textarea>
+spellcheck="false"
+data-lpignore="true"
+data-1p-ignore="true"></textarea>
 
-</label>
+</div>
 
 <button class="add todoAddButton">
 Add To-Do
@@ -1087,12 +1124,14 @@ String(todoEdit)===String(t.id)
 <div class="todoEditor">
 
 <textarea
-id="todoEditText"
-name="todo-edit-entry"
+id="unoEntryF"
+name="uef"
 maxlength="500"
-autocomplete="off"
+autocomplete="new-password"
 autocorrect="off"
-spellcheck="false">${esc(t.note)}</textarea>
+spellcheck="false"
+data-lpignore="true"
+data-1p-ignore="true">${esc(t.note)}</textarea>
 
 <div class="todoEditButtons">
 
@@ -1296,7 +1335,7 @@ document.querySelector("#form");
 if(form){
 
 const notes=
-document.querySelector("#notes");
+document.querySelector("#unoEntryC");
 
 const alt=
 document.querySelector("#altmsg");
@@ -1440,7 +1479,7 @@ render();
 setTimeout(()=>{
 
 const field=
-document.querySelector("#todoEditText");
+document.querySelector("#unoEntryF");
 
 if(field){
 
@@ -1598,13 +1637,13 @@ error="";
 
 const name=
 document
-.querySelector("#name")
+.querySelector("#unoEntryA")
 .value
 .trim();
 
 const notes=
 document
-.querySelector("#notes")
+.querySelector("#unoEntryC")
 .value
 .trim();
 
@@ -1619,7 +1658,7 @@ late(notes)||
 rc>=limit(game);
 
 const se=
-document.querySelector("#seat");
+document.querySelector("#unoEntryB");
 
 const seat=
 se
@@ -1801,7 +1840,7 @@ async function save(id){
 
 const note=
 document
-.querySelector("#editnote")
+.querySelector("#unoEntryD")
 .value
 .trim();
 
@@ -1846,7 +1885,7 @@ error="";
 
 const note=
 document
-.querySelector("#todoNote")
+.querySelector("#unoEntryE")
 .value
 .trim();
 
@@ -1879,7 +1918,7 @@ render();
 async function saveTodoEdit(id){
 
 const field=
-document.querySelector("#todoEditText");
+document.querySelector("#unoEntryF");
 
 if(!field)return;
 
