@@ -112,6 +112,14 @@ border-radius:10px;
 font-weight:800
 }
 
+/* YELLOW ADD TO-DO BUTTON */
+
+.todoAddButton{
+background:#FFEF00!important;
+color:#000!important;
+border:2px solid #000!important
+}
+
 .big{
 min-height:76px;
 font-size:1.35rem
@@ -434,7 +442,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-22-11";
+const APP_VERSION="2026-09-22-12";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -588,6 +596,9 @@ minute:"2-digit"
 
 function renderHeader(title,subtitle=""){
 
+const showSmallUnoClub=
+!(page==="main" && !day && !game);
+
 return `
 
 <header>
@@ -598,7 +609,9 @@ ${page!=="main" || day || game
 
 <div class="headertext">
 
-<b>UNO CLUB</b>
+${showSmallUnoClub
+?'<b>UNO CLUB</b>'
+:""}
 
 <h1>
 ${esc(title)}
@@ -1000,7 +1013,7 @@ maxlength="500"></textarea>
 
 </label>
 
-<button class="add">
+<button class="add todoAddButton">
 Add To-Do
 </button>
 
