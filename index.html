@@ -16,9 +16,7 @@
 
 <style>
 
-*{
-box-sizing:border-box
-}
+*{box-sizing:border-box}
 
 html{
 overscroll-behavior-y:none;
@@ -35,9 +33,7 @@ color:#0b0b0b;
 font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
 }
 
-button,input,textarea{
-font:inherit
-}
+button,input,textarea{font:inherit}
 
 header{
 min-height:118px;
@@ -58,9 +54,7 @@ font-size:.76rem;
 letter-spacing:.16em
 }
 
-.headertext{
-flex:1
-}
+.headertext{flex:1}
 
 .headerlogo{
 width:78px;
@@ -116,9 +110,7 @@ min-height:76px;
 font-size:1.35rem
 }
 
-.game{
-position:relative
-}
+.game{position:relative}
 
 .gamecount{
 position:absolute;
@@ -166,9 +158,7 @@ min-height:82px;
 resize:vertical
 }
 
-.add{
-min-height:50px
-}
+.add{min-height:50px}
 
 .red,.error{
 color:#b42318;
@@ -183,9 +173,7 @@ gap:.75rem;
 margin:1.5rem 0 .65rem
 }
 
-.head h2{
-margin:0
-}
+.head h2{margin:0}
 
 .listactions{
 display:flex;
@@ -302,9 +290,7 @@ background:#fff;
 border:1px solid #1e5acb
 }
 
-.save{
-border:0
-}
+.save{border:0}
 
 .count{
 color:#666;
@@ -318,9 +304,7 @@ font-size:.9rem
 margin:1.5rem 0 .65rem
 }
 
-.todoSectionTitle h2{
-margin:0
-}
+.todoSectionTitle h2{margin:0}
 
 .todoRow{
 display:flex;
@@ -342,9 +326,45 @@ font-size:1rem;
 overflow-wrap:anywhere
 }
 
+.todoEditable{
+width:fit-content;
+max-width:100%;
+padding:0;
+border:0;
+background:transparent;
+color:#0b0b0b;
+font-weight:800;
+font-size:1rem;
+text-align:left;
+text-decoration:underline;
+text-decoration-style:dotted;
+text-underline-offset:3px;
+cursor:pointer
+}
+
 .todoTime{
 font-size:.78rem;
 color:#666
+}
+
+.todoEditor{
+display:grid;
+gap:.5rem
+}
+
+.todoEditor textarea{
+width:100%;
+min-height:72px
+}
+
+.todoEditButtons{
+display:flex;
+gap:.5rem
+}
+
+.todoEditButtons button{
+padding:.55rem .8rem;
+border-radius:8px
 }
 
 .completedRow{
@@ -401,7 +421,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-22-09";
+const APP_VERSION="2026-09-22-10";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -434,6 +454,7 @@ let players=[];
 let todos=[];
 
 let edit=null;
+let todoEdit=null;
 let error="";
 
 async function load(){
@@ -605,7 +626,6 @@ let h="";
 if(page==="todo"){
 
 h+=renderHeader("To-Do");
-
 h+=renderTodoPage();
 
 a.innerHTML=h;
@@ -1019,9 +1039,49 @@ active.map(t=>`
 
 <div class="todoInfo">
 
-<div class="todoText">
-${esc(t.note)}
+${
+
+String(todoEdit)===String(t.id)
+
+?`
+
+<div class="todoEditor">
+
+<textarea
+id="todoEditText"
+maxlength="500">${esc(t.note)}</textarea>
+
+<div class="todoEditButtons">
+
+<button
+class="save"
+data-todo-save="${t.id}">
+Save
+</button>
+
+<button
+class="cancel"
+id="todoEditCancel">
+Cancel
+</button>
+
 </div>
+
+</div>
+
+`
+
+:`
+
+<button
+class="todoEditable"
+data-todo-edit="${t.id}">
+${esc(t.note)}
+</button>
+
+`
+
+}
 
 <div class="todoTime">
 Entered: ${formatDateTime(t.created_at)}
@@ -1095,6 +1155,13 @@ Completed: ${formatDateTime(t.completed_at)}
 </div>
 
 </div>
+
+<button
+class="del"
+data-delete-completed="${t.id}"
+aria-label="Delete completed item">
+×
+</button>
 
 </div>
 
@@ -1286,6 +1353,7 @@ if(back){
 back.onclick=()=>{
 
 page="main";
+todoEdit=null;
 error="";
 render();
 
@@ -1310,6 +1378,80 @@ b.onclick=()=>{
 
 completeTodo(
 b.dataset.complete
+);
+
+};
+
+});
+
+document
+.querySelectorAll("[data-todo-edit]")
+.forEach(b=>{
+
+b.onclick=()=>{
+
+todoEdit=b.dataset.todoEdit;
+error="";
+render();
+
+setTimeout(()=>{
+
+const field=
+document.querySelector("#todoEditText");
+
+if(field){
+
+field.focus();
+
+field.setSelectionRange(
+field.value.length,
+field.value.length
+);
+
+}
+
+},0);
+
+};
+
+});
+
+document
+.querySelectorAll("[data-todo-save]")
+.forEach(b=>{
+
+b.onclick=()=>{
+
+saveTodoEdit(
+b.dataset.todoSave
+);
+
+};
+
+});
+
+const cancel=
+document.querySelector("#todoEditCancel");
+
+if(cancel){
+
+cancel.onclick=()=>{
+
+todoEdit=null;
+render();
+
+};
+
+}
+
+document
+.querySelectorAll("[data-delete-completed]")
+.forEach(b=>{
+
+b.onclick=()=>{
+
+deleteCompletedTodo(
+b.dataset.deleteCompleted
 );
 
 };
@@ -1691,6 +1833,62 @@ render();
 
 }
 
+async function saveTodoEdit(id){
+
+const field=
+document.querySelector("#todoEditText");
+
+if(!field)return;
+
+const note=
+field.value.trim();
+
+if(!note){
+
+error=
+"To-Do item cannot be blank.";
+
+render();
+return;
+
+}
+
+const r=
+await sb
+.from("todo_items")
+.update({
+note
+})
+.eq("id",id)
+.is("completed_at",null)
+.select()
+.single();
+
+if(r.error){
+
+error=
+"Could not save the To-Do item.";
+
+render();
+return;
+
+}
+
+todos=
+todos.map(
+t=>
+String(t.id)===String(id)
+?r.data
+:t
+);
+
+todoEdit=null;
+error="";
+
+render();
+
+}
+
 async function completeTodo(id){
 
 const item=
@@ -1738,7 +1936,53 @@ String(t.id)===String(id)
 :t
 );
 
+todoEdit=null;
+
 await trimCompletedTodos();
+
+render();
+
+}
+
+async function deleteCompletedTodo(id){
+
+const item=
+todos.find(
+t=>String(t.id)===String(id)
+);
+
+if(!item)return;
+
+const confirmed=
+confirm(
+`Permanently delete this completed item?\n\n${item.note}`
+);
+
+if(!confirmed)return;
+
+const r=
+await sb
+.from("todo_items")
+.delete()
+.eq("id",id)
+.not("completed_at","is",null);
+
+if(r.error){
+
+error=
+"Could not delete that completed item.";
+
+render();
+return;
+
+}
+
+todos=
+todos.filter(
+t=>String(t.id)!==String(id)
+);
+
+error="";
 
 render();
 
