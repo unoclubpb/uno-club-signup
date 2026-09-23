@@ -327,6 +327,20 @@ font-weight:700;
 font-size:.9rem
 }
 
+/* MAIN SCREEN VERSION */
+
+.appVersion{
+position:fixed;
+left:10px;
+bottom:calc(8px + env(safe-area-inset-bottom));
+font-size:.68rem;
+color:#000;
+font-weight:400;
+z-index:10
+}
+
+/* TO-DO */
+
 .todoSectionTitle{
 margin:1.5rem 0 .65rem
 }
@@ -688,6 +702,10 @@ To-Do
 </button>
 
 </section>
+
+<div class="appVersion">
+Version ${APP_VERSION}
+</div>
 
 `;
 
