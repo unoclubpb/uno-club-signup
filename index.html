@@ -343,6 +343,34 @@ margin-bottom:1rem;
 font-weight:700
 }
 
+.specialNameEdit{
+padding:0;
+border:0;
+background:transparent;
+color:#0b0b0b;
+font-weight:800;
+font-size:1rem;
+text-decoration:underline;
+text-decoration-style:dotted;
+text-underline-offset:3px;
+cursor:pointer
+}
+
+.specialEditForm{
+margin-bottom:1rem
+}
+
+.specialEditButtons{
+display:flex;
+gap:.5rem
+}
+
+.specialEditButtons button{
+flex:1;
+min-height:46px;
+border-radius:8px
+}
+
 .todoSectionTitle{
 margin:1.5rem 0 .65rem
 }
@@ -458,7 +486,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-26-03";
+const APP_VERSION="2026-09-26-04";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -484,6 +512,7 @@ let specialSettings=null;
 
 let edit=null;
 let todoEdit=null;
+let specialEdit=false;
 let error="";
 
 function limit(g){
@@ -823,15 +852,14 @@ wire();
 
 }
 
-function renderSpecialPage(){
-
-if(!specialSettings){
+function specialSettingsForm(editing=false){
 
 return `
 
-<section class="content">
-
-<form id="specialSetupForm" autocomplete="off">
+<form
+id="${editing?"specialEditForm":"specialSetupForm"}"
+class="${editing?"specialEditForm":""}"
+autocomplete="off">
 
 <div class="fieldwrap">
 
@@ -843,6 +871,7 @@ Game Name
 id="specialGameName"
 type="text"
 maxlength="80"
+value="${editing?esc(specialSettings.game_name):""}"
 autocomplete="new-password"
 autocorrect="off"
 autocapitalize="words"
@@ -864,6 +893,7 @@ Enter 6, 7, 8, 9 or 10.
 id="specialSeats"
 type="text"
 inputmode="numeric"
+value="${editing?specialSettings.total_seats:""}"
 autocomplete="new-password"
 autocorrect="off"
 spellcheck="false">
@@ -874,11 +904,50 @@ ${error
 ?`<p class="error">${esc(error)}</p>`
 :""}
 
+${editing
+
+?`
+
+<div class="specialEditButtons">
+
+<button class="save">
+Save Changes
+</button>
+
+<button
+type="button"
+class="cancel"
+id="cancelSpecialEdit">
+Cancel
+</button>
+
+</div>
+
+`
+
+:`
+
 <button class="add">
 Set Up Game
 </button>
 
+`}
+
 </form>
+
+`;
+
+}
+
+function renderSpecialPage(){
+
+if(!specialSettings){
+
+return `
+
+<section class="content">
+
+${specialSettingsForm(false)}
 
 </section>
 
@@ -906,13 +975,28 @@ return `
 <section class="content">
 
 ${isSpecial
-?`
+
+?specialEdit
+
+?specialSettingsForm(true)
+
+:`
 
 <div class="specialInfo">
-${esc(specialSettings.game_name)} · ${specialSettings.total_seats} Seats
+
+<button
+class="specialNameEdit"
+id="specialNameEdit"
+type="button">
+${esc(specialSettings.game_name)}
+</button>
+
+· ${specialSettings.total_seats} Seats
+
 </div>
 
 `
+
 :""}
 
 <form id="form" autocomplete="off">
@@ -988,7 +1072,7 @@ Add Player
 
 </form>
 
-${error
+${!specialEdit && error
 ?`<p class="error">${esc(error)}</p>`
 :""}
 
@@ -1356,6 +1440,7 @@ specialButton.onclick=()=>{
 page="special";
 day=null;
 game=null;
+specialEdit=false;
 error="";
 render();
 };
@@ -1408,6 +1493,7 @@ back.onclick=()=>{
 page="main";
 day=null;
 game=null;
+specialEdit=false;
 error="";
 render();
 };
@@ -1418,6 +1504,46 @@ const setup=document.querySelector("#specialSetupForm");
 
 if(setup){
 setup.onsubmit=saveSpecialSetup;
+}
+
+const specialNameEdit=
+document.querySelector("#specialNameEdit");
+
+if(specialNameEdit){
+
+specialNameEdit.onclick=()=>{
+
+specialEdit=true;
+error="";
+render();
+
+};
+
+}
+
+const specialEditForm=
+document.querySelector("#specialEditForm");
+
+if(specialEditForm){
+
+specialEditForm.onsubmit=
+saveSpecialEdit;
+
+}
+
+const cancelSpecialEdit=
+document.querySelector("#cancelSpecialEdit");
+
+if(cancelSpecialEdit){
+
+cancelSpecialEdit.onclick=()=>{
+
+specialEdit=false;
+error="";
+render();
+
+};
+
 }
 
 wirePlayerControls();
@@ -1541,16 +1667,92 @@ b.onclick=()=>deleteCompletedTodo(b.dataset.deleteCompleted);
 
 }
 
+function validSpecialValues(){
+
+const name=
+document.querySelector("#specialGameName")
+.value.trim();
+
+const seatValue=
+document.querySelector("#specialSeats")
+.value.trim();
+
+if(!name){
+
+error="Please enter a game name.";
+render();
+return null;
+
+}
+
+if(
+!/^\d+$/.test(seatValue) ||
+![6,7,8,9,10].includes(Number(seatValue))
+){
+
+error="Total Seats must be 6, 7, 8, 9 or 10.";
+render();
+return null;
+
+}
+
+return{
+name,
+seats:Number(seatValue)
+};
+
+}
+
 async function saveSpecialSetup(e){
 
 e.preventDefault();
 error="";
 
+const values=validSpecialValues();
+
+if(!values)return;
+
+const r=
+await sb
+.from("special_game_settings")
+.upsert({
+id:1,
+game_name:values.name,
+total_seats:values.seats,
+updated_at:new Date().toISOString()
+})
+.select()
+.single();
+
+if(r.error){
+
+error="Could not save the Special Game setup.";
+render();
+return;
+
+}
+
+specialSettings=r.data;
+day="Special Game";
+game="Special Game";
+specialEdit=false;
+
+render();
+
+}
+
+async function saveSpecialEdit(e){
+
+e.preventDefault();
+error="";
+
 const name=
-document.querySelector("#specialGameName").value.trim();
+document.querySelector("#specialGameName")
+.value.trim();
 
 const seatValue=
-document.querySelector("#specialSeats").value.trim();
+document.querySelector("#specialSeats")
+.value.trim();
 
 if(!name){
 
@@ -1571,29 +1773,77 @@ return;
 
 }
 
-const r=
+const newSeats=Number(seatValue);
+
+const settingsResult=
 await sb
 .from("special_game_settings")
-.upsert({
-id:1,
+.update({
 game_name:name,
-total_seats:Number(seatValue),
+total_seats:newSeats,
 updated_at:new Date().toISOString()
 })
+.eq("id",1)
 .select()
 .single();
 
-if(r.error){
+if(settingsResult.error){
 
-error="Could not save the Special Game setup.";
+error="Could not save the Special Game changes.";
 render();
 return;
 
 }
 
-specialSettings=r.data;
-day="Special Game";
-game="Special Game";
+const invalidSeatPlayers=
+players.filter(
+p=>
+p.day==="Special Game" &&
+p.game==="Special Game" &&
+p.preferred_seat &&
+Number(p.preferred_seat)>newSeats
+);
+
+if(invalidSeatPlayers.length){
+
+const ids=
+invalidSeatPlayers.map(p=>p.id);
+
+const clearSeats=
+await sb
+.from("signup_players")
+.update({
+preferred_seat:null
+})
+.in("id",ids);
+
+if(clearSeats.error){
+
+error=
+"The game was updated, but some preferred seats could not be cleared.";
+
+specialSettings=settingsResult.data;
+specialEdit=false;
+render();
+return;
+
+}
+
+const idSet=
+new Set(ids.map(String));
+
+players=
+players.map(p=>
+idSet.has(String(p.id))
+?{...p,preferred_seat:null}
+:p
+);
+
+}
+
+specialSettings=settingsResult.data;
+specialEdit=false;
+error="";
 
 render();
 
@@ -1836,6 +2086,7 @@ specialSettings=null;
 day=null;
 game=null;
 page="main";
+specialEdit=false;
 
 }
 
