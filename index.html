@@ -101,7 +101,7 @@ margin-top:48px!important
 }
 
 .todoMenuButton{
-margin-top:0px!important;
+margin-top:0!important;
 background:#FFEF00!important;
 color:#000!important;
 border:2px solid #000!important
@@ -162,9 +162,7 @@ gap:.45rem;
 font-weight:700
 }
 
-.fieldlabel{
-font-weight:700
-}
+.fieldlabel{font-weight:700}
 
 .fieldhint{
 font-size:.83rem;
@@ -186,9 +184,7 @@ min-height:82px;
 resize:vertical
 }
 
-.add{
-min-height:50px
-}
+.add{min-height:50px}
 
 .red,.error{
 color:#b42318;
@@ -320,9 +316,7 @@ background:#fff;
 border:1px solid #1e5acb
 }
 
-.save{
-border:2px solid #000
-}
+.save{border:2px solid #000}
 
 .count{
 color:#666;
@@ -416,9 +410,7 @@ padding:.55rem .8rem;
 border-radius:8px
 }
 
-.completedRow{
-opacity:.78
-}
+.completedRow{opacity:.78}
 
 .completedText{
 text-decoration:line-through;
@@ -443,13 +435,9 @@ align-items:flex-start;
 flex-direction:column
 }
 
-.listactions{
-width:100%
-}
+.listactions{width:100%}
 
-.textlist,.clear{
-flex:1
-}
+.textlist,.clear{flex:1}
 
 .headerlogo{
 width:68px;
@@ -470,7 +458,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-26-02";
+const APP_VERSION="2026-09-26-03";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -683,9 +671,7 @@ ${showSmallUnoClub
 ?'<b>UNO CLUB</b>'
 :""}
 
-<h1>
-${esc(title)}
-</h1>
+<h1>${esc(title)}</h1>
 
 ${subtitle
 ?`<small>${esc(subtitle)}</small>`
@@ -707,18 +693,14 @@ alt="Uno Club Lists">
 function render(){
 
 const a=document.querySelector("#app");
-
 let h="";
 
 if(page==="todo"){
 
 h+=renderHeader("To-Do");
 h+=renderTodoPage();
-
 a.innerHTML=h;
-
 wireTodo();
-
 return;
 
 }
@@ -731,13 +713,9 @@ specialSettings
 :"Special Game";
 
 h+=renderHeader(title);
-
 h+=renderSpecialPage();
-
 a.innerHTML=h;
-
 wireSpecial();
-
 return;
 
 }
@@ -841,7 +819,6 @@ h+=renderPlayerPage();
 }
 
 a.innerHTML=h;
-
 wire();
 
 }
@@ -864,15 +841,12 @@ Game Name
 
 <input
 id="specialGameName"
-name="specialGameName"
 type="text"
 maxlength="80"
 autocomplete="new-password"
 autocorrect="off"
 autocapitalize="words"
-spellcheck="false"
-data-lpignore="true"
-data-1p-ignore="true">
+spellcheck="false">
 
 </div>
 
@@ -888,14 +862,11 @@ Enter 6, 7, 8, 9 or 10.
 
 <input
 id="specialSeats"
-name="specialSeats"
 type="text"
 inputmode="numeric"
 autocomplete="new-password"
 autocorrect="off"
-spellcheck="false"
-data-lpignore="true"
-data-1p-ignore="true">
+spellcheck="false">
 
 </div>
 
@@ -925,18 +896,10 @@ return renderPlayerPage(true);
 function renderPlayerPage(isSpecial=false){
 
 const sh=shown();
-
-const regularPlayers=
-sh.filter(p=>!p.alt);
-
-const alternatePlayers=
-sh.filter(p=>p.alt);
-
-const rc=
-regularPlayers.length;
-
-const seatLimit=
-maxPreferredSeat(game);
+const regularPlayers=sh.filter(p=>!p.alt);
+const alternatePlayers=sh.filter(p=>p.alt);
+const rc=regularPlayers.length;
+const seatLimit=maxPreferredSeat(game);
 
 return `
 
@@ -962,21 +925,15 @@ Player Name
 
 <input
 id="unoEntryA"
-name="uea"
 type="text"
 autocomplete="new-password"
 autocorrect="off"
 autocapitalize="words"
-spellcheck="false"
-data-lpignore="true"
-data-1p-ignore="true">
+spellcheck="false">
 
 </div>
 
-${
-
-game!=="Tournament" &&
-rc<limit(game)
+${game!=="Tournament" && rc<limit(game)
 
 ?`
 
@@ -992,22 +949,17 @@ Preferred Seat
 
 <input
 id="unoEntryB"
-name="ueb"
 type="text"
 inputmode="numeric"
 autocomplete="new-password"
 autocorrect="off"
-spellcheck="false"
-data-lpignore="true"
-data-1p-ignore="true">
+spellcheck="false">
 
 </div>
 
 `
 
-:""
-
-}
+:""}
 
 <div class="fieldwrap">
 
@@ -1021,13 +973,10 @@ Notes
 
 <input
 id="unoEntryC"
-name="uec"
 type="text"
 autocomplete="new-password"
 autocorrect="off"
-spellcheck="false"
-data-lpignore="true"
-data-1p-ignore="true">
+spellcheck="false">
 
 </div>
 
@@ -1047,9 +996,7 @@ ${error
 
 <div>
 
-<h2>
-Player List
-</h2>
+<h2>Player List</h2>
 
 <span class="count">
 ${countLabel(regularPlayers.length,"Player","Players")} / ${countLabel(alternatePlayers.length,"Alternate","Alternates")}
@@ -1063,33 +1010,24 @@ ${current().length
 
 ?`
 
-<button
-class="textlist"
-id="textlist">
+<button class="textlist" id="textlist">
 Text List
 </button>
 
-<button
-class="clear"
-id="clear">
+<button class="clear" id="clear">
 Clear List
 </button>
 
 `
 
-:""
-
-}
+:""}
 
 </div>
-
 </div>
 
 <div class="list">
 
-${
-
-!sh.length
+${!sh.length
 
 ?`
 
@@ -1111,15 +1049,11 @@ ${p.alt?"A":p.num}
 
 <div class="info">
 
-<button
-class="name"
-data-id="${p.id}">
+<button class="name" data-id="${p.id}">
 ${esc(p.player_name)}
 </button>
 
-${
-
-p.alt
+${p.alt
 
 ?`
 
@@ -1131,8 +1065,7 @@ ALTERNATE
 
 :
 
-game!=="Tournament" &&
-p.preferred_seat
+game!=="Tournament" && p.preferred_seat
 
 ?`
 
@@ -1142,13 +1075,9 @@ Preferred seat: ${p.preferred_seat}
 
 `
 
-:""
+:""}
 
-}
-
-${
-
-p.notes
+${p.notes
 
 ?`
 
@@ -1158,13 +1087,9 @@ Note: ${esc(p.notes)}
 
 `
 
-:""
+:""}
 
-}
-
-${
-
-edit==p.id
+${edit==p.id
 
 ?`
 
@@ -1172,52 +1097,38 @@ edit==p.id
 
 <input
 id="unoEntryD"
-name="ued"
 type="text"
 value="${esc(p.notes||"")}"
 autocomplete="new-password"
 autocorrect="off"
-spellcheck="false"
-data-lpignore="true"
-data-1p-ignore="true">
+spellcheck="false">
 
 <div>
 
-<button
-class="save"
-data-save="${p.id}">
+<button class="save" data-save="${p.id}">
 Save Note
 </button>
 
-<button
-class="cancel"
-id="cancel">
+<button class="cancel" id="cancel">
 Cancel
 </button>
 
 </div>
-
 </div>
 
 `
 
-:""
-
-}
+:""}
 
 </div>
 
-<button
-class="del"
-data-del="${p.id}">
+<button class="del" data-del="${p.id}">
 ×
 </button>
 
 </div>
 
-`).join("")
-
-}
+`).join("")}
 
 </div>
 
@@ -1232,20 +1143,12 @@ function renderTodoPage(){
 const active=
 todos
 .filter(t=>!t.completed_at)
-.sort(
-(a,b)=>
-new Date(a.created_at)-
-new Date(b.created_at)
-);
+.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
 
 const completed=
 todos
 .filter(t=>t.completed_at)
-.sort(
-(a,b)=>
-new Date(b.completed_at)-
-new Date(a.completed_at)
-)
+.sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at))
 .slice(0,25);
 
 return `
@@ -1262,13 +1165,10 @@ To-Do Item
 
 <textarea
 id="unoEntryE"
-name="uee"
 maxlength="500"
 autocomplete="new-password"
 autocorrect="off"
-spellcheck="false"
-data-lpignore="true"
-data-1p-ignore="true"></textarea>
+spellcheck="false"></textarea>
 
 </div>
 
@@ -1284,9 +1184,7 @@ ${error
 
 <div class="todoSectionTitle">
 
-<h2>
-To-Do
-</h2>
+<h2>To-Do</h2>
 
 <span class="count">
 ${countLabel(active.length,"Item","Items")}
@@ -1296,9 +1194,7 @@ ${countLabel(active.length,"Item","Items")}
 
 <div class="list">
 
-${
-
-!active.length
+${!active.length
 
 ?`
 
@@ -1316,9 +1212,7 @@ active.map(t=>`
 
 <div class="todoInfo">
 
-${
-
-String(todoEdit)===String(t.id)
+${String(todoEdit)===String(t.id)
 
 ?`
 
@@ -1326,45 +1220,33 @@ String(todoEdit)===String(t.id)
 
 <textarea
 id="unoEntryF"
-name="uef"
 maxlength="500"
 autocomplete="new-password"
 autocorrect="off"
-spellcheck="false"
-data-lpignore="true"
-data-1p-ignore="true">${esc(t.note)}</textarea>
+spellcheck="false">${esc(t.note)}</textarea>
 
 <div class="todoEditButtons">
 
-<button
-class="save"
-data-todo-save="${t.id}">
+<button class="save" data-todo-save="${t.id}">
 Save
 </button>
 
-<button
-class="cancel"
-id="todoEditCancel">
+<button class="cancel" id="todoEditCancel">
 Cancel
 </button>
 
 </div>
-
 </div>
 
 `
 
 :`
 
-<button
-class="todoEditable"
-data-todo-edit="${t.id}">
+<button class="todoEditable" data-todo-edit="${t.id}">
 ${esc(t.note)}
 </button>
 
-`
-
-}
+`}
 
 <div class="todoTime">
 Entered: ${formatDateTime(t.created_at)}
@@ -1372,26 +1254,19 @@ Entered: ${formatDateTime(t.created_at)}
 
 </div>
 
-<button
-class="del"
-data-complete="${t.id}"
-aria-label="Complete item">
+<button class="del" data-complete="${t.id}">
 ×
 </button>
 
 </div>
 
-`).join("")
-
-}
+`).join("")}
 
 </div>
 
 <div class="todoSectionTitle">
 
-<h2>
-Completed
-</h2>
+<h2>Completed</h2>
 
 <span class="count">
 Most recent 25
@@ -1401,9 +1276,7 @@ Most recent 25
 
 <div class="list">
 
-${
-
-!completed.length
+${!completed.length
 
 ?`
 
@@ -1439,18 +1312,13 @@ Completed: ${formatDateTime(t.completed_at)}
 
 </div>
 
-<button
-class="del"
-data-delete-completed="${t.id}"
-aria-label="Delete completed item">
+<button class="del" data-delete-completed="${t.id}">
 ×
 </button>
 
 </div>
 
-`).join("")
-
-}
+`).join("")}
 
 </div>
 
@@ -1462,68 +1330,53 @@ aria-label="Delete completed item">
 
 function wire(){
 
-document
-.querySelectorAll(".day")
-.forEach(b=>{
+document.querySelectorAll(".day").forEach(b=>{
 
 b.onclick=()=>{
-
 day=b.dataset.v;
 render();
-
 };
 
 });
 
-document
-.querySelectorAll(".game")
-.forEach(b=>{
+document.querySelectorAll(".game").forEach(b=>{
 
 b.onclick=()=>{
-
 game=b.dataset.v;
 render();
-
 };
 
 });
 
-const specialButton=
-document.querySelector("#specialGameButton");
+const specialButton=document.querySelector("#specialGameButton");
 
 if(specialButton){
 
 specialButton.onclick=()=>{
-
 page="special";
 day=null;
 game=null;
 error="";
 render();
-
 };
 
 }
 
-const todoButton=
-document.querySelector("#todoMenuButton");
+const todoButton=document.querySelector("#todoMenuButton");
 
 if(todoButton){
 
 todoButton.onclick=()=>{
-
 page="todo";
 error="";
 render();
-
 };
 
 }
 
 wirePlayerControls();
 
-const back=
-document.querySelector("#back");
+const back=document.querySelector("#back");
 
 if(back)
 
@@ -1532,17 +1385,11 @@ back.onclick=()=>{
 error="";
 
 if(game){
-
 game=null;
-
 }else if(day){
-
 day=null;
-
 }else{
-
 page="main";
-
 }
 
 render();
@@ -1553,30 +1400,24 @@ render();
 
 function wireSpecial(){
 
-const back=
-document.querySelector("#back");
+const back=document.querySelector("#back");
 
 if(back){
 
 back.onclick=()=>{
-
 page="main";
 day=null;
 game=null;
 error="";
 render();
-
 };
 
 }
 
-const setup=
-document.querySelector("#specialSetupForm");
+const setup=document.querySelector("#specialSetupForm");
 
 if(setup){
-
 setup.onsubmit=saveSpecialSetup;
-
 }
 
 wirePlayerControls();
@@ -1585,37 +1426,23 @@ wirePlayerControls();
 
 function wirePlayerControls(){
 
-const form=
-document.querySelector("#form");
+const form=document.querySelector("#form");
 
 if(form){
 
-const notes=
-document.querySelector("#unoEntryC");
-
-const alt=
-document.querySelector("#altmsg");
+const notes=document.querySelector("#unoEntryC");
+const alt=document.querySelector("#altmsg");
 
 notes.oninput=()=>{
 
-const rc=
-shown()
-.filter(p=>!p.alt)
-.length;
+const rc=shown().filter(p=>!p.alt).length;
 
 alt.innerHTML=
 
 late(notes.value) ||
 rc>=limit(game)
 
-?`
-
-<span class="red">
-This player will be added as an ALTERNATE.
-</span>
-
-`
-
+?`<span class="red">This player will be added as an ALTERNATE.</span>`
 :"";
 
 };
@@ -1624,176 +1451,92 @@ form.onsubmit=add;
 
 }
 
-document
-.querySelectorAll("[data-del]")
-.forEach(b=>{
-
-b.onclick=()=>
-del(b.dataset.del);
-
+document.querySelectorAll("[data-del]").forEach(b=>{
+b.onclick=()=>del(b.dataset.del);
 });
 
-document
-.querySelectorAll(".name")
-.forEach(b=>{
+document.querySelectorAll(".name").forEach(b=>{
 
 b.onclick=()=>{
-
 edit=b.dataset.id;
 render();
-
 };
 
 });
 
-const c=
-document.querySelector("#cancel");
+const c=document.querySelector("#cancel");
 
 if(c)
 
 c.onclick=()=>{
-
 edit=null;
 render();
-
 };
 
-document
-.querySelectorAll("[data-save]")
-.forEach(b=>{
-
-b.onclick=()=>
-save(b.dataset.save);
-
+document.querySelectorAll("[data-save]").forEach(b=>{
+b.onclick=()=>save(b.dataset.save);
 });
 
-const cl=
-document.querySelector("#clear");
+const cl=document.querySelector("#clear");
+if(cl)cl.onclick=clear;
 
-if(cl)
-cl.onclick=clear;
-
-const tl=
-document.querySelector("#textlist");
-
-if(tl)
-tl.onclick=textList;
+const tl=document.querySelector("#textlist");
+if(tl)tl.onclick=textList;
 
 }
 
 function wireTodo(){
 
-const back=
-document.querySelector("#back");
+const back=document.querySelector("#back");
 
 if(back){
 
 back.onclick=()=>{
-
 page="main";
 todoEdit=null;
 error="";
 render();
-
 };
 
 }
 
-const todoForm=
-document.querySelector("#todoForm");
+const todoForm=document.querySelector("#todoForm");
 
 if(todoForm){
-
 todoForm.onsubmit=addTodo;
-
 }
 
-document
-.querySelectorAll("[data-complete]")
-.forEach(b=>{
-
-b.onclick=()=>{
-
-completeTodo(
-b.dataset.complete
-);
-
-};
-
+document.querySelectorAll("[data-complete]").forEach(b=>{
+b.onclick=()=>completeTodo(b.dataset.complete);
 });
 
-document
-.querySelectorAll("[data-todo-edit]")
-.forEach(b=>{
+document.querySelectorAll("[data-todo-edit]").forEach(b=>{
 
 b.onclick=()=>{
-
 todoEdit=b.dataset.todoEdit;
 error="";
 render();
-
-setTimeout(()=>{
-
-const field=
-document.querySelector("#unoEntryF");
-
-if(field){
-
-field.focus();
-
-field.setSelectionRange(
-field.value.length,
-field.value.length
-);
-
-}
-
-},0);
-
 };
 
 });
 
-document
-.querySelectorAll("[data-todo-save]")
-.forEach(b=>{
-
-b.onclick=()=>{
-
-saveTodoEdit(
-b.dataset.todoSave
-);
-
-};
-
+document.querySelectorAll("[data-todo-save]").forEach(b=>{
+b.onclick=()=>saveTodoEdit(b.dataset.todoSave);
 });
 
-const cancel=
-document.querySelector("#todoEditCancel");
+const cancel=document.querySelector("#todoEditCancel");
 
 if(cancel){
 
 cancel.onclick=()=>{
-
 todoEdit=null;
 render();
-
 };
 
 }
 
-document
-.querySelectorAll("[data-delete-completed]")
-.forEach(b=>{
-
-b.onclick=()=>{
-
-deleteCompletedTodo(
-b.dataset.deleteCompleted
-);
-
-};
-
+document.querySelectorAll("[data-delete-completed]").forEach(b=>{
+b.onclick=()=>deleteCompletedTodo(b.dataset.deleteCompleted);
 });
 
 }
@@ -1801,20 +1544,13 @@ b.dataset.deleteCompleted
 async function saveSpecialSetup(e){
 
 e.preventDefault();
-
 error="";
 
 const name=
-document
-.querySelector("#specialGameName")
-.value
-.trim();
+document.querySelector("#specialGameName").value.trim();
 
 const seatValue=
-document
-.querySelector("#specialSeats")
-.value
-.trim();
+document.querySelector("#specialSeats").value.trim();
 
 if(!name){
 
@@ -1829,9 +1565,7 @@ if(
 ![6,7,8,9,10].includes(Number(seatValue))
 ){
 
-error=
-"Total Seats must be 6, 7, 8, 9 or 10.";
-
+error="Total Seats must be 6, 7, 8, 9 or 10.";
 render();
 return;
 
@@ -1851,16 +1585,13 @@ updated_at:new Date().toISOString()
 
 if(r.error){
 
-error=
-"Could not save the Special Game setup.";
-
+error="Could not save the Special Game setup.";
 render();
 return;
 
 }
 
 specialSettings=r.data;
-
 day="Special Game";
 game="Special Game";
 
@@ -1871,12 +1602,8 @@ render();
 function buildTextList(){
 
 const sh=shown();
-
-const regular=
-sh.filter(p=>!p.alt);
-
-const alternates=
-sh.filter(p=>p.alt);
+const regular=sh.filter(p=>!p.alt);
+const alternates=sh.filter(p=>p.alt);
 
 let lines=[];
 
@@ -1890,24 +1617,14 @@ lines.push("");
 
 regular.forEach(p=>{
 
-let line=
-`${p.num}. ${p.player_name}`;
+let line=`${p.num}. ${p.player_name}`;
 
-if(
-game!=="Tournament" &&
-p.preferred_seat
-){
-
-line+=
-` — Preferred Seat ${p.preferred_seat}`;
-
+if(game!=="Tournament" && p.preferred_seat){
+line+=` — Preferred Seat ${p.preferred_seat}`;
 }
 
 if(p.notes){
-
-line+=
-` — Note: ${p.notes}`;
-
+line+=` — Note: ${p.notes}`;
 }
 
 lines.push(line);
@@ -1916,21 +1633,16 @@ lines.push(line);
 
 if(alternates.length){
 
-if(regular.length)
-lines.push("");
+if(regular.length)lines.push("");
 
 lines.push("Alternates");
 
 alternates.forEach(p=>{
 
-let line=
-`A. ${p.player_name}`;
+let line=`A. ${p.player_name}`;
 
 if(p.notes){
-
-line+=
-` — Note: ${p.notes}`;
-
+line+=` — Note: ${p.notes}`;
 }
 
 lines.push(line);
@@ -1945,79 +1657,42 @@ return lines.join("\n");
 
 function textList(){
 
-if(!current().length)
-return;
-
-const message=
-buildTextList();
+if(!current().length)return;
 
 window.location.href=
-"sms:&body="+
-encodeURIComponent(message);
+"sms:&body="+encodeURIComponent(buildTextList());
 
 }
 
 async function add(e){
 
 e.preventDefault();
-
 error="";
 
-const name=
-document
-.querySelector("#unoEntryA")
-.value
-.trim();
-
-const notes=
-document
-.querySelector("#unoEntryC")
-.value
-.trim();
+const name=document.querySelector("#unoEntryA").value.trim();
+const notes=document.querySelector("#unoEntryC").value.trim();
 
 const sh=shown();
+const rc=sh.filter(p=>!p.alt).length;
 
-const rc=
-sh.filter(p=>!p.alt)
-.length;
+const alt=late(notes)||rc>=limit(game);
 
-const alt=
-late(notes)||
-rc>=limit(game);
-
-const se=
-document.querySelector("#unoEntryB");
-
-const seat=
-se
-?se.value.trim()
-:"";
+const se=document.querySelector("#unoEntryB");
+const seat=se?se.value.trim():"";
 
 if(!name)return;
 
-if(
-current()
-.some(
-p=>p.player_name===name
-)
-){
+if(current().some(p=>p.player_name===name)){
 
-error=
-"That player is already on this list.";
-
+error="That player is already on this list.";
 render();
 return;
 
 }
 
-if(
-game!=="Tournament" &&
-!alt &&
-seat
-){
+if(game!=="Tournament" && !alt && seat){
 
-const maxSeat=
-maxPreferredSeat(game);
+const maxSeat=maxPreferredSeat(game);
 
 if(
 !/^\d+$/.test(seat) ||
@@ -2025,27 +1700,19 @@ if(
 +seat>maxSeat
 ){
 
-error=
-`Invalid response. Preferred seat must be a number from 1 to ${maxSeat}.`;
-
+error=`Invalid response. Preferred seat must be a number from 1 to ${maxSeat}.`;
 render();
 return;
 
 }
 
 if(
-current()
-.some(
-p=>
-String(p.preferred_seat??"")
-===
-String(+seat)
+current().some(
+p=>String(p.preferred_seat??"")===String(+seat)
 )
 ){
 
-error=
-"That preferred seat is already taken. Choose another seat or leave the seat blank.";
-
+error="That preferred seat is already taken. Choose another seat or leave the seat blank.";
 render();
 return;
 
@@ -2060,20 +1727,14 @@ await sb
 
 day,
 game,
-
 player_name:name,
 
 preferred_seat:
-
-game==="Tournament" ||
-alt
-
+game==="Tournament" || alt
 ?null
-
 :(seat?+seat:null),
 
-notes:
-notes||null
+notes:notes||null
 
 })
 .select()
@@ -2082,11 +1743,8 @@ notes||null
 if(r.error){
 
 error=
-
 r.error.code==="23505"
-
 ?"That player name or preferred seat is already on this list."
-
 :r.error.message;
 
 }else{
@@ -2110,16 +1768,11 @@ await sb
 if(!r.error){
 
 players=
-players.filter(
-p=>
-String(p.id)!==
-String(id)
-);
+players.filter(p=>String(p.id)!==String(id));
 
 }else{
 
-error=
-r.error.message;
+error=r.error.message;
 
 }
 
@@ -2129,8 +1782,7 @@ render();
 
 async function clear(){
 
-const special=
-game==="Special Game";
+const special=game==="Special Game";
 
 const label=
 special && specialSettings
@@ -2142,8 +1794,7 @@ special
 ?`Clear the entire ${label} list and reset Special Game?`
 :`Clear the entire ${label} list?`;
 
-if(!confirm(question))
-return;
+if(!confirm(question))return;
 
 const r=
 await sb
@@ -2162,11 +1813,7 @@ return;
 
 players=
 players.filter(
-p=>
-!(
-p.day===day &&
-p.game===game
-)
+p=>!(p.day===day && p.game===game)
 );
 
 if(special){
@@ -2179,9 +1826,7 @@ await sb
 
 if(settingsDelete.error){
 
-error=
-"Players were cleared, but the Special Game setup could not be reset.";
-
+error="Players were cleared, but the Special Game setup could not be reset.";
 render();
 return;
 
@@ -2200,36 +1845,25 @@ render();
 
 async function save(id){
 
-const note=
-document
-.querySelector("#unoEntryD")
-.value
-.trim();
+const note=document.querySelector("#unoEntryD").value.trim();
 
 const r=
 await sb
 .from("signup_players")
-.update({
-notes:note||null
-})
+.update({notes:note||null})
 .eq("id",id)
 .select()
 .single();
 
 if(r.error){
 
-error=
-r.error.message;
+error=r.error.message;
 
 }else{
 
 players=
 players.map(
-p=>
-String(p.id)===
-String(id)
-?r.data
-:p
+p=>String(p.id)===String(id)?r.data:p
 );
 
 }
@@ -2242,30 +1876,22 @@ render();
 async function addTodo(e){
 
 e.preventDefault();
-
 error="";
 
-const note=
-document
-.querySelector("#unoEntryE")
-.value
-.trim();
+const note=document.querySelector("#unoEntryE").value.trim();
 
 if(!note)return;
 
 const r=
 await sb
 .from("todo_items")
-.insert({
-note
-})
+.insert({note})
 .select()
 .single();
 
 if(r.error){
 
-error=
-"Could not add the To-Do item.";
+error="Could not add the To-Do item.";
 
 }else{
 
@@ -2279,19 +1905,15 @@ render();
 
 async function saveTodoEdit(id){
 
-const field=
-document.querySelector("#unoEntryF");
+const field=document.querySelector("#unoEntryF");
 
 if(!field)return;
 
-const note=
-field.value.trim();
+const note=field.value.trim();
 
 if(!note){
 
-error=
-"To-Do item cannot be blank.";
-
+error="To-Do item cannot be blank.";
 render();
 return;
 
@@ -2300,9 +1922,7 @@ return;
 const r=
 await sb
 .from("todo_items")
-.update({
-note
-})
+.update({note})
 .eq("id",id)
 .is("completed_at",null)
 .select()
@@ -2310,9 +1930,7 @@ note
 
 if(r.error){
 
-error=
-"Could not save the To-Do item.";
-
+error="Could not save the To-Do item.";
 render();
 return;
 
@@ -2320,15 +1938,11 @@ return;
 
 todos=
 todos.map(
-t=>
-String(t.id)===String(id)
-?r.data
-:t
+t=>String(t.id)===String(id)?r.data:t
 );
 
 todoEdit=null;
 error="";
-
 render();
 
 }
@@ -2336,27 +1950,18 @@ render();
 async function completeTodo(id){
 
 const item=
-todos.find(
-t=>String(t.id)===String(id)
-);
+todos.find(t=>String(t.id)===String(id));
 
 if(!item)return;
 
-const confirmed=
-confirm(
-`Mark this item completed?\n\n${item.note}`
-);
-
-if(!confirmed)return;
-
-const completedAt=
-new Date().toISOString();
+if(!confirm(`Mark this item completed?\n\n${item.note}`))
+return;
 
 const r=
 await sb
 .from("todo_items")
 .update({
-completed_at:completedAt
+completed_at:new Date().toISOString()
 })
 .eq("id",id)
 .select()
@@ -2364,9 +1969,7 @@ completed_at:completedAt
 
 if(r.error){
 
-error=
-"Could not complete that item.";
-
+error="Could not complete that item.";
 render();
 return;
 
@@ -2374,10 +1977,7 @@ return;
 
 todos=
 todos.map(
-t=>
-String(t.id)===String(id)
-?r.data
-:t
+t=>String(t.id)===String(id)?r.data:t
 );
 
 todoEdit=null;
@@ -2391,18 +1991,12 @@ render();
 async function deleteCompletedTodo(id){
 
 const item=
-todos.find(
-t=>String(t.id)===String(id)
-);
+todos.find(t=>String(t.id)===String(id));
 
 if(!item)return;
 
-const confirmed=
-confirm(
-`Permanently delete this completed item?\n\n${item.note}`
-);
-
-if(!confirmed)return;
+if(!confirm(`Permanently delete this completed item?\n\n${item.note}`))
+return;
 
 const r=
 await sb
@@ -2413,21 +2007,16 @@ await sb
 
 if(r.error){
 
-error=
-"Could not delete that completed item.";
-
+error="Could not delete that completed item.";
 render();
 return;
 
 }
 
 todos=
-todos.filter(
-t=>String(t.id)!==String(id)
-);
+todos.filter(t=>String(t.id)!==String(id));
 
 error="";
-
 render();
 
 }
@@ -2437,20 +2026,12 @@ async function trimCompletedTodos(){
 const completed=
 todos
 .filter(t=>t.completed_at)
-.sort(
-(a,b)=>
-new Date(b.completed_at)-
-new Date(a.completed_at)
-);
+.sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at));
 
-if(completed.length<=25)
-return;
-
-const oldItems=
-completed.slice(25);
+if(completed.length<=25)return;
 
 const oldIds=
-oldItems.map(t=>t.id);
+completed.slice(25).map(t=>t.id);
 
 const r=
 await sb
@@ -2461,16 +2042,11 @@ await sb
 if(!r.error){
 
 const removeSet=
-new Set(
-oldIds.map(String)
-);
+new Set(oldIds.map(String));
 
 todos=
 todos.filter(
-t=>
-!removeSet.has(
-String(t.id)
-)
+t=>!removeSet.has(String(t.id))
 );
 
 }
@@ -2486,13 +2062,10 @@ await fetch(
 window.location.pathname+
 "?updatecheck="+
 Date.now(),
-{
-cache:"no-store"
-}
+{cache:"no-store"}
 );
 
-const html=
-await response.text();
+const html=await response.text();
 
 const match=
 html.match(
@@ -2507,8 +2080,7 @@ match[1]!==APP_VERSION
 
 window.location.replace(
 window.location.pathname+
-"?v="+
-encodeURIComponent(match[1])
+"?v="+encodeURIComponent(match[1])
 );
 
 }
@@ -2521,11 +2093,8 @@ document.addEventListener(
 "visibilitychange",
 ()=>{
 
-if(
-document.visibilityState==="visible"){
-
+if(document.visibilityState==="visible"){
 checkForUpdate();
-
 }
 
 }
@@ -2534,9 +2103,7 @@ checkForUpdate();
 window.addEventListener(
 "pageshow",
 ()=>{
-
 checkForUpdate();
-
 }
 );
 
