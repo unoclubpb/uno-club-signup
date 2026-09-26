@@ -96,8 +96,12 @@ gap:1rem;
 padding-top:2rem
 }
 
+.specialGameButton{
+margin-top:48px!important
+}
+
 .todoMenuButton{
-margin-top:80px!important;
+margin-top:110px!important;
 background:#FFEF00!important;
 color:#000!important;
 border:2px solid #000!important
@@ -122,7 +126,7 @@ min-height:76px;
 font-size:1.35rem
 }
 
-.game{
+.game,.specialGameButton{
 position:relative
 }
 
@@ -326,8 +330,6 @@ font-weight:700;
 font-size:.9rem
 }
 
-/* MAIN SCREEN VERSION */
-
 .appVersion{
 position:fixed;
 left:10px;
@@ -338,7 +340,14 @@ font-weight:400;
 z-index:10
 }
 
-/* TO-DO */
+.specialInfo{
+background:#fff;
+border:1px solid #d9d9d9;
+border-radius:12px;
+padding:.85rem 1rem;
+margin-bottom:1rem;
+font-weight:700
+}
 
 .todoSectionTitle{
 margin:1.5rem 0 .65rem
@@ -461,7 +470,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-23-02";
+const APP_VERSION="2026-09-26-02";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -474,15 +483,6 @@ Wednesday:["Tournament","Omaha"],
 Thursday:["Hold Em","Omaha"]
 };
 
-const limit=g=>
-g==="Hold Em"?10:
-g==="Omaha"?9:
-20;
-
-const maxPreferredSeat=g=>
-g==="Omaha"?9:
-10;
-
 const late=n=>
 /\b(?:late|later)\b/i.test(n||"");
 
@@ -492,16 +492,45 @@ let page="main";
 
 let players=[];
 let todos=[];
+let specialSettings=null;
 
 let edit=null;
 let todoEdit=null;
 let error="";
 
+function limit(g){
+
+if(g==="Special Game"){
+return specialSettings
+?Number(specialSettings.total_seats)
+:10;
+}
+
+if(g==="Hold Em")return 10;
+if(g==="Omaha")return 9;
+
+return 20;
+
+}
+
+function maxPreferredSeat(g){
+
+if(g==="Special Game"){
+return specialSettings
+?Number(specialSettings.total_seats)
+:10;
+}
+
+return g==="Omaha"?9:10;
+
+}
+
 async function load(){
 
 const [
 playerResult,
-todoResult
+todoResult,
+specialResult
 ]=await Promise.all([
 
 sb
@@ -513,7 +542,13 @@ sb
 sb
 .from("todo_items")
 .select("*")
-.order("created_at")
+.order("created_at"),
+
+sb
+.from("special_game_settings")
+.select("*")
+.eq("id",1)
+.maybeSingle()
 
 ]);
 
@@ -529,6 +564,12 @@ error="Could not load the To-Do list.";
 todos=todoResult.data||[];
 }
 
+if(specialResult.error){
+error="Could not load the Special Game settings.";
+}else{
+specialSettings=specialResult.data||null;
+}
+
 render();
 
 }
@@ -542,6 +583,16 @@ function gameCount(d,g){
 
 return players.filter(
 p=>p.day===d&&p.game===g
+).length;
+
+}
+
+function specialCount(){
+
+return players.filter(
+p=>
+p.day==="Special Game" &&
+p.game==="Special Game"
 ).length;
 
 }
@@ -672,12 +723,38 @@ return;
 
 }
 
+if(page==="special"){
+
+const title=
+specialSettings
+?specialSettings.game_name
+:"Special Game";
+
+h+=renderHeader(title);
+
+h+=renderSpecialPage();
+
+a.innerHTML=h;
+
+wireSpecial();
+
+return;
+
+}
+
 h+=renderHeader(
 game||day||"Uno Club Lists",
 game?`${day} Night`:""
 );
 
 if(!day){
+
+const specialName=
+specialSettings
+?specialSettings.game_name
+:"Special Game";
+
+const sc=specialCount();
 
 h+=`
 
@@ -693,6 +770,18 @@ ${x}
 </button>`
 
 ).join("")}
+
+<button
+class="big specialGameButton"
+id="specialGameButton">
+
+${esc(specialName)}
+
+${sc
+?`<span class="gamecount">${sc}</span>`
+:""}
+
+</button>
 
 <button
 class="big todoMenuButton"
@@ -747,6 +836,94 @@ ${total}
 
 else{
 
+h+=renderPlayerPage();
+
+}
+
+a.innerHTML=h;
+
+wire();
+
+}
+
+function renderSpecialPage(){
+
+if(!specialSettings){
+
+return `
+
+<section class="content">
+
+<form id="specialSetupForm" autocomplete="off">
+
+<div class="fieldwrap">
+
+<div class="fieldlabel">
+Game Name
+</div>
+
+<input
+id="specialGameName"
+name="specialGameName"
+type="text"
+maxlength="80"
+autocomplete="new-password"
+autocorrect="off"
+autocapitalize="words"
+spellcheck="false"
+data-lpignore="true"
+data-1p-ignore="true">
+
+</div>
+
+<div class="fieldwrap">
+
+<div class="fieldlabel">
+Total Seats
+</div>
+
+<div class="fieldhint">
+Enter 6, 7, 8, 9 or 10.
+</div>
+
+<input
+id="specialSeats"
+name="specialSeats"
+type="text"
+inputmode="numeric"
+autocomplete="new-password"
+autocorrect="off"
+spellcheck="false"
+data-lpignore="true"
+data-1p-ignore="true">
+
+</div>
+
+${error
+?`<p class="error">${esc(error)}</p>`
+:""}
+
+<button class="add">
+Set Up Game
+</button>
+
+</form>
+
+</section>
+
+`;
+
+}
+
+day="Special Game";
+game="Special Game";
+
+return renderPlayerPage(true);
+
+}
+
+function renderPlayerPage(isSpecial=false){
+
 const sh=shown();
 
 const regularPlayers=
@@ -758,9 +935,22 @@ sh.filter(p=>p.alt);
 const rc=
 regularPlayers.length;
 
-h+=`
+const seatLimit=
+maxPreferredSeat(game);
+
+return `
 
 <section class="content">
+
+${isSpecial
+?`
+
+<div class="specialInfo">
+${esc(specialSettings.game_name)} · ${specialSettings.total_seats} Seats
+</div>
+
+`
+:""}
 
 <form id="form" autocomplete="off">
 
@@ -797,7 +987,7 @@ Preferred Seat
 </div>
 
 <div class="fieldhint">
-(optional)
+(optional — 1 through ${seatLimit})
 </div>
 
 <input
@@ -1034,12 +1224,6 @@ data-del="${p.id}">
 </section>
 
 `;
-
-}
-
-a.innerHTML=h;
-
-wire();
 
 }
 
@@ -1304,6 +1488,23 @@ render();
 
 });
 
+const specialButton=
+document.querySelector("#specialGameButton");
+
+if(specialButton){
+
+specialButton.onclick=()=>{
+
+page="special";
+day=null;
+game=null;
+error="";
+render();
+
+};
+
+}
+
 const todoButton=
 document.querySelector("#todoMenuButton");
 
@@ -1318,6 +1519,8 @@ render();
 };
 
 }
+
+wirePlayerControls();
 
 const back=
 document.querySelector("#back");
@@ -1345,6 +1548,42 @@ page="main";
 render();
 
 };
+
+}
+
+function wireSpecial(){
+
+const back=
+document.querySelector("#back");
+
+if(back){
+
+back.onclick=()=>{
+
+page="main";
+day=null;
+game=null;
+error="";
+render();
+
+};
+
+}
+
+const setup=
+document.querySelector("#specialSetupForm");
+
+if(setup){
+
+setup.onsubmit=saveSpecialSetup;
+
+}
+
+wirePlayerControls();
+
+}
+
+function wirePlayerControls(){
 
 const form=
 document.querySelector("#form");
@@ -1559,6 +1798,76 @@ b.dataset.deleteCompleted
 
 }
 
+async function saveSpecialSetup(e){
+
+e.preventDefault();
+
+error="";
+
+const name=
+document
+.querySelector("#specialGameName")
+.value
+.trim();
+
+const seatValue=
+document
+.querySelector("#specialSeats")
+.value
+.trim();
+
+if(!name){
+
+error="Please enter a game name.";
+render();
+return;
+
+}
+
+if(
+!/^\d+$/.test(seatValue) ||
+![6,7,8,9,10].includes(Number(seatValue))
+){
+
+error=
+"Total Seats must be 6, 7, 8, 9 or 10.";
+
+render();
+return;
+
+}
+
+const r=
+await sb
+.from("special_game_settings")
+.upsert({
+id:1,
+game_name:name,
+total_seats:Number(seatValue),
+updated_at:new Date().toISOString()
+})
+.select()
+.single();
+
+if(r.error){
+
+error=
+"Could not save the Special Game setup.";
+
+render();
+return;
+
+}
+
+specialSettings=r.data;
+
+day="Special Game";
+game="Special Game";
+
+render();
+
+}
+
 function buildTextList(){
 
 const sh=shown();
@@ -1571,10 +1880,12 @@ sh.filter(p=>p.alt);
 
 let lines=[];
 
-lines.push(
-`Uno Club – ${day} ${game}`
-);
+const heading=
+game==="Special Game" && specialSettings
+?`Uno Club – ${specialSettings.game_name}`
+:`Uno Club – ${day} ${game}`;
 
+lines.push(heading);
 lines.push("");
 
 regular.forEach(p=>{
@@ -1818,11 +2129,21 @@ render();
 
 async function clear(){
 
-if(
-!confirm(
-`Clear the entire ${day} ${game} list?`
-)
-)return;
+const special=
+game==="Special Game";
+
+const label=
+special && specialSettings
+?specialSettings.game_name
+:`${day} ${game}`;
+
+const question=
+special
+?`Clear the entire ${label} list and reset Special Game?`
+:`Clear the entire ${label} list?`;
+
+if(!confirm(question))
+return;
 
 const r=
 await sb
@@ -1831,7 +2152,13 @@ await sb
 .eq("day",day)
 .eq("game",game);
 
-if(!r.error){
+if(r.error){
+
+error=r.error.message;
+render();
+return;
+
+}
 
 players=
 players.filter(
@@ -1842,10 +2169,28 @@ p.game===game
 )
 );
 
-}else{
+if(special){
+
+const settingsDelete=
+await sb
+.from("special_game_settings")
+.delete()
+.eq("id",1);
+
+if(settingsDelete.error){
 
 error=
-r.error.message;
+"Players were cleared, but the Special Game setup could not be reset.";
+
+render();
+return;
+
+}
+
+specialSettings=null;
+day=null;
+game=null;
+page="main";
 
 }
 
