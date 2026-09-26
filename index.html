@@ -324,6 +324,42 @@ font-weight:700;
 font-size:.9rem
 }
 
+.lastUpdated{
+display:block;
+margin-top:.18rem;
+color:#888;
+font-size:.76rem;
+font-weight:500
+}
+
+.undoBar{
+position:fixed;
+left:50%;
+bottom:calc(18px + env(safe-area-inset-bottom));
+transform:translateX(-50%);
+width:min(92vw,560px);
+background:#171717;
+color:#fff;
+border:2px solid #000;
+border-radius:10px;
+padding:.8rem 1rem;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:1rem;
+z-index:2000;
+box-shadow:0 4px 18px rgba(0,0,0,.22)
+}
+
+.undoBar button{
+background:#FFEF00;
+color:#000;
+border:2px solid #000;
+border-radius:8px;
+padding:.5rem .9rem;
+font-weight:900
+}
+
 .appVersion{
 position:fixed;
 left:10px;
@@ -486,7 +522,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-26-04";
+const APP_VERSION="2026-09-26-05";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -509,11 +545,15 @@ let page="main";
 let players=[];
 let todos=[];
 let specialSettings=null;
+let listUpdates=[];
 
 let edit=null;
 let todoEdit=null;
 let specialEdit=false;
 let error="";
+
+let pendingDelete=null;
+let deleteTimer=null;
 
 function limit(g){
 
@@ -547,7 +587,8 @@ async function load(){
 const [
 playerResult,
 todoResult,
-specialResult
+specialResult,
+updateResult
 ]=await Promise.all([
 
 sb
@@ -565,7 +606,11 @@ sb
 .from("special_game_settings")
 .select("*")
 .eq("id",1)
-.maybeSingle()
+.maybeSingle(),
+
+sb
+.from("list_updates")
+.select("*")
 
 ]);
 
@@ -585,6 +630,12 @@ if(specialResult.error){
 error="Could not load the Special Game settings.";
 }else{
 specialSettings=specialResult.data||null;
+}
+
+if(updateResult.error){
+listUpdates=[];
+}else{
+listUpdates=updateResult.data||[];
 }
 
 render();
@@ -659,6 +710,76 @@ return String(s??"")
 function countLabel(count,singular,plural){
 
 return `${count} ${count===1?singular:plural}`;
+
+}
+
+function lastUpdatedFor(d=day,g=game){
+
+const row=
+listUpdates.find(
+x=>x.day===d&&x.game===g
+);
+
+return row
+?row.updated_at
+:null;
+
+}
+
+function formatLastUpdated(value){
+
+if(!value)
+return "No changes yet";
+
+const d=new Date(value);
+
+return "Last updated "+
+d.toLocaleTimeString(
+undefined,
+{
+hour:"numeric",
+minute:"2-digit"
+}
+);
+
+}
+
+async function touchList(d=day,g=game){
+
+if(!d||!g)return;
+
+const now=
+new Date().toISOString();
+
+const r=
+await sb
+.from("list_updates")
+.upsert(
+{
+day:d,
+game:g,
+updated_at:now
+},
+{
+onConflict:"day,game"
+}
+)
+.select()
+.single();
+
+if(!r.error){
+
+listUpdates=
+listUpdates.filter(
+x=>!(
+x.day===d &&
+x.game===g
+)
+);
+
+listUpdates.push(r.data);
+
+}
 
 }
 
@@ -1086,6 +1207,10 @@ ${!specialEdit && error
 ${countLabel(regularPlayers.length,"Player","Players")} / ${countLabel(alternatePlayers.length,"Alternate","Alternates")}
 </span>
 
+<span class="lastUpdated">
+${formatLastUpdated(lastUpdatedFor())}
+</span>
+
 </div>
 
 <div class="listactions">
@@ -1217,6 +1342,26 @@ Cancel
 </div>
 
 </section>
+
+${pendingDelete
+
+?`
+
+<div class="undoBar">
+
+<span>
+${esc(pendingDelete.player.player_name)} removed
+</span>
+
+<button id="undoDelete">
+Undo
+</button>
+
+</div>
+
+`
+
+:""}
 
 `;
 
@@ -1609,6 +1754,12 @@ if(cl)cl.onclick=clear;
 const tl=document.querySelector("#textlist");
 if(tl)tl.onclick=textList;
 
+const undo=
+document.querySelector("#undoDelete");
+
+if(undo)
+undo.onclick=undoPlayerDelete;
+
 }
 
 function wireTodo(){
@@ -1737,6 +1888,8 @@ day="Special Game";
 game="Special Game";
 specialEdit=false;
 
+await touchList();
+
 render();
 
 }
@@ -1844,6 +1997,8 @@ idSet.has(String(p.id))
 specialSettings=settingsResult.data;
 specialEdit=false;
 error="";
+
+await touchList();
 
 render();
 
@@ -2000,6 +2155,52 @@ r.error.code==="23505"
 }else{
 
 players.push(r.data);
+await touchList();
+
+}
+
+render();
+
+}
+
+async function finalizePendingDelete(){
+
+if(!pendingDelete)return;
+
+const item=pendingDelete;
+const p=item.player;
+
+pendingDelete=null;
+
+if(deleteTimer){
+clearTimeout(deleteTimer);
+deleteTimer=null;
+}
+
+const r=
+await sb
+.from("signup_players")
+.delete()
+.eq("id",p.id);
+
+if(r.error){
+
+players.push(p);
+
+players.sort(
+(a,b)=>
+new Date(a.created_at)-
+new Date(b.created_at)
+);
+
+error=r.error.message;
+
+}else{
+
+await touchList(
+p.day,
+p.game
+);
 
 }
 
@@ -2009,28 +2210,71 @@ render();
 
 async function del(id){
 
-const r=
-await sb
-.from("signup_players")
-.delete()
-.eq("id",id);
+if(pendingDelete){
 
-if(!r.error){
-
-players=
-players.filter(p=>String(p.id)!==String(id));
-
-}else{
-
-error=r.error.message;
+await finalizePendingDelete();
 
 }
+
+const p=
+players.find(
+x=>String(x.id)===String(id)
+);
+
+if(!p)return;
+
+pendingDelete={
+player:{...p}
+};
+
+players=
+players.filter(
+x=>String(x.id)!==String(id)
+);
+
+render();
+
+deleteTimer=
+setTimeout(
+finalizePendingDelete,
+5000
+);
+
+}
+
+function undoPlayerDelete(){
+
+if(!pendingDelete)return;
+
+const p=
+pendingDelete.player;
+
+if(deleteTimer){
+
+clearTimeout(deleteTimer);
+deleteTimer=null;
+
+}
+
+pendingDelete=null;
+
+players.push(p);
+
+players.sort(
+(a,b)=>
+new Date(a.created_at)-
+new Date(b.created_at)
+);
 
 render();
 
 }
 
 async function clear(){
+
+if(pendingDelete){
+await finalizePendingDelete();
+}
 
 const special=game==="Special Game";
 
@@ -2046,12 +2290,15 @@ special
 
 if(!confirm(question))return;
 
+const clearDay=day;
+const clearGame=game;
+
 const r=
 await sb
 .from("signup_players")
 .delete()
-.eq("day",day)
-.eq("game",game);
+.eq("day",clearDay)
+.eq("game",clearGame);
 
 if(r.error){
 
@@ -2063,7 +2310,15 @@ return;
 
 players=
 players.filter(
-p=>!(p.day===day && p.game===game)
+p=>!(
+p.day===clearDay &&
+p.game===clearGame
+)
+);
+
+await touchList(
+clearDay,
+clearGame
 );
 
 if(special){
@@ -2096,12 +2351,17 @@ render();
 
 async function save(id){
 
-const note=document.querySelector("#unoEntryD").value.trim();
+const note=
+document.querySelector("#unoEntryD")
+.value
+.trim();
 
 const r=
 await sb
 .from("signup_players")
-.update({notes:note||null})
+.update({
+notes:note||null
+})
 .eq("id",id)
 .select()
 .single();
@@ -2114,8 +2374,13 @@ error=r.error.message;
 
 players=
 players.map(
-p=>String(p.id)===String(id)?r.data:p
+p=>
+String(p.id)===String(id)
+?r.data
+:p
 );
+
+await touchList();
 
 }
 
@@ -2277,7 +2542,11 @@ async function trimCompletedTodos(){
 const completed=
 todos
 .filter(t=>t.completed_at)
-.sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at));
+.sort(
+(a,b)=>
+new Date(b.completed_at)-
+new Date(a.completed_at)
+);
 
 if(completed.length<=25)return;
 
@@ -2313,10 +2582,13 @@ await fetch(
 window.location.pathname+
 "?updatecheck="+
 Date.now(),
-{cache:"no-store"}
+{
+cache:"no-store"
+}
 );
 
-const html=await response.text();
+const html=
+await response.text();
 
 const match=
 html.match(
@@ -2331,7 +2603,8 @@ match[1]!==APP_VERSION
 
 window.location.replace(
 window.location.pathname+
-"?v="+encodeURIComponent(match[1])
+"?v="+
+encodeURIComponent(match[1])
 );
 
 }
@@ -2344,8 +2617,12 @@ document.addEventListener(
 "visibilitychange",
 ()=>{
 
-if(document.visibilityState==="visible"){
+if(
+document.visibilityState==="visible"
+){
+
 checkForUpdate();
+
 }
 
 }
@@ -2354,7 +2631,9 @@ checkForUpdate();
 window.addEventListener(
 "pageshow",
 ()=>{
+
 checkForUpdate();
+
 }
 );
 
