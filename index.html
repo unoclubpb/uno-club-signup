@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.2";
+const APP_VERSION="092826.3";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -50,6 +50,7 @@ let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,list
 let edit=null,todoEdit=null,specialEdit=false,error="",pendingDelete=null,deleteTimer=null;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
 const limit=g=>g==="Special Game"?(specialSettings?+specialSettings.total_seats:10):g==="Hold Em"?10:g==="Omaha"?9:20;
 const maxPreferredSeat=g=>g==="Special Game"?(specialSettings?+specialSettings.total_seats:10):g==="Omaha"?9:10;
 const current=()=>players.filter(p=>p.day===day&&p.game===game);
@@ -187,7 +188,7 @@ function applyDirectoryPlayer(p){
 function showSuggestions(value){
  const box=document.querySelector("#nameSuggestions");if(!box)return;
  const q=value.trim().toLowerCase();if(!q){box.classList.remove("show");box.innerHTML="";return}
- const matches=directory.filter(p=>p.player_name.toLowerCase().includes(q)).slice(0,8);
+ const matches=directory.filter(p=>p.player_name.toLowerCase().startsWith(q)).slice(0,8);
  box.innerHTML=matches.map(p=>{
   const remembered=rememberedSeatForGame(p);
   const detail=(game==="Hold Em"||game==="Omaha")?(remembered?`${game} preferred seat ${remembered}`:`No ${game} preferred seat`):"Previous player";
@@ -260,7 +261,7 @@ async function updateDirectory(name,seat){
 }
 async function add(e){
  e.preventDefault();error="";
- const name=document.querySelector("#unoEntryA").value.trim(),notes=document.querySelector("#unoEntryC").value.trim(),se=document.querySelector("#unoEntryB"),seat=se?se.value.trim():"";
+ const name=formatPlayerName(document.querySelector("#unoEntryA").value),notes=document.querySelector("#unoEntryC").value.trim(),se=document.querySelector("#unoEntryB"),seat=se?se.value.trim():"";
  if(!name)return;if(current().some(p=>p.player_name.toLowerCase()===name.toLowerCase())){error="That player is already on this list.";render();return}
  const rc=shown().filter(p=>!p.alt).length,alt=late(notes)||rc>=limit(game);
  if(game!=="Tournament"&&!alt&&seat){
