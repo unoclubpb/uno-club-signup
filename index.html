@@ -522,7 +522,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-26-05";
+const APP_VERSION="2026-09-26-06";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -535,8 +535,69 @@ Wednesday:["Tournament","Omaha"],
 Thursday:["Hold Em","Omaha"]
 };
 
+function arrivesAfter715(note){
+
+const text=String(note||"");
+
+const timePattern=
+/\b(1[0-2]|[1-9])(?:\s*[:.]\s*([0-5]\d))?\s*(a\.?\s*m\.?|p\.?\s*m\.?)?\b/gi;
+
+let match;
+
+while((match=timePattern.exec(text))!==null){
+
+let hour=Number(match[1]);
+
+const minute=
+match[2]!==undefined
+?Number(match[2])
+:0;
+
+const meridiem=
+(match[3]||"")
+.replace(/[\s.]/g,"")
+.toLowerCase();
+
+let eveningMinutes=null;
+
+if(meridiem==="pm"){
+
+eveningMinutes=
+hour*60+minute;
+
+}else if(meridiem==="am"){
+
+continue;
+
+}else{
+
+if(hour>=7 && hour<=11){
+
+eveningMinutes=
+hour*60+minute;
+
+}
+
+}
+
+if(
+eveningMinutes!==null &&
+eveningMinutes>19*60+15
+){
+
+return true;
+
+}
+
+}
+
+return false;
+
+}
+
 const late=n=>
-/\b(?:late|later)\b/i.test(n||"");
+/\b(?:late|later)\b/i.test(n||"") ||
+arrivesAfter715(n);
 
 let day=null;
 let game=null;
