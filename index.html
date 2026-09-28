@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.1";
+const APP_VERSION="092826.2";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -168,17 +168,33 @@ function wireSpecial(){
  wirePlayerControls();
 }
 function findDirectory(name){return directory.find(x=>x.player_name.toLowerCase()===name.trim().toLowerCase())}
+function rememberedSeatForGame(p){
+ if(game==="Hold Em")return p.hold_em_preferred_seat??null;
+ if(game==="Omaha")return p.omaha_preferred_seat??null;
+ return null;
+}
 function applyDirectoryPlayer(p){
  const name=document.querySelector("#unoEntryA"),seat=document.querySelector("#unoEntryB"),box=document.querySelector("#nameSuggestions"),hint=document.querySelector("#seatHint");
- name.value=p.player_name;if(seat)seat.value=p.preferred_seat??"";if(hint)hint.textContent=p.preferred_seat?`Remembered seat: ${p.preferred_seat}`:"No preferred seat currently remembered.";if(box)box.classList.remove("show");
+ const remembered=rememberedSeatForGame(p);
+ name.value=p.player_name;
+ if(seat)seat.value=(game==="Hold Em"||game==="Omaha")?(remembered??""):"";
+ if(hint){
+  if(game==="Hold Em"||game==="Omaha")hint.textContent=remembered?`Remembered ${game} seat: ${remembered}`:`No ${game} preferred seat currently remembered.`;
+  else hint.textContent="";
+ }
+ if(box)box.classList.remove("show");
 }
 function showSuggestions(value){
  const box=document.querySelector("#nameSuggestions");if(!box)return;
  const q=value.trim().toLowerCase();if(!q){box.classList.remove("show");box.innerHTML="";return}
  const matches=directory.filter(p=>p.player_name.toLowerCase().includes(q)).slice(0,8);
- box.innerHTML=matches.map(p=>`<button type="button" class="suggestion" data-dir="${p.id}">${esc(p.player_name)}<small>${p.preferred_seat?`Preferred seat ${p.preferred_seat}`:"No preferred seat"}</small></button>`).join("");
+ box.innerHTML=matches.map(p=>{
+  const remembered=rememberedSeatForGame(p);
+  const detail=(game==="Hold Em"||game==="Omaha")?(remembered?`${game} preferred seat ${remembered}`:`No ${game} preferred seat`):"Previous player";
+  return `<button type="button" class="suggestion" data-dir="${esc(p.player_name)}">${esc(p.player_name)}<small>${detail}</small></button>`;
+ }).join("");
  box.classList.toggle("show",matches.length>0);
- box.querySelectorAll("[data-dir]").forEach(b=>b.onclick=()=>{const p=directory.find(x=>String(x.id)===b.dataset.dir);if(p)applyDirectoryPlayer(p)});
+ box.querySelectorAll("[data-dir]").forEach(b=>b.onclick=()=>{const p=directory.find(x=>x.player_name===b.dataset.dir);if(p)applyDirectoryPlayer(p)});
 }
 function wirePlayerControls(){
  const form=document.querySelector("#form");
@@ -229,11 +245,18 @@ function buildTextList(){
 }
 function textList(){if(current().length)window.location.href="sms:&body="+encodeURIComponent(buildTextList())}
 async function updateDirectory(name,seat){
- const existing=findDirectory(name),payload={player_name:name,preferred_seat:seat?+seat:null,updated_at:new Date().toISOString()};
+ const existing=findDirectory(name);
+ const payload={player_name:name,updated_at:new Date().toISOString()};
+ if(game==="Hold Em")payload.hold_em_preferred_seat=seat?+seat:null;
+ if(game==="Omaha")payload.omaha_preferred_seat=seat?+seat:null;
  let r;
- if(existing)r=await sb.from("player_directory").update(payload).eq("id",existing.id).select().single();
+ if(existing)r=await sb.from("player_directory").update(payload).eq("player_name",existing.player_name).select().single();
  else r=await sb.from("player_directory").insert(payload).select().single();
- if(!r.error){directory=directory.filter(x=>String(x.id)!==String(r.data.id));directory.push(r.data);directory.sort((a,b)=>a.player_name.localeCompare(b.player_name))}
+ if(!r.error){
+  directory=directory.filter(x=>x.player_name.toLowerCase()!==r.data.player_name.toLowerCase());
+  directory.push(r.data);
+  directory.sort((a,b)=>a.player_name.localeCompare(b.player_name));
+ }
 }
 async function add(e){
  e.preventDefault();error="";
@@ -248,7 +271,12 @@ async function add(e){
  const savedSeat=game==="Tournament"||alt?null:(seat?+seat:null);
  const r=await sb.from("signup_players").insert({day,game,player_name:name,preferred_seat:savedSeat,notes:notes||null}).select().single();
  if(r.error){error=r.code==="23505"?"That player name or preferred seat is already on this list.":r.message}
- else{players.push(r.data);await updateDirectory(name,game==="Tournament"?null:seat);await touchList()}
+ else{
+  players.push(r.data);
+  if(game==="Hold Em"||game==="Omaha")await updateDirectory(name,seat);
+  else if(!findDirectory(name))await updateDirectory(name,null);
+  await touchList();
+ }
  render();
 }
 async function finalizePendingDelete(){
