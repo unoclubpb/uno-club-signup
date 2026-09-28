@@ -21,13 +21,13 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 .undoBar{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92vw,560px);background:#171717;color:#fff;border:2px solid #000;border-radius:10px;padding:.8rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;z-index:2000}.undoBar button{background:#FFEF00;color:#000;border:2px solid #000;border-radius:8px;padding:.5rem .9rem;font-weight:900}.appVersion{position:fixed;left:10px;bottom:calc(8px + env(safe-area-inset-bottom));font-size:.68rem;color:#000;z-index:10}
 .specialInfo{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:.85rem 1rem;margin-bottom:1rem;font-weight:700}.specialNameEdit{padding:0;border:0;background:transparent;color:#0b0b0b;font-weight:800;text-decoration:underline dotted;cursor:pointer}.specialEditButtons{display:flex;gap:.5rem}.specialEditButtons button{flex:1;min-height:46px;border-radius:8px}
 .todoSectionTitle{margin:1.5rem 0 .65rem}.todoSectionTitle h2{margin:0}.todoRow{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem}.todoInfo{flex:1;display:grid;gap:.3rem}.todoEditable{width:fit-content;max-width:100%;padding:0;border:0;background:transparent;color:#0b0b0b;font-weight:800;text-align:left;text-decoration:underline dotted}.todoTime{font-size:.78rem;color:#666}.todoEditor{display:grid;gap:.5rem}.todoEditButtons{display:flex;gap:.5rem}.completedRow{opacity:.78}.completedText{text-decoration:line-through}.completedBadge{display:inline-block;width:fit-content;font-size:.72rem;font-weight:800;color:#2e7d32;background:#e7f4e8;border-radius:999px;padding:.2rem .5rem}
-@media(max-width:430px){.head{align-items:flex-start;flex-direction:column}.listactions{width:100%}.textlist,.clear{flex:1}.headerlogo{width:68px;height:68px}}
+.playerDbTop{display:grid;gap:.75rem;margin-bottom:1rem}.playerDbAdd{min-height:50px}.playerDbList{display:grid;gap:.55rem}.playerDbRow{width:100%;background:#fff;border:1px solid #d9d9d9;border-radius:10px;padding:.85rem 1rem;text-align:left;font-weight:800;display:flex;justify-content:space-between;align-items:center}.playerDbRow small{font-weight:800;color:#000;padding:.25rem .55rem;border:1px solid #000;border-radius:6px}.playerDbRow small.activeBadge{background:#65d66e}.playerDbRow small.inactiveBadge{background:#ef6b6b}.inactivePlayer{opacity:1}.playerDbForm{display:grid;gap:1rem}.statusToggle{display:flex;gap:.5rem}.statusToggle button{flex:1;min-height:44px;border:2px solid #000;border-radius:8px;font-weight:800}.statusSelected{background:#1e5acb;color:#fff}.statusUnselected{background:#fff;color:#000}.dangerButton{min-height:48px;background:#fff;color:#b42318;border:2px solid #b42318;border-radius:10px;font-weight:800}.dbActions{display:flex;gap:.6rem}.dbActions button{flex:1;min-height:48px}.dbNotes{text-transform:none}@media(max-width:430px){.head{align-items:flex-start;flex-direction:column}.listactions{width:100%}.textlist,.clear{flex:1}.headerlogo{width:68px;height:68px}}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.5";
+const APP_VERSION="092826.7";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -48,6 +48,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,specialEdit=false,error="",pendingDelete=null,deleteTimer=null;
+let playerDbMode="list",playerDbEditName=null,playerDbSearch="";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -101,6 +102,7 @@ function renderHeader(title,subtitle=""){
 function render(){
  const a=document.querySelector("#app");let h="";
  if(page==="todo"){a.innerHTML=renderHeader("To-Do")+renderTodoPage();wireTodo();return}
+ if(page==="playerdb"){a.innerHTML=renderHeader(playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+renderPlayerDatabase();wirePlayerDatabase();return}
  if(page==="special"){a.innerHTML=renderHeader(specialSettings?specialSettings.game_name:"Special Game")+renderSpecialPage();wireSpecial();return}
  h+=renderHeader(game||day||"Uno Club Lists",game?`${day} Night`:"");
  if(!day){
@@ -152,11 +154,78 @@ function renderTodoPage(){
  ${!active.length?'<div class="empty">Nothing currently needs to be done.</div>':active.map(t=>`<div class="todoRow"><div class="todoInfo">${String(todoEdit)===String(t.id)?`<div class="todoEditor"><textarea id="unoEntryF">${esc(t.note)}</textarea><div class="todoEditButtons"><button class="save" data-todo-save="${t.id}">Save</button><button class="cancel" id="todoEditCancel">Cancel</button></div></div>`:`<button class="todoEditable" data-todo-edit="${t.id}">${esc(t.note)}</button>`}<div class="todoTime">Entered: ${formatDateTime(t.created_at)}</div></div><button class="del" data-complete="${t.id}">×</button></div>`).join("")}</div>
  <div class="todoSectionTitle"><h2>Completed</h2><span class="count">Most recent 25</span></div><div class="list">${!completed.length?'<div class="empty">No completed items yet.</div>':completed.map(t=>`<div class="todoRow completedRow"><div class="todoInfo"><span class="completedBadge">COMPLETED</span><div class="completedText">${esc(t.note)}</div><div class="todoTime">Entered: ${formatDateTime(t.created_at)}</div><div class="todoTime">Completed: ${formatDateTime(t.completed_at)}</div></div><button class="del" data-delete-completed="${t.id}">×</button></div>`).join("")}</div></section>`;
 }
+
+function renderPlayerDatabase(){
+ if(playerDbMode==="list"){
+  const q=playerDbSearch.trim().toLowerCase();
+  const rows=[...directory].filter(p=>!q||p.player_name.toLowerCase().startsWith(q)).sort((a,b)=>a.player_name.localeCompare(b.player_name));
+  return `<section class="content"><div class="playerDbTop"><button class="add playerDbAdd" id="dbAddPlayer">Add Player</button><input id="dbSearch" type="text" placeholder="Search players" value="${esc(playerDbSearch)}" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+  ${error?`<p class="error">${esc(error)}</p>`:""}
+  <div class="playerDbList">${rows.length?rows.map(p=>`<button class="playerDbRow ${p.active===false?"inactivePlayer":""}" data-db-player="${esc(p.player_name)}"><span>${esc(p.player_name)}</span><small class="${p.active===false?"inactiveBadge":"activeBadge"}">${p.active===false?"Inactive":"Active"}</small></button>`).join(""):'<div class="empty">No players found.</div>'}</div></section>`;
+ }
+ const existing=playerDbMode==="edit"?findDirectory(playerDbEditName):null;
+ const name=existing?.player_name||"",he=existing?.hold_em_preferred_seat??"",om=existing?.omaha_preferred_seat??"",notes=existing?.notes||"",active=existing?.active!==false;
+ return `<section class="content"><form id="playerDbForm" class="playerDbForm" autocomplete="off">
+ <div class="fieldwrap"><div>Player Name</div><input id="dbPlayerName" value="${esc(name)}" maxlength="80" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
+ <div class="fieldwrap"><div>Hold Em Preferred Seat</div><div class="fieldhint">Optional — 1 through 10</div><input id="dbHoldemSeat" inputmode="numeric" value="${he}" autocomplete="off"></div>
+ <div class="fieldwrap"><div>Omaha Preferred Seat</div><div class="fieldhint">Optional — 1 through 9</div><input id="dbOmahaSeat" inputmode="numeric" value="${om}" autocomplete="off"></div>
+ <div class="fieldwrap"><div>Status</div><div class="statusToggle"><button type="button" id="dbActive" class="${active?"statusSelected":"statusUnselected"}">Active</button><button type="button" id="dbInactive" class="${!active?"statusSelected":"statusUnselected"}">Inactive</button></div><input type="hidden" id="dbStatus" value="${active?"active":"inactive"}"></div>
+ <div class="fieldwrap"><div>Notes</div><textarea id="dbNotes" class="dbNotes" maxlength="500" autocomplete="off" autocorrect="off" spellcheck="false">${esc(notes)}</textarea></div>
+ ${error?`<p class="error">${esc(error)}</p>`:""}
+ <div class="dbActions"><button class="save">Save Player</button><button type="button" class="cancel" id="dbCancel">Cancel</button></div>
+ ${existing?'<button type="button" class="dangerButton" id="dbDelete">Delete Player</button>':""}
+ </form></section>`;
+}
+function wirePlayerDatabase(){
+ const back=document.querySelector("#back");
+ if(back)back.onclick=()=>{error="";if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;render()}else{page="main";render()}};
+ const add=document.querySelector("#dbAddPlayer");if(add)add.onclick=()=>{playerDbMode="add";playerDbEditName=null;error="";render()};
+ const search=document.querySelector("#dbSearch");if(search)search.oninput=()=>{playerDbSearch=search.value;render()};
+ document.querySelectorAll("[data-db-player]").forEach(b=>b.onclick=()=>{playerDbMode="edit";playerDbEditName=b.dataset.dbPlayer;error="";render()});
+ const form=document.querySelector("#playerDbForm");
+ if(form){
+  const active=document.querySelector("#dbActive"),inactive=document.querySelector("#dbInactive"),status=document.querySelector("#dbStatus");
+  active.onclick=()=>{status.value="active";active.className="statusSelected";inactive.className="statusUnselected"};
+  inactive.onclick=()=>{status.value="inactive";inactive.className="statusSelected";active.className="statusUnselected"};
+  form.onsubmit=savePlayerDatabase;
+ }
+ const cancel=document.querySelector("#dbCancel");if(cancel)cancel.onclick=()=>{playerDbMode="list";playerDbEditName=null;error="";render()};
+ const del=document.querySelector("#dbDelete");if(del)del.onclick=deletePlayerDatabase;
+}
+async function savePlayerDatabase(e){
+ e.preventDefault();error="";
+ const name=formatPlayerName(document.querySelector("#dbPlayerName").value);
+ const he=document.querySelector("#dbHoldemSeat").value.trim(),om=document.querySelector("#dbOmahaSeat").value.trim();
+ const notes=document.querySelector("#dbNotes").value.trim(),active=document.querySelector("#dbStatus").value==="active";
+ if(!name){error="Please enter a player name.";render();return}
+ if(he&&(!/^\d+$/.test(he)||+he<1||+he>10)){error="Hold Em preferred seat must be 1 through 10, or blank.";render();return}
+ if(om&&(!/^\d+$/.test(om)||+om<1||+om>9)){error="Omaha preferred seat must be 1 through 9, or blank.";render();return}
+ const duplicate=directory.find(p=>p.player_name.toLowerCase()===name.toLowerCase()&&p.player_name!==playerDbEditName);
+ if(duplicate){error="That player is already in the database.";render();return}
+ const payload={player_name:name,hold_em_preferred_seat:he?+he:null,omaha_preferred_seat:om?+om:null,active,notes:notes||null,updated_at:new Date().toISOString()};
+ let r;
+ if(playerDbMode==="edit"){
+  r=await sb.from("player_directory").update(payload).eq("player_name",playerDbEditName).select().single();
+ }else{
+  r=await sb.from("player_directory").insert(payload).select().single();
+ }
+ if(r.error){error="Could not save the player. "+r.error.message;render();return}
+ directory=directory.filter(p=>p.player_name!==playerDbEditName&&p.player_name.toLowerCase()!==name.toLowerCase());directory.push(r.data);directory.sort((a,b)=>a.player_name.localeCompare(b.player_name));
+ playerDbMode="list";playerDbEditName=null;error="";render();
+}
+async function deletePlayerDatabase(){
+ const p=findDirectory(playerDbEditName);if(!p)return;
+ if(!confirm(`Delete ${p.player_name} from the Player Database?`))return;
+ const r=await sb.from("player_directory").delete().eq("player_name",p.player_name);
+ if(r.error){error="Could not delete the player.";render();return}
+ directory=directory.filter(x=>x.player_name!==p.player_name);playerDbMode="list";playerDbEditName=null;error="";render();
+}
 function wire(){
  document.querySelectorAll(".day").forEach(b=>b.onclick=()=>{day=b.dataset.v;render()});
  document.querySelectorAll(".game").forEach(b=>b.onclick=()=>{game=b.dataset.v;render()});
  const s=document.querySelector("#specialGameButton");if(s)s.onclick=()=>{page="special";day=null;game=null;specialEdit=false;error="";render()};
  const t=document.querySelector("#todoMenuButton");if(t)t.onclick=()=>{page="todo";error="";render()};
+ const pdb=document.querySelector("#playerDatabaseButton");if(pdb)pdb.onclick=()=>{page="playerdb";playerDbMode="list";playerDbEditName=null;playerDbSearch="";error="";render()};
  wirePlayerControls();
  const b=document.querySelector("#back");if(b)b.onclick=()=>{error="";if(game)game=null;else if(day)day=null;else page="main";render()};
 }
@@ -188,7 +257,7 @@ function applyDirectoryPlayer(p){
 function showSuggestions(value){
  const box=document.querySelector("#nameSuggestions");if(!box)return;
  const q=value.trim().toLowerCase();if(!q){box.classList.remove("show");box.innerHTML="";return}
- const matches=directory.filter(p=>p.player_name.toLowerCase().startsWith(q)).slice(0,8);
+ const matches=directory.filter(p=>p.active!==false&&p.player_name.toLowerCase().startsWith(q)).slice(0,8);
  box.innerHTML=matches.map(p=>{
   const remembered=rememberedSeatForGame(p);
   const detail=(game==="Hold Em"||game==="Omaha")?(remembered?`${game} preferred seat ${remembered}`:`No ${game} preferred seat`):"Previous player";
@@ -247,7 +316,7 @@ function buildTextList(){
 function textList(){if(current().length)window.location.href="sms:&body="+encodeURIComponent(buildTextList())}
 async function updateDirectory(name,seat){
  const existing=findDirectory(name);
- const payload={player_name:name,updated_at:new Date().toISOString()};
+ const payload={player_name:name,updated_at:new Date().toISOString()};if(!existing)payload.active=true;
  if(game==="Hold Em")payload.hold_em_preferred_seat=seat?+seat:null;
  if(game==="Omaha")payload.omaha_preferred_seat=seat?+seat:null;
  let r;
