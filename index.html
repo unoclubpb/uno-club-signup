@@ -21,13 +21,13 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 .undoBar{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92vw,560px);background:#171717;color:#fff;border:2px solid #000;border-radius:10px;padding:.8rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;z-index:2000}.undoBar button{background:#FFEF00;color:#000;border:2px solid #000;border-radius:8px;padding:.5rem .9rem;font-weight:900}.appVersion{position:fixed;left:10px;bottom:calc(8px + env(safe-area-inset-bottom));font-size:.68rem;color:#000;z-index:10}
 .specialInfo{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:.85rem 1rem;margin-bottom:1rem;font-weight:700}.specialNameEdit{padding:0;border:0;background:transparent;color:#0b0b0b;font-weight:800;text-decoration:underline dotted;cursor:pointer}.specialEditButtons{display:flex;gap:.5rem}.specialEditButtons button{flex:1;min-height:46px;border-radius:8px}
 .todoSectionTitle{margin:1.5rem 0 .65rem}.todoSectionTitle h2{margin:0}.todoRow{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem}.todoInfo{flex:1;display:grid;gap:.3rem}.todoEditable{width:fit-content;max-width:100%;padding:0;border:0;background:transparent;color:#0b0b0b;font-weight:800;text-align:left;text-decoration:underline dotted}.todoTime{font-size:.78rem;color:#666}.todoEditor{display:grid;gap:.5rem}.todoEditButtons{display:flex;gap:.5rem}.completedRow{opacity:.78}.completedText{text-decoration:line-through}.completedBadge{display:inline-block;width:fit-content;font-size:.72rem;font-weight:800;color:#2e7d32;background:#e7f4e8;border-radius:999px;padding:.2rem .5rem}
-.playerDbTop{display:grid;gap:.75rem;margin-bottom:1rem}.playerDbAdd{min-height:50px}.playerDbList{display:grid;gap:.55rem}.playerDbRow{width:100%;background:#fff;border:1px solid #d9d9d9;border-radius:10px;padding:.85rem 1rem;text-align:left;font-weight:800;display:flex;justify-content:space-between;align-items:center}.playerDbRow small{font-weight:800;color:#000;padding:.25rem .55rem;border:1px solid #000;border-radius:6px}.playerDbRow small.activeBadge{background:#65d66e}.playerDbRow small.inactiveBadge{background:#ef6b6b}.inactivePlayer{opacity:1}.playerDbForm{display:grid;gap:1rem}.statusToggle{display:flex;gap:.5rem}.statusToggle button{flex:1;min-height:44px;border:2px solid #000;border-radius:8px;font-weight:800}.statusSelected{background:#1e5acb;color:#fff}.statusUnselected{background:#fff;color:#000}.dangerButton{min-height:48px;background:#fff;color:#b42318;border:2px solid #b42318;border-radius:10px;font-weight:800}.dbActions{display:flex;gap:.6rem}.dbActions button{flex:1;min-height:48px}.dbNotes{text-transform:none}@media(max-width:430px){.head{align-items:flex-start;flex-direction:column}.listactions{width:100%}.textlist,.clear{flex:1}.headerlogo{width:68px;height:68px}}
+.playerDbTop{display:grid;gap:.75rem;margin-bottom:1rem}.playerDbAdd{min-height:50px}.playerDbList{display:grid;gap:.55rem}.playerDbRow{width:100%;background:#fff;border:1px solid #d9d9d9;border-radius:10px;padding:.85rem 1rem;text-align:left;font-weight:800;display:flex;justify-content:space-between;align-items:center}.playerDbRow small{font-weight:800;color:#000;padding:.25rem .55rem;border:1px solid #000;border-radius:6px}.playerDbRow small.activeBadge{background:#65d66e}.playerDbRow small.inactiveBadge{background:#ef6b6b}.inactivePlayer{opacity:1}.playerDbForm{display:grid;gap:1rem}.statusToggle{display:flex;gap:.5rem}.statusToggle button{flex:1;min-height:44px;border:2px solid #000;border-radius:8px;font-weight:800;color:#000}.statusActiveSelected{background:#65d66e;color:#000}.statusInactiveSelected{background:#ef6b6b;color:#000}.statusUnselected{background:#fff;color:#000}.dangerButton{min-height:48px;background:#fff;color:#b42318;border:2px solid #b42318;border-radius:10px;font-weight:800}.dbActions{display:flex;gap:.6rem}.dbActions button{flex:1;min-height:48px}.dbNotes{text-transform:none}@media(max-width:430px){.head{align-items:flex-start;flex-direction:column}.listactions{width:100%}.textlist,.clear{flex:1}.headerlogo{width:68px;height:68px}}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.7";
+const APP_VERSION="092826.8";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -169,10 +169,10 @@ function renderPlayerDatabase(){
  <div class="fieldwrap"><div>Player Name</div><input id="dbPlayerName" value="${esc(name)}" maxlength="80" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
  <div class="fieldwrap"><div>Hold Em Preferred Seat</div><div class="fieldhint">Optional — 1 through 10</div><input id="dbHoldemSeat" inputmode="numeric" value="${he}" autocomplete="off"></div>
  <div class="fieldwrap"><div>Omaha Preferred Seat</div><div class="fieldhint">Optional — 1 through 9</div><input id="dbOmahaSeat" inputmode="numeric" value="${om}" autocomplete="off"></div>
- <div class="fieldwrap"><div>Status</div><div class="statusToggle"><button type="button" id="dbActive" class="${active?"statusSelected":"statusUnselected"}">Active</button><button type="button" id="dbInactive" class="${!active?"statusSelected":"statusUnselected"}">Inactive</button></div><input type="hidden" id="dbStatus" value="${active?"active":"inactive"}"></div>
+ <div class="fieldwrap"><div>Status</div><div class="statusToggle"><button type="button" id="dbActive" class="${active?"statusActiveSelected":"statusUnselected"}">Active</button><button type="button" id="dbInactive" class="${!active?"statusInactiveSelected":"statusUnselected"}">Inactive</button></div><input type="hidden" id="dbStatus" value="${active?"active":"inactive"}"></div>
  <div class="fieldwrap"><div>Notes</div><textarea id="dbNotes" class="dbNotes" maxlength="500" autocomplete="off" autocorrect="off" spellcheck="false">${esc(notes)}</textarea></div>
  ${error?`<p class="error">${esc(error)}</p>`:""}
- <div class="dbActions"><button class="save">Save Player</button><button type="button" class="cancel" id="dbCancel">Cancel</button></div>
+ <div class="dbActions"><button class="save">${existing?"Save Changes":"Save Player"}</button></div>
  ${existing?'<button type="button" class="dangerButton" id="dbDelete">Delete Player</button>':""}
  </form></section>`;
 }
@@ -185,11 +185,10 @@ function wirePlayerDatabase(){
  const form=document.querySelector("#playerDbForm");
  if(form){
   const active=document.querySelector("#dbActive"),inactive=document.querySelector("#dbInactive"),status=document.querySelector("#dbStatus");
-  active.onclick=()=>{status.value="active";active.className="statusSelected";inactive.className="statusUnselected"};
-  inactive.onclick=()=>{status.value="inactive";inactive.className="statusSelected";active.className="statusUnselected"};
+  active.onclick=()=>{status.value="active";active.className="statusActiveSelected";inactive.className="statusUnselected"};
+  inactive.onclick=()=>{status.value="inactive";inactive.className="statusInactiveSelected";active.className="statusUnselected"};
   form.onsubmit=savePlayerDatabase;
  }
- const cancel=document.querySelector("#dbCancel");if(cancel)cancel.onclick=()=>{playerDbMode="list";playerDbEditName=null;error="";render()};
  const del=document.querySelector("#dbDelete");if(del)del.onclick=deletePlayerDatabase;
 }
 async function savePlayerDatabase(e){
