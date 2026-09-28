@@ -522,7 +522,7 @@ height:68px
 import {createClient}
 from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const APP_VERSION="2026-09-26-06";
+const APP_VERSION="2026-09-26-07";
 
 const sb=createClient(
 "https://dugemciflvwboiyneufa.supabase.co",
@@ -558,35 +558,46 @@ const meridiem=
 .replace(/[\s.]/g,"")
 .toLowerCase();
 
-let eveningMinutes=null;
+let hour24=null;
 
 if(meridiem==="pm"){
 
-eveningMinutes=
-hour*60+minute;
+hour24=
+hour===12
+?12
+:hour+12;
 
 }else if(meridiem==="am"){
 
-continue;
+hour24=
+hour===12
+?0
+:hour;
 
 }else{
 
+/*
+If AM/PM is omitted, only 7 through 11
+are treated as evening arrival times.
+*/
 if(hour>=7 && hour<=11){
-
-eveningMinutes=
-hour*60+minute;
-
+hour24=hour+12;
 }
 
 }
 
-if(
-eveningMinutes!==null &&
-eveningMinutes>19*60+15
-){
+if(hour24===null){
+continue;
+}
 
+const arrivalMinutes=
+hour24*60+minute;
+
+const cutoffMinutes=
+19*60+15;
+
+if(arrivalMinutes>cutoffMinutes){
 return true;
-
 }
 
 }
