@@ -186,12 +186,18 @@ body:has(.tableGameMenu){
   font-size:clamp(7px,2vw,11px) !important;
   max-width:20% !important;
 }
+
+.tableGameMenu .gameImageButton .seatName{
+  transform:translate(-50%,-50%) !important;
+  text-align:center !important;
+  z-index:12 !important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.14";
+const APP_VERSION="092926.15";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -266,12 +272,12 @@ function renderHeader(title,subtitle=""){
 
 const TABLE_SEAT_POSITIONS={
  "Hold Em":{
-  1:[70.5,14.5],2:[86.5,28.5],3:[92.0,50.5],4:[86.0,72.5],5:[62.0,86.0],
-  6:[38.0,86.0],7:[14.5,72.5],8:[8.0,50.5],9:[13.5,28.5],10:[29.5,14.5]
+  1:[70.8,20.8],2:[87.2,31.0],3:[92.3,50.0],4:[87.1,68.5],5:[63.2,80.2],
+  6:[36.8,80.2],7:[13.0,68.5],8:[7.8,50.0],9:[12.8,31.0],10:[29.2,20.8]
  },
  "Omaha":{
-  1:[70.5,14.5],2:[87.0,29.0],3:[92.0,51.0],4:[84.0,73.0],
-  5:[62.0,86.0],6:[38.0,86.0],7:[16.0,73.0],8:[8.0,51.0],9:[29.5,14.5]
+  1:[70.8,20.8],2:[87.0,31.0],3:[92.0,50.0],4:[84.0,69.0],
+  5:[62.0,80.5],6:[38.0,80.5],7:[16.0,69.0],8:[8.0,50.0],9:[29.2,20.8]
  }
 };
 function tableSeatOverlays(d,g){
