@@ -228,7 +228,7 @@ body:has(.tableGameMenu){
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.20";
+const APP_VERSION="092926.21";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -307,8 +307,8 @@ const TABLE_SEAT_POSITIONS={
   6:[36.7,80.3],7:[13.9,68.0],8:[7.7,50.0],9:[11.6,31.8],10:[28.3,19.3]
  },
  "Omaha":{
-  1:[72.7,18.0],2:[89.4,34.0],3:[91.4,60.5],4:[77.0,82.5],
-  5:[50.0,87.0],6:[23.0,82.5],7:[8.6,60.5],8:[10.6,34.0],9:[27.3,18.0]
+  1:[72.7,18.0],2:[89.0,34.8],3:[91.0,59.0],4:[76.5,78.8],
+  5:[50.0,81.5],6:[23.5,78.8],7:[9.0,59.0],8:[11.0,34.8],9:[27.3,18.0]
  }
 };
 function tableSeatOverlays(d,g){
