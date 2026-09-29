@@ -271,12 +271,34 @@ body:has(.tableGameMenu){
   color:#1262c6;font-weight:900;font-size:clamp(1rem,5vw,1.5rem);
   display:flex;align-items:center;justify-content:center;z-index:8;
 }
+
+/* Two-game day fix: size dynamic tables as the cards themselves, not as oversized content. */
+.tableGameMenu .gameImageButton:has(.cssPokerTable){
+  flex:1 1 0 !important;
+  height:calc((100% - 14px)/2) !important;
+  min-height:0 !important;
+  aspect-ratio:auto !important;
+}
+.tableGameMenu .gameImageButton:has(.cssPokerTable) .cssPokerTable{
+  width:100% !important;
+  height:100% !important;
+  aspect-ratio:auto !important;
+}
+/* A one-game dynamic menu may use the normal table proportion. */
+.tableGameMenu .gameImageButton:only-child:has(.cssPokerTable){
+  flex:0 0 auto !important;
+  height:auto !important;
+}
+.tableGameMenu .gameImageButton:only-child:has(.cssPokerTable) .cssPokerTable{
+  height:auto !important;
+  aspect-ratio:1.55/1 !important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.25";
+const APP_VERSION="092926.26";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
