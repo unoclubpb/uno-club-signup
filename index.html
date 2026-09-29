@@ -228,7 +228,7 @@ body:has(.tableGameMenu){
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.22";
+const APP_VERSION="092926.24";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -379,7 +379,7 @@ function renderPlayerPage(isSpecial=false){
  <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row"><div class="num">${p.alt?"A":p.num}</div><div class="info">
  <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
  ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>
- ${edit==p.id?`<div class="editor">${game!=="Tournament"?`<div class="fieldwrap"><div>Preferred Seat</div><div class="fieldhint">Optional — 1 through ${limit(game)}</div><input id="unoEditSeat" inputmode="numeric" value="${p.preferred_seat??""}" autocomplete="off"></div>`:""}<div class="fieldwrap"><div>Note</div><input id="unoEntryD" value="${esc(p.notes||"")}" autocomplete="new-password"></div><div><button class="save" data-save="${p.id}">Save Changes</button><button class="cancel" id="cancel">Cancel</button></div></div>`:""}
+ ${edit==p.id?`<div class="editor">${game!=="Tournament"?`<div class="fieldwrap"><div>Preferred Seat <span class="fieldhint">(Optional — 1 - ${limit(game)})</span></div><input id="unoEditSeat" inputmode="numeric" value="${p.preferred_seat??""}" autocomplete="off"></div>`:""}<div class="fieldwrap"><div>Notes <span class="fieldhint">(Optional)</span></div><input id="unoEntryD" value="${esc(p.notes||"")}" autocomplete="new-password"></div><div><button class="save" data-save="${p.id}">Save Changes</button><button class="cancel" id="cancel">Cancel</button></div></div>`:""}
  </div><button class="del" data-del="${p.id}">×</button></div>`).join("")}</div></section>
  ${pendingDelete?`<div class="undoBar"><span>${esc(pendingDelete.player.player_name)} removed</span><button id="undoDelete">Undo</button></div>`:""}`;
 }
