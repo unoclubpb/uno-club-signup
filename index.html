@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.18";
+const APP_VERSION="092826.20";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -104,7 +104,17 @@ function render(){
  const a=document.querySelector("#app");let h="";
  if(page==="todo"){a.innerHTML=renderHeader("To-Do")+renderTodoPage();wireTodo();return}
  if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?"Game Detail":playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+renderPlayerDatabase();wirePlayerDatabase();return}
- if(page==="admin"){const adminHeader=(archiveGame&&!archiveViewId)?renderArchiveHeader(archiveGame):renderHeader(adminMode==="main"?"Admin":adminMode==="archives"?"List Archives":archiveViewId?"Archived List":"List Archives");a.innerHTML=adminHeader+renderAdminPage();wireAdmin();return}
+ if(page==="admin"){
+ let adminHeader;
+ if(archiveViewId){
+  adminHeader=renderArchiveHeader(archiveGame==="Special Game"?"Special Games":archiveGame);
+ }else if(archiveGame){
+  adminHeader=renderArchiveHeader(archiveGame==="Special Game"?"Special Games":archiveGame);
+ }else{
+  adminHeader=renderHeader(adminMode==="main"?"Admin":"List Archives");
+ }
+ a.innerHTML=adminHeader+renderAdminPage();wireAdmin();return
+}
  if(page==="special"){a.innerHTML=renderHeader(specialSettings?specialSettings.game_name:"Special Game")+renderSpecialPage();wireSpecial();return}
  h+=renderHeader(game||day||"Uno Club Lists",game?`${day} Night`:"");
  if(!day){
@@ -172,8 +182,8 @@ async function openArchive(id){
  const q=await sb.from("list_archive_players").select("*").eq("archive_id",id).order("archive_order");
  archivePlayers=q.error?[]:(q.data||[]);archiveViewId=id;render();
 }
-function renderArchiveHeader(gameName){
- return `<header class="top"><button class="back" id="back" aria-label="Back">‹</button><div class="title" style="text-align:center;line-height:1.15"><div>List Archives</div><div>${esc(gameName==="Special Game"?"Special Games":gameName)}</div></div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
+function renderArchiveHeader(secondLine){
+ return `<header class="top"><button class="back" id="back" aria-label="Back">‹</button><div class="title" style="position:absolute;left:0;right:78px;text-align:center;line-height:1.15;pointer-events:none"><div>List Archives</div><div>${esc(secondLine)}</div></div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
 }
 function renderAdminPage(){
  if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button></section>`;
