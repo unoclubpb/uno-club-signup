@@ -191,7 +191,7 @@ body:has(.tableGameMenu){
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.13";
+const APP_VERSION="092926.14";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -211,7 +211,7 @@ function arrivesAfter715(note){
 const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
-let edit=null,todoEdit=null,specialEdit=false,error="",pendingDelete=null,deleteTimer=null;
+let edit=null,todoEdit=null,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
 let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[];
 
@@ -583,7 +583,8 @@ function showSuggestions(value){
 function wirePlayerControls(){
  const form=document.querySelector("#form");
  if(form){
-  const name=document.querySelector("#unoEntryA"),notes=document.querySelector("#unoEntryC"),alt=document.querySelector("#altmsg");
+  const name=document.querySelector("#unoEntryA"),notes=document.querySelector("#unoEntryC"),seatInput=document.querySelector("#unoEntryB"),alt=document.querySelector("#altmsg");
+  if(addPlayerDraft){name.value=addPlayerDraft.name||"";if(seatInput)seatInput.value=addPlayerDraft.seat||"";if(notes)notes.value=addPlayerDraft.notes||"";addPlayerDraft=null;}
   name.oninput=()=>showSuggestions(name.value);
   name.onchange=()=>{const p=findDirectory(name.value);if(p)applyDirectoryPlayer(p)};
   notes.oninput=()=>{const rc=shown().filter(p=>!p.alt).length;alt.innerHTML=late(notes.value)||rc>=limit(game)?'<span class="red">This player will be added as an ALTERNATE.</span>':""};
@@ -681,8 +682,8 @@ async function add(e){
  const rc=shown().filter(p=>!p.alt).length,alt=late(notes)||rc>=limit(game);
  if(game!=="Tournament"&&!alt&&seat){
   const max=maxPreferredSeat(game);
-  if(!/^\d+$/.test(seat)||+seat<1||+seat>max){error=`Invalid response. Preferred seat must be a number from 1 to ${max}.`;render();return}
-  if(current().some(p=>String(p.preferred_seat??"")===String(+seat))){error="That preferred seat is already taken. Choose another seat or leave the seat blank.";render();return}
+  if(!/^\d+$/.test(seat)||+seat<1||+seat>max){addPlayerDraft={name,seat,notes};error=`Invalid response. Preferred seat must be a number from 1 to ${max}.`;render();return}
+  if(current().some(p=>String(p.preferred_seat??"")===String(+seat))){addPlayerDraft={name,seat,notes};error="That preferred seat is already taken. Choose another seat or leave the seat blank.";render();return}
  }
  const savedSeat=game==="Tournament"||alt?null:(seat?+seat:null);
  const r=await sb.from("signup_players").insert({day,game,player_name:name,preferred_seat:savedSeat,notes:notes||null}).select().single();
