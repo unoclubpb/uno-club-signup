@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.14";
+const APP_VERSION="092826.16";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -49,7 +49,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,specialEdit=false,error="",pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[];
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],playerDbFromAdmin=false,playerHistoryMode=false,playerHistory=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[];
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -103,7 +103,7 @@ function renderHeader(title,subtitle=""){
 function render(){
  const a=document.querySelector("#app");let h="";
  if(page==="todo"){a.innerHTML=renderHeader("To-Do")+renderTodoPage();wireTodo();return}
- if(page==="playerdb"){a.innerHTML=renderHeader(playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+renderPlayerDatabase();wirePlayerDatabase();return}
+ if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?"Game Detail":playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+renderPlayerDatabase();wirePlayerDatabase();return}
  if(page==="admin"){a.innerHTML=renderHeader(adminMode==="main"?"Admin":adminMode==="archives"?"List Archives":archiveViewId?"Archived List":archiveGame||"List Archives")+renderAdminPage();wireAdmin();return}
  if(page==="special"){a.innerHTML=renderHeader(specialSettings?specialSettings.game_name:"Special Game")+renderSpecialPage();wireSpecial();return}
  h+=renderHeader(game||day||"Uno Club Lists",game?`${day} Night`:"");
@@ -190,12 +190,38 @@ function wireAdmin(){
   if(adminMode==="archives"){adminMode="main";render();return}
   page="main";render();
  };
- const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbMode="list";playerDbSearch="";playerDbDraftName="";render()};
+ const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
  const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
  document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
  document.querySelectorAll("[data-archive]").forEach(b=>b.onclick=()=>openArchive(b.dataset.archive));
 }
+function playerHistoryLabel(a){
+ const d=new Date(a.archive_date+"T12:00:00");
+ const ds=d.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"2-digit"});
+ const day=a.day==="Special Game"?d.toLocaleDateString("en-US",{weekday:"long"}):a.day;
+ const game=a.game==="Special Game"?(a.special_game_name||"Special Game"):a.game;
+ return `${ds} ${day} ${game}`;
+}
+async function loadPlayerHistory(name){
+ const ap=await sb.from("list_archive_players").select("archive_id").eq("player_name",name);
+ if(ap.error){playerHistory=[];return}
+ const ids=[...new Set((ap.data||[]).map(x=>x.archive_id))];
+ if(!ids.length){playerHistory=[];return}
+ const ar=await sb.from("list_archives").select("*").in("id",ids).order("archive_date",{ascending:false}).order("archived_at",{ascending:false});
+ playerHistory=ar.error?[]:(ar.data||[]);
+}
+async function openPlayerHistoryArchive(id){
+ const q=await sb.from("list_archive_players").select("*").eq("archive_id",id).order("archive_order");
+ playerHistoryArchivePlayers=q.error?[]:(q.data||[]);playerHistoryArchiveId=id;render();
+}
 function renderPlayerDatabase(){
+ if(playerHistoryArchiveId){
+  const a=playerHistory.find(x=>String(x.id)===String(playerHistoryArchiveId));
+  return `<section class="content"><div class="head"><div><h2>${a?esc(playerHistoryLabel(a)):"Archived List"}</h2><span class="count">${countLabel(playerHistoryArchivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(playerHistoryArchivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${playerHistoryArchivePlayers.length?playerHistoryArchivePlayers.map(p=>`<div class="row"><div class="num">${p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+ }
+ if(playerHistoryMode){
+  return `<section class="content"><div class="list">${playerHistory.length?playerHistory.map(a=>`<button class="playerDbRow" data-pharchive="${a.id}"><span>${esc(playerHistoryLabel(a))}</span></button>`).join(""):'<div class="empty">No archived games for this player yet.</div>'}</div></section>`;
+ }
  if(playerDbMode==="list"){
   const q=playerDbSearch.trim().toLowerCase();
   const rows=[...directory].filter(p=>!q||p.player_name.toLowerCase().startsWith(q)).sort((a,b)=>a.player_name.localeCompare(b.player_name));
@@ -210,6 +236,7 @@ function renderPlayerDatabase(){
  <div class="fieldwrap"><div>Hold Em Preferred Seat</div><div class="fieldhint">Optional — 1 through 10</div><input id="dbHoldemSeat" inputmode="numeric" value="${he}" autocomplete="off"></div>
  <div class="fieldwrap"><div>Omaha Preferred Seat</div><div class="fieldhint">Optional — 1 through 9</div><input id="dbOmahaSeat" inputmode="numeric" value="${om}" autocomplete="off"></div>
  <div class="fieldwrap"><div>Status</div><div class="statusToggle"><button type="button" id="dbActive" class="${active?"statusActiveSelected":"statusUnselected"}">Active</button><button type="button" id="dbInactive" class="${!active?"statusInactiveSelected":"statusUnselected"}">Inactive</button></div><input type="hidden" id="dbStatus" value="${active?"active":"inactive"}"></div>
+ ${existing?'<button type="button" class="big" id="dbGameDetail" style="min-height:52px;font-size:1rem">Game Detail</button>':""}
  <div class="fieldwrap"><div>Notes</div><textarea id="dbNotes" class="dbNotes" maxlength="500" autocomplete="off" autocorrect="off" spellcheck="false">${esc(notes)}</textarea></div>
  ${error?`<p class="error">${esc(error)}</p>`:""}
  <div class="dbActions"><button class="save">${existing?"Save Changes":"Save Player"}</button></div>
@@ -230,10 +257,17 @@ function wirePlayerDbRows(){
 function wirePlayerDatabase(){
  wireHomeLogo();
  const back=document.querySelector("#back");
- if(back)back.onclick=()=>{error="";if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;playerDbDraftName="";render()}else{page="main";render()}};
+ if(back)back.onclick=()=>{error="";
+  if(playerHistoryArchiveId){playerHistoryArchiveId=null;playerHistoryArchivePlayers=[];render();return}
+  if(playerHistoryMode){playerHistoryMode=false;render();return}
+  if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;playerDbDraftName="";render();return}
+  if(playerDbFromAdmin){page="admin";adminMode="main";playerDbFromAdmin=false;render()}else{page="main";render()}
+ };
  const add=document.querySelector("#dbAddPlayer");if(add)add.onclick=()=>{playerDbMode="add";playerDbEditName=null;playerDbDraftName=formatPlayerName(playerDbSearch);error="";render()};
  const search=document.querySelector("#dbSearch");if(search)search.oninput=()=>{playerDbSearch=search.value;const results=document.querySelector("#playerDbResults");if(results){results.innerHTML=playerDbResultsHtml();wirePlayerDbRows()}};
  wirePlayerDbRows();
+ const gd=document.querySelector("#dbGameDetail");if(gd)gd.onclick=async()=>{await loadPlayerHistory(playerDbEditName);playerHistoryMode=true;playerHistoryArchiveId=null;render()};
+ document.querySelectorAll("[data-pharchive]").forEach(b=>b.onclick=()=>openPlayerHistoryArchive(b.dataset.pharchive));
  const form=document.querySelector("#playerDbForm");
  if(form){
   const active=document.querySelector("#dbActive"),inactive=document.querySelector("#dbInactive"),status=document.querySelector("#dbStatus");
@@ -423,7 +457,9 @@ function undoPlayerDelete(){if(!pendingDelete)return;const p=pendingDelete.playe
 async function clear(){
  if(pendingDelete)await finalizePendingDelete();
  const special=game==="Special Game",label=special&&specialSettings?specialSettings.game_name:`${day} ${game}`;
- if(!confirm(special?`Archive and clear the entire ${label} list?`:`Archive and clear the entire ${label} list?`))return;
+ const nowCheck=new Date(),currentMinutes=nowCheck.getHours()*60+nowCheck.getMinutes(),dayName=nowCheck.toLocaleDateString("en-US",{weekday:"long"});
+ if(currentMinutes<20*60||(!special&&dayName!==day)){error="Game cannot be archived until 8:00 PM.";render();return}
+ if(!confirm(`Archive and clear the entire ${label} list?`))return;
  const d=day,g=game;
  if(!current().length){if(special){const sd=await sb.from("special_game_settings").delete().eq("id",1);if(!sd.error){specialSettings=null;day=game=null;page="main"}}render();return}
  const now=new Date(),dateStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
