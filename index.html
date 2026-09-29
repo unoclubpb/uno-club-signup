@@ -29,6 +29,8 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
   gap:28px !important;
   padding-top:22px;
   padding-bottom:22px;
+  min-height:calc(100vh - 92px);
+  box-sizing:border-box;
 }
 .deleteSpecialGameButton{width:100%;min-height:48px;margin:.75rem 0 1rem;background:#fff;color:#b42318;border:2px solid #b42318;border-radius:10px;font-weight:800}
 </style>
@@ -36,7 +38,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.3";
+const APP_VERSION="092926.4";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
