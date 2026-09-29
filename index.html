@@ -192,12 +192,32 @@ body:has(.tableGameMenu){
   text-align:center !important;
   z-index:12 !important;
 }
+
+.tableGameMenu .gameImageButton .chairLabel{
+  position:absolute;
+  z-index:12;
+  transform:translate(-50%,-50%);
+  font-weight:900;
+  font-size:clamp(7px,2vw,11px);
+  line-height:1;
+  white-space:nowrap;
+  text-align:center;
+  pointer-events:none;
+  text-shadow:0 1px 2px #000,0 0 2px #000;
+}
+.tableGameMenu .gameImageButton .emptySeat,
+.tableGameMenu .gameImageButton .dealerLabel{
+  color:#fff;
+}
+.tableGameMenu .gameImageButton .occupiedSeat{
+  color:#ffd400;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.16";
+const APP_VERSION="092926.18";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -272,18 +292,26 @@ function renderHeader(title,subtitle=""){
 
 const TABLE_SEAT_POSITIONS={
  "Hold Em":{
-  1:[70.8,19.3],2:[87.2,29.2],3:[92.3,49.2],4:[87.0,67.2],5:[63.2,77.2],
-  6:[36.8,77.2],7:[13.0,67.2],8:[7.8,49.2],9:[12.8,29.2],10:[29.2,19.3]
+  1:[72.0,14.0],2:[88.2,30.0],3:[92.0,50.0],4:[86.0,70.0],5:[64.0,85.0],
+  6:[36.0,85.0],7:[14.0,70.0],8:[8.0,50.0],9:[11.8,30.0],10:[28.0,14.0]
  },
  "Omaha":{
-  1:[70.8,19.3],2:[87.0,29.2],3:[92.0,49.2],4:[84.0,67.5],
-  5:[62.0,77.5],6:[38.0,77.5],7:[16.0,67.5],8:[8.0,49.2],9:[29.2,19.3]
+  1:[72.0,14.0],2:[88.0,30.0],3:[92.0,50.0],4:[84.0,70.0],
+  5:[64.0,85.0],6:[36.0,85.0],7:[16.0,70.0],8:[8.0,50.0],9:[28.0,14.0]
  }
 };
 function tableSeatOverlays(d,g){
  const pos=TABLE_SEAT_POSITIONS[g];if(!pos)return "";
- const occupied=players.filter(p=>p.day===d&&p.game===g&&!p.alt&&p.preferred_seat&&pos[Number(p.preferred_seat)]);
- return occupied.map(p=>{const xy=pos[Number(p.preferred_seat)];return `<span class="seatName" style="left:${xy[0]}%;top:${xy[1]}%">${esc(p.player_name)}</span>`}).join("");
+ const max=g==="Hold Em"?10:9;
+ const regular=players.filter(p=>p.day===d&&p.game===g&&!p.alt);
+ let out=`<span class="chairLabel dealerLabel" style="left:50%;top:14%">DEALER</span>`;
+ for(let seat=1;seat<=max;seat++){
+  const xy=pos[seat];
+  const p=regular.find(x=>String(x.preferred_seat??"")===String(seat));
+  if(p)out+=`<span class="chairLabel occupiedSeat" style="left:${xy[0]}%;top:${xy[1]}%">${esc(p.player_name)}</span>`;
+  else out+=`<span class="chairLabel emptySeat" style="left:${xy[0]}%;top:${xy[1]}%">SEAT ${seat}</span>`;
+ }
+ return out;
 }
 function render(){
  const a=document.querySelector("#app");let h="";
@@ -309,7 +337,7 @@ function render(){
   <button class="big specialGameButton" id="specialGameButton">${esc(specialName)}${sc?`<span class="gamecount">${sc}</span>`:""}</button>
   <button class="big todoMenuButton" id="todoMenuButton">To-Do</button><button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
-  const imageForGame=x=>x==="Hold Em"?"HoldEm10.jpeg":x==="Omaha"?"Omaha9.jpeg":x==="Tournament"?"Tournament.jpeg":null;
+  const imageForGame=x=>x==="Hold Em"?"Holdem10.jpeg":x==="Omaha"?"Omaha9.jpeg":x==="Tournament"?"Tournament.jpeg":null;
   h+=`<section class="menu tableGameMenu">${games[day].map(x=>{const img=imageForGame(x);return img?`<button class="game gameImageButton" data-v="${x}" aria-label="${x}"><img src="${img}" alt="${x}">${tableSeatOverlays(day,x)}<span class="gameImageLabel">${x.toUpperCase()}</span><span class="gamecount gameImageCount gameCount">${gameCount(day,x)}</span></button>`:`<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
  a.innerHTML=h;wire();
