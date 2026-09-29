@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.8";
+const APP_VERSION="092826.9";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -161,7 +161,7 @@ function renderPlayerDatabase(){
   const rows=[...directory].filter(p=>!q||p.player_name.toLowerCase().startsWith(q)).sort((a,b)=>a.player_name.localeCompare(b.player_name));
   return `<section class="content"><div class="playerDbTop"><button class="add playerDbAdd" id="dbAddPlayer">Add Player</button><input id="dbSearch" type="text" placeholder="Search players" value="${esc(playerDbSearch)}" autocomplete="off" autocorrect="off" spellcheck="false"></div>
   ${error?`<p class="error">${esc(error)}</p>`:""}
-  <div class="playerDbList">${rows.length?rows.map(p=>`<button class="playerDbRow ${p.active===false?"inactivePlayer":""}" data-db-player="${esc(p.player_name)}"><span>${esc(p.player_name)}</span><small class="${p.active===false?"inactiveBadge":"activeBadge"}">${p.active===false?"Inactive":"Active"}</small></button>`).join(""):'<div class="empty">No players found.</div>'}</div></section>`;
+  <div class="playerDbList" id="playerDbResults">${rows.length?rows.map(p=>`<button class="playerDbRow ${p.active===false?"inactivePlayer":""}" data-db-player="${esc(p.player_name)}"><span>${esc(p.player_name)}</span><small class="${p.active===false?"inactiveBadge":"activeBadge"}">${p.active===false?"Inactive":"Active"}</small></button>`).join(""):'<div class="empty">No players found.</div>'}</div></section>`;
  }
  const existing=playerDbMode==="edit"?findDirectory(playerDbEditName):null;
  const name=existing?.player_name||"",he=existing?.hold_em_preferred_seat??"",om=existing?.omaha_preferred_seat??"",notes=existing?.notes||"",active=existing?.active!==false;
@@ -176,12 +176,23 @@ function renderPlayerDatabase(){
  ${existing?'<button type="button" class="dangerButton" id="dbDelete">Delete Player</button>':""}
  </form></section>`;
 }
+function playerDbFilteredRows(){
+ const q=playerDbSearch.trim().toLowerCase();
+ return [...directory].filter(p=>!q||p.player_name.toLowerCase().startsWith(q)).sort((a,b)=>a.player_name.localeCompare(b.player_name));
+}
+function playerDbResultsHtml(){
+ const rows=playerDbFilteredRows();
+ return rows.length?rows.map(p=>`<button class="playerDbRow ${p.active===false?"inactivePlayer":""}" data-db-player="${esc(p.player_name)}"><span>${esc(p.player_name)}</span><small class="${p.active===false?"inactiveBadge":"activeBadge"}">${p.active===false?"Inactive":"Active"}</small></button>`).join(""):'<div class="empty">No players found.</div>';
+}
+function wirePlayerDbRows(){
+ document.querySelectorAll("[data-db-player]").forEach(b=>b.onclick=()=>{playerDbMode="edit";playerDbEditName=b.dataset.dbPlayer;error="";render()});
+}
 function wirePlayerDatabase(){
  const back=document.querySelector("#back");
  if(back)back.onclick=()=>{error="";if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;render()}else{page="main";render()}};
  const add=document.querySelector("#dbAddPlayer");if(add)add.onclick=()=>{playerDbMode="add";playerDbEditName=null;error="";render()};
- const search=document.querySelector("#dbSearch");if(search)search.oninput=()=>{playerDbSearch=search.value;render()};
- document.querySelectorAll("[data-db-player]").forEach(b=>b.onclick=()=>{playerDbMode="edit";playerDbEditName=b.dataset.dbPlayer;error="";render()});
+ const search=document.querySelector("#dbSearch");if(search)search.oninput=()=>{playerDbSearch=search.value;const results=document.querySelector("#playerDbResults");if(results){results.innerHTML=playerDbResultsHtml();wirePlayerDbRows()}};
+ wirePlayerDbRows();
  const form=document.querySelector("#playerDbForm");
  if(form){
   const active=document.querySelector("#dbActive"),inactive=document.querySelector("#dbInactive"),status=document.querySelector("#dbStatus");
