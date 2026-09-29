@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.10";
+const APP_VERSION="092826.11";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -221,7 +221,7 @@ async function savePlayerDatabase(e){
  }
  if(r.error){error="Could not save the player. "+r.error.message;render();return}
  directory=directory.filter(p=>p.player_name!==playerDbEditName&&p.player_name.toLowerCase()!==name.toLowerCase());directory.push(r.data);directory.sort((a,b)=>a.player_name.localeCompare(b.player_name));
- playerDbMode="list";playerDbEditName=null;playerDbDraftName="";error="";render();
+ playerDbMode="list";playerDbEditName=null;playerDbDraftName="";playerDbSearch="";error="";render();
 }
 async function deletePlayerDatabase(){
  const p=findDirectory(playerDbEditName);if(!p)return;
