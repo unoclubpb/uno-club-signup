@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.20";
+const APP_VERSION="092826.21";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -49,7 +49,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,specialEdit=false,error="",pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],playerDbFromAdmin=false,playerHistoryMode=false,playerHistory=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[];
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[];
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -103,7 +103,7 @@ function renderHeader(title,subtitle=""){
 function render(){
  const a=document.querySelector("#app");let h="";
  if(page==="todo"){a.innerHTML=renderHeader("To-Do")+renderTodoPage();wireTodo();return}
- if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?"Game Detail":playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+renderPlayerDatabase();wirePlayerDatabase();return}
+ if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?(playerHistoryView==="totals"?"Total Games Played":playerHistoryView==="dates"?"Dates Played":"Game Detail"):playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+renderPlayerDatabase();wirePlayerDatabase();return}
  if(page==="admin"){
  let adminHeader;
  if(archiveViewId){
@@ -216,9 +216,10 @@ function playerHistoryLabel(a){
  return `${ds} ${day} ${game}`;
 }
 async function loadPlayerHistory(name){
- const ap=await sb.from("list_archive_players").select("archive_id").eq("player_name",name);
- if(ap.error){playerHistory=[];return}
- const ids=[...new Set((ap.data||[]).map(x=>x.archive_id))];
+ const ap=await sb.from("list_archive_players").select("archive_id,was_alternate").eq("player_name",name);
+ if(ap.error){playerHistory=[];playerHistoryRows=[];return}
+ playerHistoryRows=ap.data||[];
+ const ids=[...new Set(playerHistoryRows.map(x=>x.archive_id))];
  if(!ids.length){playerHistory=[];return}
  const ar=await sb.from("list_archives").select("*").in("id",ids).order("archive_date",{ascending:false}).order("archived_at",{ascending:false});
  playerHistory=ar.error?[]:(ar.data||[]);
@@ -233,7 +234,25 @@ function renderPlayerDatabase(){
   return `<section class="content"><div class="head"><div><h2>${a?esc(playerHistoryLabel(a)):"Archived List"}</h2><span class="count">${countLabel(playerHistoryArchivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(playerHistoryArchivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${playerHistoryArchivePlayers.length?playerHistoryArchivePlayers.map(p=>`<div class="row"><div class="num">${p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
  if(playerHistoryMode){
-  return `<section class="content"><div class="list">${playerHistory.length?playerHistory.map(a=>`<button class="playerDbRow" data-pharchive="${a.id}"><span>${esc(playerHistoryLabel(a))}</span></button>`).join(""):'<div class="empty">No archived games for this player yet.</div>'}</div></section>`;
+  if(playerHistoryView==="menu"){
+   return `<section class="menu"><button class="big game" id="phDates">Dates Played</button><button class="big game" id="phTotals">Total Games Played</button></section>`;
+  }
+  if(playerHistoryView==="dates"){
+   return `<section class="content"><div class="list">${playerHistory.length?playerHistory.map(a=>`<button class="playerDbRow" data-pharchive="${a.id}"><span>${esc(playerHistoryLabel(a))}</span></button>`).join(""):'<div class="empty">No archived games for this player yet.</div>'}</div></section>`;
+  }
+  const playedIds=new Set(playerHistoryRows.filter(x=>!x.was_alternate).map(x=>String(x.archive_id)));
+  const played=playerHistory.filter(a=>playedIds.has(String(a.id)));
+  const totals={"Hold Em":0,"Omaha":0,"Tournament":0,"Special Game":0};
+  played.forEach(a=>{if(Object.prototype.hasOwnProperty.call(totals,a.game))totals[a.game]++});
+  let since="—";
+  if(played.length){
+   const earliest=[...played].sort((a,b)=>a.archive_date.localeCompare(b.archive_date))[0];
+   const d=new Date(earliest.archive_date+"T12:00:00");
+   since=d.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"2-digit"});
+  }
+  return `<section class="content"><div class="fieldwrap"><div style="font-weight:800;font-size:1.05rem">Since ${esc(since)}</div></div><div class="list">
+   ${["Hold Em","Omaha","Tournament","Special Game"].map(g=>`<div class="playerDbRow" style="cursor:default"><span>${g}</span><strong>${totals[g]}</strong></div>`).join("")}
+  </div></section>`;
  }
  if(playerDbMode==="list"){
   const q=playerDbSearch.trim().toLowerCase();
@@ -271,15 +290,18 @@ function wirePlayerDatabase(){
  wireHomeLogo();
  const back=document.querySelector("#back");
  if(back)back.onclick=()=>{error="";
-  if(playerHistoryArchiveId){playerHistoryArchiveId=null;playerHistoryArchivePlayers=[];render();return}
-  if(playerHistoryMode){playerHistoryMode=false;render();return}
+  if(playerHistoryArchiveId){playerHistoryArchiveId=null;playerHistoryArchivePlayers=[];playerHistoryView="dates";render();return}
+  if(playerHistoryMode&&playerHistoryView!=="menu"){playerHistoryView="menu";render();return}
+  if(playerHistoryMode){playerHistoryMode=false;playerHistoryView="menu";render();return}
   if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;playerDbDraftName="";render();return}
   if(playerDbFromAdmin){page="admin";adminMode="main";playerDbFromAdmin=false;render()}else{page="main";render()}
  };
  const add=document.querySelector("#dbAddPlayer");if(add)add.onclick=()=>{playerDbMode="add";playerDbEditName=null;playerDbDraftName=formatPlayerName(playerDbSearch);error="";render()};
  const search=document.querySelector("#dbSearch");if(search)search.oninput=()=>{playerDbSearch=search.value;const results=document.querySelector("#playerDbResults");if(results){results.innerHTML=playerDbResultsHtml();wirePlayerDbRows()}};
  wirePlayerDbRows();
- const gd=document.querySelector("#dbGameDetail");if(gd)gd.onclick=async()=>{await loadPlayerHistory(playerDbEditName);playerHistoryMode=true;playerHistoryArchiveId=null;render()};
+ const gd=document.querySelector("#dbGameDetail");if(gd)gd.onclick=async()=>{await loadPlayerHistory(playerDbEditName);playerHistoryMode=true;playerHistoryView="menu";playerHistoryArchiveId=null;render()};
+ const phd=document.querySelector("#phDates");if(phd)phd.onclick=()=>{playerHistoryView="dates";render()};
+ const pht=document.querySelector("#phTotals");if(pht)pht.onclick=()=>{playerHistoryView="totals";render()};
  document.querySelectorAll("[data-pharchive]").forEach(b=>b.onclick=()=>openPlayerHistoryArchive(b.dataset.pharchive));
  const form=document.querySelector("#playerDbForm");
  if(form){
