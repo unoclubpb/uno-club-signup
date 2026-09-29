@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.24";
+const APP_VERSION="092826.25";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -215,7 +215,10 @@ function playerHistoryLabel(a){
  return `${ds} ${day} ${game}`;
 }
 async function loadPlayerHistory(name){
- const ap=await sb.from("list_archive_players").select("archive_id,was_alternate").eq("player_name",name);
+ const dp=findDirectory(name);
+ let aq=sb.from("list_archive_players").select("archive_id,was_alternate");
+ aq=dp?.player_id?aq.eq("player_id",dp.player_id):aq.eq("player_name",name);
+ const ap=await aq;
  if(ap.error){playerHistory=[];playerHistoryRows=[];return}
  playerHistoryRows=ap.data||[];
  const ids=[...new Set(playerHistoryRows.map(x=>x.archive_id))];
@@ -324,7 +327,12 @@ async function savePlayerDatabase(e){
  const payload={player_name:name,hold_em_preferred_seat:he?+he:null,omaha_preferred_seat:om?+om:null,active,notes:notes||null,updated_at:new Date().toISOString()};
  let r;
  if(playerDbMode==="edit"){
+  const oldPlayer=findDirectory(playerDbEditName);
   r=await sb.from("player_directory").update(payload).eq("player_name",playerDbEditName).select().single();
+  if(!r.error&&oldPlayer?.player_id&&name!==playerDbEditName){
+   await sb.from("signup_players").update({player_name:name}).eq("player_id",oldPlayer.player_id);
+   await sb.from("list_archive_players").update({player_name:name}).eq("player_id",oldPlayer.player_id);
+  }
  }else{
   r=await sb.from("player_directory").insert(payload).select().single();
  }
