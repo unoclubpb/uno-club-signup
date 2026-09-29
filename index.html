@@ -145,12 +145,17 @@ body:has(.tableGameMenu){
   z-index:10 !important;
   margin:0 !important;
 }
+
+.tableGameMenu .gameImageButton .gameCount{
+  top:22px !important;
+  right:8px !important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.8";
+const APP_VERSION="092926.9";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
