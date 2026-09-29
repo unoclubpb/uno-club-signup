@@ -223,12 +223,60 @@ body:has(.tableGameMenu){
 .tableGameMenu .gameImageButton .occupiedSeat{
   font-size:clamp(7px,1.9vw,11px) !important;
 }
+
+/* Dynamic CSS poker tables: Hold Em and Omaha */
+.cssPokerTable{
+  position:relative;
+  width:100%;
+  aspect-ratio:1.55/1;
+  background:#090909;
+  overflow:hidden;
+  border-radius:14px;
+}
+.cssPokerTable .felt{
+  position:absolute;
+  left:15%;right:15%;top:22%;bottom:22%;
+  border-radius:44% / 48%;
+  background:radial-gradient(ellipse at center,#087443 0%,#075f38 62%,#034629 100%);
+  border:clamp(7px,2.2vw,13px) solid #8a451d;
+  box-shadow:inset 0 0 0 2px #d39145,inset 0 0 22px #002d1b,0 2px 5px #000;
+}
+.cssPokerTable .tableTitle{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  color:#fff;font-weight:900;font-size:clamp(1.35rem,7vw,2.4rem);
+  white-space:nowrap;text-shadow:0 3px 4px #000;z-index:4;
+}
+.cssPokerTable .cssSeat{
+  position:absolute;
+  width:15%;height:16%;
+  transform:translate(-50%,-50%);
+  border-radius:42% 42% 35% 35%;
+  background:linear-gradient(#303030,#111);
+  border:2px solid #050505;
+  box-shadow:inset 0 3px 5px #4a4a4a,0 3px 4px #000;
+  display:flex;align-items:center;justify-content:center;
+  padding:2px;box-sizing:border-box;z-index:5;
+}
+.cssPokerTable .cssSeat span{
+  color:#fff;font-weight:900;font-size:clamp(6px,1.8vw,11px);
+  line-height:1;text-align:center;white-space:nowrap;
+  text-shadow:0 1px 2px #000;
+}
+.cssPokerTable .cssSeat.occupied span{color:#ffd400}
+.cssPokerTable .cssSeat.dealer span{color:#fff}
+.cssPokerTable .cssCount{
+  position:absolute;right:2.5%;top:3%;
+  width:clamp(34px,10vw,46px);height:clamp(34px,10vw,46px);
+  border-radius:50%;background:#fff;border:3px solid #000;
+  color:#1262c6;font-weight:900;font-size:clamp(1rem,5vw,1.5rem);
+  display:flex;align-items:center;justify-content:center;z-index:8;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.24";
+const APP_VERSION="092926.25";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -324,6 +372,27 @@ function tableSeatOverlays(d,g){
  }
  return out;
 }
+
+const CSS_TABLE_POSITIONS={
+ "Hold Em":{
+  dealer:[50,10],1:[72,12],2:[90,29],3:[94,50],4:[87,72],5:[64,88],
+  6:[36,88],7:[13,72],8:[6,50],9:[10,29],10:[28,12]
+ },
+ "Omaha":{
+  dealer:[50,10],1:[72,12],2:[90,31],3:[93,58],4:[78,82],
+  5:[50,90],6:[22,82],7:[7,58],8:[10,31],9:[28,12]
+ }
+};
+function renderCssPokerTable(d,g){
+ const pos=CSS_TABLE_POSITIONS[g],max=g==="Hold Em"?10:9;
+ const regular=players.filter(p=>p.day===d&&p.game===g&&!p.alt);
+ let seats=`<div class="cssSeat dealer" style="left:${pos.dealer[0]}%;top:${pos.dealer[1]}%"><span>DEALER</span></div>`;
+ for(let n=1;n<=max;n++){
+  const p=regular.find(x=>String(x.preferred_seat??"")===String(n)),xy=pos[n];
+  seats+=`<div class="cssSeat ${p?"occupied":""}" style="left:${xy[0]}%;top:${xy[1]}%"><span>${p?esc(p.player_name):`SEAT ${n}`}</span></div>`;
+ }
+ return `<div class="cssPokerTable"><div class="felt"></div>${seats}<div class="tableTitle">${g.toUpperCase()}</div><div class="cssCount">${gameCount(d,g)}</div></div>`;
+}
 function render(){
  const a=document.querySelector("#app");let h="";
  if(page==="todo"){a.innerHTML=renderHeader("To-Do")+renderTodoPage();wireTodo();return}
@@ -348,8 +417,8 @@ function render(){
   <button class="big specialGameButton" id="specialGameButton">${esc(specialName)}${sc?`<span class="gamecount">${sc}</span>`:""}</button>
   <button class="big todoMenuButton" id="todoMenuButton">To-Do</button><button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
-  const imageForGame=x=>x==="Hold Em"?"Holdem10.jpeg":x==="Omaha"?"Omaha9.jpeg":x==="Tournament"?"Tournament.jpeg":null;
-  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{const img=imageForGame(x);return img?`<button class="game gameImageButton" data-v="${x}" aria-label="${x}"><img src="${img}" alt="${x}">${tableSeatOverlays(day,x)}<span class="gameImageLabel">${x.toUpperCase()}</span><span class="gamecount gameImageCount gameCount">${gameCount(day,x)}</span></button>`:`<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
+  const imageForGame=x=>x==="Tournament"?"Tournament.jpeg":null;
+  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;const img=imageForGame(x);return img?`<button class="game gameImageButton" data-v="${x}" aria-label="${x}"><img src="${img}" alt="${x}"><span class="gameImageLabel">${x.toUpperCase()}</span><span class="gamecount gameImageCount gameCount">${gameCount(day,x)}</span></button>`:`<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
  a.innerHTML=h;wire();
 }
