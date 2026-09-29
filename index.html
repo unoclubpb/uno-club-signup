@@ -293,12 +293,49 @@ body:has(.tableGameMenu){
   aspect-ratio:auto !important;
   display:block !important;
 }
+
+/* Definitive dynamic day layout */
+.tableGameMenu{
+  height:calc(100dvh - 162px) !important;
+  max-height:calc(100dvh - 162px) !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:stretch !important;
+  gap:12px !important;
+  padding:12px 18px !important;
+  box-sizing:border-box !important;
+}
+.tableGameMenu .dynamicTableButton{
+  position:relative !important;
+  display:block !important;
+  flex:1 1 0 !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+  background:#090909 !important;
+  border:0 !important;
+  padding:0 !important;
+  margin:0 !important;
+  border-radius:14px !important;
+}
+.tableGameMenu .dynamicTableButton .cssPokerTable{
+  position:absolute !important;
+  inset:0 !important;
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:1px !important;
+  aspect-ratio:auto !important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.28";
+const APP_VERSION="092926.29";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
