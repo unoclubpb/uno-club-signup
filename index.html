@@ -335,7 +335,7 @@ body:has(.tableGameMenu){
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.29";
+const APP_VERSION="092926.30";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -878,7 +878,7 @@ async function finalizePendingDelete(){
 }
 async function del(id){
  if(pendingDelete)await finalizePendingDelete();
- const p=players.find(x=>String(x.id)===String(id));if(!p)return;pendingDelete={player:{...p}};players=players.filter(x=>String(x.id)!==String(id));render();deleteTimer=setTimeout(finalizePendingDelete,5000);
+ const p=players.find(x=>String(x.id)===String(id));if(!p)return;pendingDelete={player:{...p}};players=players.filter(x=>String(x.id)!==String(id));render();deleteTimer=setTimeout(finalizePendingDelete,3000);
 }
 function undoPlayerDelete(){if(!pendingDelete)return;const p=pendingDelete.player;if(deleteTimer)clearTimeout(deleteTimer);deleteTimer=null;pendingDelete=null;players.push(p);render()}
 async function clear(){
