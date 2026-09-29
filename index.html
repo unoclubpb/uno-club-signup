@@ -298,7 +298,7 @@ body:has(.tableGameMenu){
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.26";
+const APP_VERSION="092926.27";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -405,6 +405,9 @@ const CSS_TABLE_POSITIONS={
   5:[50,90],6:[22,82],7:[7,58],8:[10,31],9:[28,12]
  }
 };
+function renderCssTournamentTable(d){
+ return `<div class="cssPokerTable cssTournamentTable"><div class="felt"></div><div class="tableTitle">TOURNAMENT</div><div class="cssCount">${gameCount(d,"Tournament")}</div></div>`;
+}
 function renderCssPokerTable(d,g){
  const pos=CSS_TABLE_POSITIONS[g],max=g==="Hold Em"?10:9;
  const regular=players.filter(p=>p.day===d&&p.game===g&&!p.alt);
@@ -439,8 +442,7 @@ function render(){
   <button class="big specialGameButton" id="specialGameButton">${esc(specialName)}${sc?`<span class="gamecount">${sc}</span>`:""}</button>
   <button class="big todoMenuButton" id="todoMenuButton">To-Do</button><button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
-  const imageForGame=x=>x==="Tournament"?"Tournament.jpeg":null;
-  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;const img=imageForGame(x);return img?`<button class="game gameImageButton" data-v="${x}" aria-label="${x}"><img src="${img}" alt="${x}"><span class="gameImageLabel">${x.toUpperCase()}</span><span class="gamecount gameImageCount gameCount">${gameCount(day,x)}</span></button>`:`<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
+  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;if(x==="Tournament")return `<button class="game gameImageButton" data-v="${x}" aria-label="${x}">${renderCssTournamentTable(day)}</button>`;return `<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
  a.innerHTML=h;wire();
 }
