@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.25";
+const APP_VERSION="092826.26";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -254,7 +254,7 @@ function renderPlayerDatabase(){
   }
   return `<section class="content"><div class="fieldwrap" style="text-align:center;margin-bottom:1.4rem"><div style="font-weight:800;font-size:1.05rem">Since ${esc(since)}</div></div><div class="list">
    ${["Hold Em","Omaha","Tournament","Special Game"].map(g=>`<div class="playerDbRow" style="cursor:default"><span>${g}</span><strong>${totals[g]}</strong></div>`).join("")}
-  </div></section>`;
+  </div><div style="margin-top:2.2rem;font-size:.88rem;line-height:1.4;color:#555">* Game totals are based on players on the main list when the game is archived. Alternates and players who join later are not included.</div></section>`;
  }
  if(playerDbMode==="list"){
   const q=playerDbSearch.trim().toLowerCase();
