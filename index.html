@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.9";
+const APP_VERSION="092826.10";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -48,7 +48,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,specialEdit=false,error="",pendingDelete=null,deleteTimer=null;
-let playerDbMode="list",playerDbEditName=null,playerDbSearch="";
+let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -164,7 +164,7 @@ function renderPlayerDatabase(){
   <div class="playerDbList" id="playerDbResults">${rows.length?rows.map(p=>`<button class="playerDbRow ${p.active===false?"inactivePlayer":""}" data-db-player="${esc(p.player_name)}"><span>${esc(p.player_name)}</span><small class="${p.active===false?"inactiveBadge":"activeBadge"}">${p.active===false?"Inactive":"Active"}</small></button>`).join(""):'<div class="empty">No players found.</div>'}</div></section>`;
  }
  const existing=playerDbMode==="edit"?findDirectory(playerDbEditName):null;
- const name=existing?.player_name||"",he=existing?.hold_em_preferred_seat??"",om=existing?.omaha_preferred_seat??"",notes=existing?.notes||"",active=existing?.active!==false;
+ const name=existing?.player_name||(playerDbMode==="add"?playerDbDraftName:""),he=existing?.hold_em_preferred_seat??"",om=existing?.omaha_preferred_seat??"",notes=existing?.notes||"",active=existing?.active!==false;
  return `<section class="content"><form id="playerDbForm" class="playerDbForm" autocomplete="off">
  <div class="fieldwrap"><div>Player Name</div><input id="dbPlayerName" value="${esc(name)}" maxlength="80" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
  <div class="fieldwrap"><div>Hold Em Preferred Seat</div><div class="fieldhint">Optional — 1 through 10</div><input id="dbHoldemSeat" inputmode="numeric" value="${he}" autocomplete="off"></div>
@@ -189,8 +189,8 @@ function wirePlayerDbRows(){
 }
 function wirePlayerDatabase(){
  const back=document.querySelector("#back");
- if(back)back.onclick=()=>{error="";if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;render()}else{page="main";render()}};
- const add=document.querySelector("#dbAddPlayer");if(add)add.onclick=()=>{playerDbMode="add";playerDbEditName=null;error="";render()};
+ if(back)back.onclick=()=>{error="";if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;playerDbDraftName="";render()}else{page="main";render()}};
+ const add=document.querySelector("#dbAddPlayer");if(add)add.onclick=()=>{playerDbMode="add";playerDbEditName=null;playerDbDraftName=formatPlayerName(playerDbSearch);error="";render()};
  const search=document.querySelector("#dbSearch");if(search)search.oninput=()=>{playerDbSearch=search.value;const results=document.querySelector("#playerDbResults");if(results){results.innerHTML=playerDbResultsHtml();wirePlayerDbRows()}};
  wirePlayerDbRows();
  const form=document.querySelector("#playerDbForm");
@@ -221,21 +221,21 @@ async function savePlayerDatabase(e){
  }
  if(r.error){error="Could not save the player. "+r.error.message;render();return}
  directory=directory.filter(p=>p.player_name!==playerDbEditName&&p.player_name.toLowerCase()!==name.toLowerCase());directory.push(r.data);directory.sort((a,b)=>a.player_name.localeCompare(b.player_name));
- playerDbMode="list";playerDbEditName=null;error="";render();
+ playerDbMode="list";playerDbEditName=null;playerDbDraftName="";error="";render();
 }
 async function deletePlayerDatabase(){
  const p=findDirectory(playerDbEditName);if(!p)return;
  if(!confirm(`Delete ${p.player_name} from the Player Database?`))return;
  const r=await sb.from("player_directory").delete().eq("player_name",p.player_name);
  if(r.error){error="Could not delete the player.";render();return}
- directory=directory.filter(x=>x.player_name!==p.player_name);playerDbMode="list";playerDbEditName=null;error="";render();
+ directory=directory.filter(x=>x.player_name!==p.player_name);playerDbMode="list";playerDbEditName=null;playerDbDraftName="";error="";render();
 }
 function wire(){
  document.querySelectorAll(".day").forEach(b=>b.onclick=()=>{day=b.dataset.v;render()});
  document.querySelectorAll(".game").forEach(b=>b.onclick=()=>{game=b.dataset.v;render()});
  const s=document.querySelector("#specialGameButton");if(s)s.onclick=()=>{page="special";day=null;game=null;specialEdit=false;error="";render()};
  const t=document.querySelector("#todoMenuButton");if(t)t.onclick=()=>{page="todo";error="";render()};
- const pdb=document.querySelector("#playerDatabaseButton");if(pdb)pdb.onclick=()=>{page="playerdb";playerDbMode="list";playerDbEditName=null;playerDbSearch="";error="";render()};
+ const pdb=document.querySelector("#playerDatabaseButton");if(pdb)pdb.onclick=()=>{page="playerdb";playerDbMode="list";playerDbEditName=null;playerDbSearch="";playerDbDraftName="";error="";render()};
  wirePlayerControls();
  const b=document.querySelector("#back");if(b)b.onclick=()=>{error="";if(game)game=null;else if(day)day=null;else page="main";render()};
 }
