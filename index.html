@@ -98,12 +98,59 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
   max-height:none !important;
   object-fit:contain !important;
 }
+
+/* Final compact day-game layout: no page scrolling, count on image */
+html:has(.tableGameMenu), body:has(.tableGameMenu){
+  height:100%;
+  overflow:hidden !important;
+}
+body:has(.tableGameMenu){
+  margin:0;
+}
+.tableGameMenu{
+  height:calc(100dvh - 162px) !important;
+  max-height:calc(100dvh - 162px) !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+  display:grid !important;
+  grid-template-rows:minmax(0,1fr) minmax(0,1fr);
+  gap:12px !important;
+  padding:12px 18px !important;
+  box-sizing:border-box;
+}
+.tableGameMenu .gameImageButton{
+  position:relative !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  background:#000 !important;
+}
+.tableGameMenu .gameImageButton img{
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  object-fit:contain !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+.tableGameMenu .gameImageButton .gameCount{
+  position:absolute !important;
+  top:8px !important;
+  right:8px !important;
+  z-index:10 !important;
+  margin:0 !important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.7";
+const APP_VERSION="092926.8";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -200,7 +247,7 @@ function render(){
   <button class="big todoMenuButton" id="todoMenuButton">To-Do</button><button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
   const imageForGame=x=>x==="Hold Em"?"HoldEm10.jpeg":x==="Omaha"?"Omaha9.jpeg":x==="Tournament"?"Tournament.jpeg":null;
-  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{const img=imageForGame(x);return img?`<button class="game gameImageButton" data-v="${x}" aria-label="${x}"><img src="${img}" alt="${x}"><span class="gameImageLabel">${x.toUpperCase()}</span><span class="gamecount gameImageCount">${gameCount(day,x)}</span></button>`:`<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
+  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{const img=imageForGame(x);return img?`<button class="game gameImageButton" data-v="${x}" aria-label="${x}"><img src="${img}" alt="${x}"><span class="gameImageLabel">${x.toUpperCase()}</span><span class="gamecount gameImageCount gameCount">${gameCount(day,x)}</span></button>`:`<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
  a.innerHTML=h;wire();
 }
