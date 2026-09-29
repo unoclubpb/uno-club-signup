@@ -36,7 +36,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.30";
+const APP_VERSION="092826.31";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -159,7 +159,7 @@ function renderPlayerPage(isSpecial=false){
  <div id="altmsg"></div><button class="add">Add Player</button></form>
  ${!specialEdit&&error?`<p class="error">${esc(error)}</p>`:""}
  <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}</span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
- <div class="listactions">${current().length?`<button class="textlist" id="textlist">Text List</button><button class="clear" id="clear">${isSpecial&&current().length===0?"Delete Game":"Archive List"}</button>`:""}</div></div>
+ <div class="listactions">${current().length?`<button class="textlist" id="textlist">Text List</button><button class="clear" id="clear">${isSpecial&&shown().length===0?"Delete Game":"Archive List"}</button>`:""}</div></div>
  <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row"><div class="num">${p.alt?"A":p.num}</div><div class="info">
  <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
  ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>
@@ -537,7 +537,7 @@ function undoPlayerDelete(){if(!pendingDelete)return;const p=pendingDelete.playe
 async function clear(){
  if(pendingDelete)await finalizePendingDelete();
  const special=game==="Special Game",label=special&&specialSettings?specialSettings.game_name:`${day} ${game}`;
- if(special&&current().length===0){await deleteSpecialGame();return}
+ if(special&&shown().length===0){await deleteSpecialGame();return}
  const nowCheck=new Date(),currentMinutes=nowCheck.getHours()*60+nowCheck.getMinutes(),dayName=nowCheck.toLocaleDateString("en-US",{weekday:"long"});
  if(currentMinutes<20*60||(!special&&dayName!==day)){error="Game cannot be archived until 8:00 PM.";render();return}
  if(!confirm(`Clear and archive this list?`))return;
