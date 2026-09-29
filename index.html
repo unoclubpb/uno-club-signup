@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.21";
+const APP_VERSION="092826.23";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -97,8 +97,7 @@ async function load(){
  render();
 }
 function renderHeader(title,subtitle=""){
- const small=!(page==="main"&&!day&&!game);
- return `<header>${page!=="main"||day||game?'<button class="back" id="back">←</button>':""}<div class="headertext">${small?'<b>UNO CLUB</b>':""}<h1>${esc(title)}</h1>${subtitle?`<small>${esc(subtitle)}</small>`:""}</div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
+ return `<header>${page!=="main"||day||game?'<button class="back" id="back">←</button>':""}<div class="headertext"><h1>${esc(title)}</h1>${subtitle?`<small>${esc(subtitle)}</small>`:""}</div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
 }
 function render(){
  const a=document.querySelector("#app");let h="";
@@ -250,7 +249,7 @@ function renderPlayerDatabase(){
    const d=new Date(earliest.archive_date+"T12:00:00");
    since=d.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"2-digit"});
   }
-  return `<section class="content"><div class="fieldwrap"><div style="font-weight:800;font-size:1.05rem">Since ${esc(since)}</div></div><div class="list">
+  return `<section class="content"><div class="fieldwrap" style="text-align:center;margin-bottom:1.4rem"><div style="font-weight:800;font-size:1.05rem">Since ${esc(since)}</div></div><div class="list">
    ${["Hold Em","Omaha","Tournament","Special Game"].map(g=>`<div class="playerDbRow" style="cursor:default"><span>${g}</span><strong>${totals[g]}</strong></div>`).join("")}
   </div></section>`;
  }
