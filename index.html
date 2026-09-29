@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.23";
+const APP_VERSION="092826.24";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -267,7 +267,7 @@ function renderPlayerDatabase(){
  <div class="fieldwrap"><div>Hold Em Preferred Seat</div><div class="fieldhint">Optional — 1 through 10</div><input id="dbHoldemSeat" inputmode="numeric" value="${he}" autocomplete="off"></div>
  <div class="fieldwrap"><div>Omaha Preferred Seat</div><div class="fieldhint">Optional — 1 through 9</div><input id="dbOmahaSeat" inputmode="numeric" value="${om}" autocomplete="off"></div>
  <div class="fieldwrap"><div>Status</div><div class="statusToggle"><button type="button" id="dbActive" class="${active?"statusActiveSelected":"statusUnselected"}">Active</button><button type="button" id="dbInactive" class="${!active?"statusInactiveSelected":"statusUnselected"}">Inactive</button></div><input type="hidden" id="dbStatus" value="${active?"active":"inactive"}"></div>
- ${existing?'<button type="button" class="big" id="dbGameDetail" style="min-height:52px;font-size:1rem">Game Detail</button>':""}
+ ${existing?'<button type="button" class="big" id="dbGameDetail" style="min-height:52px;font-size:1rem">Game Data</button>':""}
  <div class="fieldwrap"><div>Notes</div><textarea id="dbNotes" class="dbNotes" maxlength="500" autocomplete="off" autocorrect="off" spellcheck="false">${esc(notes)}</textarea></div>
  ${error?`<p class="error">${esc(error)}</p>`:""}
  <div class="dbActions"><button class="save">${existing?"Save Changes":"Save Player"}</button></div>
