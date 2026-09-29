@@ -30,12 +30,13 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
   padding-top:22px;
   padding-bottom:22px;
 }
+.deleteSpecialGameButton{width:100%;min-height:48px;margin:.75rem 0 1rem;background:#fff;color:#b42318;border:2px solid #b42318;border-radius:10px;font-weight:800}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.28";
+const APP_VERSION="092826.30";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -158,7 +159,7 @@ function renderPlayerPage(isSpecial=false){
  <div id="altmsg"></div><button class="add">Add Player</button></form>
  ${!specialEdit&&error?`<p class="error">${esc(error)}</p>`:""}
  <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}</span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
- <div class="listactions">${current().length?`<button class="textlist" id="textlist">Text List</button><button class="clear" id="clear">Archive List</button>`:""}</div></div>
+ <div class="listactions">${current().length?`<button class="textlist" id="textlist">Text List</button><button class="clear" id="clear">${isSpecial&&current().length===0?"Delete Game":"Archive List"}</button>`:""}</div></div>
  <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row"><div class="num">${p.alt?"A":p.num}</div><div class="info">
  <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
  ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>
@@ -450,6 +451,34 @@ async function saveSpecialEdit(e){
  if(ids.length){await sb.from("signup_players").update({preferred_seat:null}).in("id",ids);players=players.map(p=>ids.includes(p.id)?{...p,preferred_seat:null}:p)}
  specialSettings=r.data;specialEdit=false;error="";await touchList();render();
 }
+async function deleteSpecialGame(){
+ if(!specialSettings)return;
+ if(!confirm(`Delete ${specialSettings.game_name}?`))return;
+
+ const pr=await sb.from("signup_players").delete().eq("day","Special Game").eq("game","Special Game");
+ if(pr.error){
+  error="Could not delete the Special Game player list.";
+  render();
+  return;
+ }
+
+ const sr=await sb.from("special_game_settings").delete().eq("id",1);
+ if(sr.error){
+  error="The player list was removed, but the Special Game setup could not be deleted.";
+  render();
+  return;
+ }
+
+ players=players.filter(p=>!(p.day==="Special Game"&&p.game==="Special Game"));
+ specialSettings=null;
+ specialEdit=false;
+ day=null;
+ game=null;
+ page="main";
+ error="";
+ render();
+}
+
 function buildTextList(){
  const sh=shown(),reg=sh.filter(p=>!p.alt),alts=sh.filter(p=>p.alt),lines=[game==="Special Game"&&specialSettings?`Uno Club – ${specialSettings.game_name}`:`Uno Club – ${day} ${game}`,""];
  reg.forEach(p=>{let s=`${p.num}. ${p.player_name}`;if(game!=="Tournament"&&p.preferred_seat)s+=` — Preferred Seat ${p.preferred_seat}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)});
@@ -508,6 +537,7 @@ function undoPlayerDelete(){if(!pendingDelete)return;const p=pendingDelete.playe
 async function clear(){
  if(pendingDelete)await finalizePendingDelete();
  const special=game==="Special Game",label=special&&specialSettings?specialSettings.game_name:`${day} ${game}`;
+ if(special&&current().length===0){await deleteSpecialGame();return}
  const nowCheck=new Date(),currentMinutes=nowCheck.getHours()*60+nowCheck.getMinutes(),dayName=nowCheck.toLocaleDateString("en-US",{weekday:"long"});
  if(currentMinutes<20*60||(!special&&dayName!==day)){error="Game cannot be archived until 8:00 PM.";render();return}
  if(!confirm(`Clear and archive this list?`))return;
