@@ -339,7 +339,7 @@ body:has(.tableGameMenu){
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.33";
+const APP_VERSION="092926.34";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -373,16 +373,24 @@ const specialCount=()=>players.filter(p=>p.day==="Special Game"&&p.game==="Speci
 const countLabel=(n,a,b)=>`${n} ${n===1?a:b}`;
 const sortBySignup=a=>[...a].sort((x,y)=>new Date(x.created_at)-new Date(y.created_at)||(Number(x.id)||0)-(Number(y.id)||0));
 
+function isLateArrivalTime(){
+ if(day==="Special Game"||game==="Special Game")return false;
+ const now=new Date(),today=now.toLocaleDateString("en-US",{weekday:"long"});
+ if(today!==day)return false;
+ const mins=now.getHours()*60+now.getMinutes();
+ return game==="Tournament"?mins>=19*60+31:mins>=19*60+1;
+}
 function shown(){
  if(!game)return[];
  let n=0;
  const a=sortBySignup(current()).map(p=>{
-  const forced=late(p.notes);
-  const alt=forced||n>=limit(game);
-  if(!alt)n++;
-  return {...p,alt,forcedLate:forced,num:alt?null:n};
+  const isLate=p.is_late===true;
+  const forced=!isLate&&late(p.notes);
+  const alt=!isLate&&(forced||n>=limit(game));
+  if(!alt&&!isLate)n++;
+  return {...p,alt,isLate,forcedLate:forced,num:(alt||isLate)?null:n};
  });
- return [...a.filter(p=>!p.alt),...a.filter(p=>p.alt)];
+ return [...a.filter(p=>!p.alt&&!p.isLate),...a.filter(p=>p.alt),...a.filter(p=>p.isLate)];
 }
 function formatSignup(v){return new Date(v).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});}
 function lastUpdatedFor(d=day,g=game){return listUpdates.find(x=>x.day===d&&x.game===g)?.updated_at||null}
@@ -505,19 +513,19 @@ function renderSpecialPage(){
  day="Special Game";game="Special Game";return renderPlayerPage(true);
 }
 function renderPlayerPage(isSpecial=false){
- const sh=shown(),regular=sh.filter(p=>!p.alt),alts=sh.filter(p=>p.alt),rc=regular.length,seatLimit=maxPreferredSeat(game);
+ const sh=shown(),regular=sh.filter(p=>!p.alt&&!p.isLate),alts=sh.filter(p=>p.alt),lates=sh.filter(p=>p.isLate),rc=regular.length,seatLimit=maxPreferredSeat(game),lateMode=!isSpecial&&isLateArrivalTime();
  return `<section class="content">
  ${isSpecial?(specialEdit?specialSettingsForm(true):`<div class="specialInfo"><button class="specialNameEdit" id="specialNameEdit">${esc(specialSettings.game_name)}</button> · ${specialSettings.total_seats} Seats</div>`):""}
  <form id="form" autocomplete="off">
  <div class="fieldwrap"><div>Player Name</div><input id="unoEntryA" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false"><div id="nameSuggestions" class="suggestions"></div></div>
- ${game!=="Tournament"&&rc<limit(game)?`<div class="fieldwrap"><div>Preferred Seat</div><div class="fieldhint">(optional — 1 through ${seatLimit})</div><input id="unoEntryB" inputmode="numeric" autocomplete="new-password"><div id="seatHint" class="fieldhint"></div></div>`:""}
+ ${game!=="Tournament"&&!lateMode&&rc<limit(game)?`<div class="fieldwrap"><div>Preferred Seat</div><div class="fieldhint">(optional — 1 through ${seatLimit})</div><input id="unoEntryB" inputmode="numeric" autocomplete="new-password"><div id="seatHint" class="fieldhint"></div></div>`:""}
  <div class="fieldwrap"><div>Notes</div><div class="fieldhint">(optional)</div><input id="unoEntryC" autocomplete="new-password" autocorrect="off" spellcheck="false"></div>
- <div id="altmsg"></div><button class="add">Add Player</button></form>
+ <div id="altmsg"></div><button class="add">${lateMode?"Add Late Arrival":"Add Player"}</button></form>
  ${!specialEdit&&error?`<p class="error">${esc(error)}</p>`:""}
- <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}</span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
+ <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}${lates.length?` / ${countLabel(lates.length,"Late Arrival","Late Arrivals")}`:""}</span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
  <div class="listactions">${current().length?`<button class="textlist" id="textlist">Text List</button>`:""}${isSpecial?`<button class="clear" id="clear">${players.filter(p=>p.day==="Special Game"&&p.game==="Special Game").length===0?"Delete Game":"Archive List"}</button>`:current().length?`<button class="clear" id="clear">Archive List</button>`:""}</div></div>
- <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row"><div class="num">${p.alt?"A":p.num}</div><div class="info">
- <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
+ <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row"><div class="num">${p.isLate?"L":p.alt?"A":p.num}</div><div class="info">
+ <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.isLate?'<span class="red">LATE ARRIVAL</span>':p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
  ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>
  ${edit==p.id?`<div class="editor">${game!=="Tournament"?`<div class="fieldwrap"><div>Preferred Seat <span class="fieldhint">(Optional — 1 - ${limit(game)})</span></div><input id="unoEditSeat" inputmode="numeric" value="${p.preferred_seat??""}" autocomplete="off"></div>`:""}<div class="fieldwrap"><div>Notes <span class="fieldhint">(Optional)</span></div><input id="unoEntryD" value="${esc(p.notes||"")}" autocomplete="new-password"></div><div><button class="save" data-save="${p.id}">Save Changes</button><button class="cancel" id="cancel">Cancel</button></div></div>`:""}
  </div><button class="del" data-del="${p.id}">×</button></div>`).join("")}</div></section>
@@ -555,7 +563,7 @@ function renderAdminPage(){
  if(adminMode==="archives"&&!archiveGame)return `<section class="menu archiveMenu"><button class="big game archiveGameBtn" data-agame="Hold Em">Hold Em</button><button class="big game archiveGameBtn" data-agame="Omaha">Omaha</button><button class="big game archiveGameBtn" data-agame="Tournament">Tournament</button><button class="big game archiveGameBtn" data-agame="Special Game">Special Games</button></section>`;
  if(archiveViewId){
   const a=archives.find(x=>String(x.id)===String(archiveViewId));
-  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${countLabel(archivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(archivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>`<div class="row"><div class="num">${p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${countLabel(archivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(archivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>`<div class="row"><div class="num">${p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
  return `<section class="content"><div class="list">${archives.length?archives.map(a=>`<button class="playerDbRow" data-archive="${a.id}"><span>${esc(archiveLabel(a))}</span></button>`).join(""):'<div class="empty">No archived lists yet.</div>'}</div></section>`;
 }
@@ -582,7 +590,7 @@ function playerHistoryLabel(a){
 }
 async function loadPlayerHistory(name){
  const dp=findDirectory(name);
- let aq=sb.from("list_archive_players").select("archive_id,was_alternate");
+ let aq=sb.from("list_archive_players").select("archive_id,was_alternate,was_late");
  aq=dp?.player_id?aq.eq("player_id",dp.player_id):aq.eq("player_name",name);
  const ap=await aq;
  if(ap.error){playerHistory=[];playerHistoryRows=[];return}
@@ -599,7 +607,7 @@ async function openPlayerHistoryArchive(id){
 function renderPlayerDatabase(){
  if(playerHistoryArchiveId){
   const a=playerHistory.find(x=>String(x.id)===String(playerHistoryArchiveId));
-  return `<section class="content"><div class="head"><div><h2>${a?esc(playerHistoryLabel(a)):"Archived List"}</h2><span class="count">${countLabel(playerHistoryArchivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(playerHistoryArchivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${playerHistoryArchivePlayers.length?playerHistoryArchivePlayers.map(p=>`<div class="row"><div class="num">${p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+  return `<section class="content"><div class="head"><div><h2>${a?esc(playerHistoryLabel(a)):"Archived List"}</h2><span class="count">${countLabel(playerHistoryArchivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(playerHistoryArchivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${playerHistoryArchivePlayers.length?playerHistoryArchivePlayers.map(p=>`<div class="row"><div class="num">${p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
  if(playerHistoryMode){
   if(playerHistoryView==="menu"){
@@ -608,7 +616,7 @@ function renderPlayerDatabase(){
   if(playerHistoryView==="dates"){
    return `<section class="content"><div class="list">${playerHistory.length?playerHistory.map(a=>`<button class="playerDbRow" data-pharchive="${a.id}"><span>${esc(playerHistoryLabel(a))}</span></button>`).join(""):'<div class="empty">No archived games for this player yet.</div>'}</div></section>`;
   }
-  const playedIds=new Set(playerHistoryRows.filter(x=>!x.was_alternate).map(x=>String(x.archive_id)));
+  const playedIds=new Set(playerHistoryRows.filter(x=>x.was_late||!x.was_alternate).map(x=>String(x.archive_id)));
   const played=playerHistory.filter(a=>playedIds.has(String(a.id)));
   const totals={"Hold Em":0,"Omaha":0,"Tournament":0,"Special Game":0};
   played.forEach(a=>{if(Object.prototype.hasOwnProperty.call(totals,a.game))totals[a.game]++});
@@ -620,7 +628,7 @@ function renderPlayerDatabase(){
   }
   return `<section class="content"><div class="fieldwrap" style="text-align:center;margin-bottom:1.4rem"><div style="font-weight:800;font-size:1.05rem">Since ${esc(since)}</div></div><div class="list">
    ${["Hold Em","Omaha","Tournament","Special Game"].map(g=>`<div class="playerDbRow" style="cursor:default"><span>${g}</span><strong>${totals[g]}</strong></div>`).join("")}
-  </div><div style="margin-top:2.2rem;font-size:.88rem;line-height:1.4;color:#555">* Game totals are based on players on the main list when the game is archived. Alternates and players who join later are not included.</div></section>`;
+  </div><div style="margin-top:2.2rem;font-size:.88rem;line-height:1.4;color:#555">* Game totals include players on the list when the game is archived, including alternates and recorded late arrivals.</div></section>`;
  }
  if(playerDbMode==="list"){
   const q=playerDbSearch.trim().toLowerCase();
@@ -844,9 +852,10 @@ async function deleteSpecialGame(){
 }
 
 function buildTextList(){
- const sh=shown(),reg=sh.filter(p=>!p.alt),alts=sh.filter(p=>p.alt),lines=[game==="Special Game"&&specialSettings?`Uno Club – ${specialSettings.game_name}`:`Uno Club – ${day} ${game}`,""];
+ const sh=shown(),reg=sh.filter(p=>!p.alt&&!p.isLate),alts=sh.filter(p=>p.alt),lates=sh.filter(p=>p.isLate),lines=[game==="Special Game"&&specialSettings?`Uno Club – ${specialSettings.game_name}`:`Uno Club – ${day} ${game}`,""];
  reg.forEach(p=>{let s=`${p.num}. ${p.player_name}`;if(game!=="Tournament"&&p.preferred_seat)s+=` — Preferred Seat ${p.preferred_seat}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)});
  if(alts.length){if(reg.length)lines.push("");lines.push("Alternates");alts.forEach(p=>{let s=`A. ${p.player_name}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)})}
+ if(lates.length){if(reg.length||alts.length)lines.push("");lines.push("Late Arrivals");lates.forEach(p=>{let s=`L. ${p.player_name}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)})}
  return lines.join("\n");
 }
 function textList(){if(current().length)window.location.href="sms:&body="+encodeURIComponent(buildTextList())}
@@ -871,18 +880,19 @@ async function add(e){
  const directoryPlayer=findDirectory(name);
  if(directoryPlayer&&directoryPlayer.active===false){error="An inactive player cannot be added to the list.";render();return}
  if(current().some(p=>p.player_name.toLowerCase()===name.toLowerCase())){error="That player is already on this list.";render();return}
- const rc=shown().filter(p=>!p.alt).length,alt=late(notes)||rc>=limit(game);
- if(game!=="Tournament"&&!alt&&seat){
+ const lateArrival=isLateArrivalTime(),rc=shown().filter(p=>!p.alt&&!p.isLate).length,alt=!lateArrival&&(late(notes)||rc>=limit(game));
+ if(game!=="Tournament"&&!alt&&!lateArrival&&seat){
   const max=maxPreferredSeat(game);
   if(!/^\d+$/.test(seat)||+seat<1||+seat>max){addPlayerDraft={name,seat,notes};error=`Invalid response. Preferred seat must be a number from 1 to ${max}.`;render();return}
   if(current().some(p=>String(p.preferred_seat??"")===String(+seat))){addPlayerDraft={name,seat,notes};error="That preferred seat is already taken. Choose another seat or leave the seat blank.";render();return}
  }
- const savedSeat=game==="Tournament"||alt?null:(seat?+seat:null);
- const r=await sb.from("signup_players").insert({day,game,player_name:name,preferred_seat:savedSeat,notes:notes||null}).select().single();
+ const savedSeat=game==="Tournament"||alt||lateArrival?null:(seat?+seat:null);
+ const r=await sb.from("signup_players").insert({day,game,player_name:name,preferred_seat:savedSeat,notes:notes||null,is_late:lateArrival}).select().single();
  if(r.error){error=r.code==="23505"?"That player name or preferred seat is already on this list.":r.message}
  else{
   players.push(r.data);
-  if(game==="Hold Em"||game==="Omaha")await updateDirectory(name,seat);
+  if((game==="Hold Em"||game==="Omaha")&&!lateArrival)await updateDirectory(name,seat);
+  else if((game==="Hold Em"||game==="Omaha")&&!findDirectory(name))await updateDirectory(name,null);
   else if(!findDirectory(name))await updateDirectory(name,null);
   await touchList();
  }
