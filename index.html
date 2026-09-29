@@ -228,7 +228,7 @@ body:has(.tableGameMenu){
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.21";
+const APP_VERSION="092926.22";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -379,7 +379,7 @@ function renderPlayerPage(isSpecial=false){
  <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row"><div class="num">${p.alt?"A":p.num}</div><div class="info">
  <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
  ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>
- ${edit==p.id?`<div class="editor"><input id="unoEntryD" value="${esc(p.notes||"")}" autocomplete="new-password"><div><button class="save" data-save="${p.id}">Save Note</button><button class="cancel" id="cancel">Cancel</button></div></div>`:""}
+ ${edit==p.id?`<div class="editor">${game!=="Tournament"?`<div class="fieldwrap"><div>Preferred Seat</div><div class="fieldhint">Optional — 1 through ${limit(game)}</div><input id="unoEditSeat" inputmode="numeric" value="${p.preferred_seat??""}" autocomplete="off"></div>`:""}<div class="fieldwrap"><div>Note</div><input id="unoEntryD" value="${esc(p.notes||"")}" autocomplete="new-password"></div><div><button class="save" data-save="${p.id}">Save Changes</button><button class="cancel" id="cancel">Cancel</button></div></div>`:""}
  </div><button class="del" data-del="${p.id}">×</button></div>`).join("")}</div></section>
  ${pendingDelete?`<div class="undoBar"><span>${esc(pendingDelete.player.player_name)} removed</span><button id="undoDelete">Undo</button></div>`:""}`;
 }
@@ -771,7 +771,24 @@ async function clear(){
  }
  render();
 }
-async function save(id){const note=document.querySelector("#unoEntryD").value.trim(),r=await sb.from("signup_players").update({notes:note||null}).eq("id",id).select().single();if(r.error)error=r.message;else{players=players.map(p=>String(p.id)===String(id)?r.data:p);await touchList()}edit=null;render()}
+async function save(id){
+ const p=players.find(x=>String(x.id)===String(id));if(!p)return;
+ const note=document.querySelector("#unoEntryD").value.trim();
+ const seatEl=document.querySelector("#unoEditSeat");
+ let seat=seatEl?seatEl.value.trim():"";
+ if(seatEl&&seat){
+  const max=limit(p.game);
+  if(!/^\d+$/.test(seat)||+seat<1||+seat>max){error=`Preferred seat must be a number from 1 to ${max}.`;render();return}
+  if(players.some(x=>String(x.id)!==String(id)&&x.day===p.day&&x.game===p.game&&!x.alt&&String(x.preferred_seat??"")===String(+seat))){
+   error="That preferred seat is already taken. Choose another seat or leave the seat blank.";render();return
+  }
+ }
+ const changes={notes:note||null};
+ if(seatEl)changes.preferred_seat=seat?+seat:null;
+ const r=await sb.from("signup_players").update(changes).eq("id",id).select().single();
+ if(r.error){error=r.message;render();return}
+ players=players.map(x=>String(x.id)===String(id)?r.data:x);await touchList();edit=null;error="";render()
+}
 async function addTodo(e){e.preventDefault();const note=document.querySelector("#unoEntryE").value.trim();if(!note)return;const r=await sb.from("todo_items").insert({note}).select().single();if(r.error)error="Could not add the To-Do item.";else todos.push(r.data);render()}
 async function saveTodoEdit(id){const note=document.querySelector("#unoEntryF").value.trim();if(!note){error="To-Do item cannot be blank.";render();return}const r=await sb.from("todo_items").update({note}).eq("id",id).is("completed_at",null).select().single();if(r.error)error="Could not save the To-Do item.";else{todos=todos.map(t=>String(t.id)===String(id)?r.data:t);todoEdit=null}render()}
 async function completeTodo(id){const item=todos.find(t=>String(t.id)===String(id));if(!item||!confirm(`Mark this item completed?\n\n${item.note}`))return;const r=await sb.from("todo_items").update({completed_at:new Date().toISOString()}).eq("id",id).select().single();if(r.error)error="Could not complete that item.";else todos=todos.map(t=>String(t.id)===String(id)?r.data:t);await trimCompletedTodos();render()}
