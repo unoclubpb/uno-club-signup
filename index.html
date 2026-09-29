@@ -272,33 +272,33 @@ body:has(.tableGameMenu){
   display:flex;align-items:center;justify-content:center;z-index:8;
 }
 
-/* Two-game day fix: size dynamic tables as the cards themselves, not as oversized content. */
-.tableGameMenu .gameImageButton:has(.cssPokerTable){
+
+
+/* Stable dynamic day-card sizing (no :has selector). */
+.tableGameMenu .dynamicTableButton{
+  position:relative !important;
+  display:block !important;
   flex:1 1 0 !important;
-  height:calc((100% - 14px)/2) !important;
+  width:100% !important;
+  height:0 !important;
   min-height:0 !important;
-  aspect-ratio:auto !important;
+  overflow:hidden !important;
+  background:#000 !important;
 }
-.tableGameMenu .gameImageButton:has(.cssPokerTable) .cssPokerTable{
+.tableGameMenu .dynamicTableButton .cssPokerTable{
+  position:absolute !important;
+  inset:0 !important;
   width:100% !important;
   height:100% !important;
   aspect-ratio:auto !important;
-}
-/* A one-game dynamic menu may use the normal table proportion. */
-.tableGameMenu .gameImageButton:only-child:has(.cssPokerTable){
-  flex:0 0 auto !important;
-  height:auto !important;
-}
-.tableGameMenu .gameImageButton:only-child:has(.cssPokerTable) .cssPokerTable{
-  height:auto !important;
-  aspect-ratio:1.55/1 !important;
+  display:block !important;
 }
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.27";
+const APP_VERSION="092926.28";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -442,7 +442,7 @@ function render(){
   <button class="big specialGameButton" id="specialGameButton">${esc(specialName)}${sc?`<span class="gamecount">${sc}</span>`:""}</button>
   <button class="big todoMenuButton" id="todoMenuButton">To-Do</button><button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
-  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;if(x==="Tournament")return `<button class="game gameImageButton" data-v="${x}" aria-label="${x}">${renderCssTournamentTable(day)}</button>`;return `<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
+  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;if(x==="Tournament")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssTournamentTable(day)}</button>`;return `<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
  a.innerHTML=h;wire();
 }
