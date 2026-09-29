@@ -36,7 +36,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.31";
+const APP_VERSION="092826.32";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -539,7 +539,7 @@ async function clear(){
  const special=game==="Special Game",label=special&&specialSettings?specialSettings.game_name:`${day} ${game}`;
  if(special&&shown().length===0){await deleteSpecialGame();return}
  const nowCheck=new Date(),currentMinutes=nowCheck.getHours()*60+nowCheck.getMinutes(),dayName=nowCheck.toLocaleDateString("en-US",{weekday:"long"});
- if(currentMinutes<20*60||(!special&&dayName!==day)){error="Game cannot be archived until 8:00 PM.";render();return}
+ if(!special&&(currentMinutes<20*60||dayName!==day)){error="Game cannot be archived until 8:00 PM.";render();return}
  if(!confirm(`Clear and archive this list?`))return;
  const d=day,g=game;
  if(!current().length){if(special){const sd=await sb.from("special_game_settings").delete().eq("id",1);if(!sd.error){specialSettings=null;day=game=null;page="main"}}render();return}
