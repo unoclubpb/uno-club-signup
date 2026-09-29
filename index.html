@@ -212,12 +212,23 @@ body:has(.tableGameMenu){
 .tableGameMenu .gameImageButton .occupiedSeat{
   color:#ffd400;
 }
+
+.tableGameMenu .gameImageButton .chairLabel{
+  transform:translate(-50%,-50%) !important;
+  text-align:center !important;
+  max-width:17% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.tableGameMenu .gameImageButton .occupiedSeat{
+  font-size:clamp(7px,1.9vw,11px) !important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.18";
+const APP_VERSION="092926.19";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -292,19 +303,19 @@ function renderHeader(title,subtitle=""){
 
 const TABLE_SEAT_POSITIONS={
  "Hold Em":{
-  1:[72.0,14.0],2:[88.2,30.0],3:[92.0,50.0],4:[86.0,70.0],5:[64.0,85.0],
-  6:[36.0,85.0],7:[14.0,70.0],8:[8.0,50.0],9:[11.8,30.0],10:[28.0,14.0]
+  1:[71.7,19.3],2:[88.4,31.8],3:[92.3,50.0],4:[86.1,68.0],5:[63.3,80.3],
+  6:[36.7,80.3],7:[13.9,68.0],8:[7.7,50.0],9:[11.6,31.8],10:[28.3,19.3]
  },
  "Omaha":{
-  1:[72.0,14.0],2:[88.0,30.0],3:[92.0,50.0],4:[84.0,70.0],
-  5:[64.0,85.0],6:[36.0,85.0],7:[16.0,70.0],8:[8.0,50.0],9:[28.0,14.0]
+  1:[71.7,19.3],2:[88.0,31.5],3:[91.8,50.0],4:[84.2,68.8],
+  5:[63.0,80.5],6:[37.0,80.5],7:[15.8,68.8],8:[8.2,50.0],9:[28.3,19.3]
  }
 };
 function tableSeatOverlays(d,g){
  const pos=TABLE_SEAT_POSITIONS[g];if(!pos)return "";
  const max=g==="Hold Em"?10:9;
  const regular=players.filter(p=>p.day===d&&p.game===g&&!p.alt);
- let out=`<span class="chairLabel dealerLabel" style="left:50%;top:14%">DEALER</span>`;
+ let out=`<span class="chairLabel dealerLabel" style="left:50%;top:19.3%">DEALER</span>`;
  for(let seat=1;seat<=max;seat++){
   const xy=pos[seat];
   const p=regular.find(x=>String(x.preferred_seat??"")===String(seat));
