@@ -71,12 +71,47 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
   margin:0 !important;
   padding:0 !important;
 }
+
+/* Keep Monday / Wednesday / Thursday game-choice screens within one viewport */
+body:has(.tableGameMenu){
+  overflow:hidden;
+}
+body:has(.tableGameMenu) main{
+  height:calc(100dvh - 92px);
+  min-height:0;
+  overflow:hidden;
+}
+.tableGameMenu{
+  height:100%;
+  min-height:0 !important;
+  box-sizing:border-box;
+  display:flex !important;
+  flex-direction:column;
+  justify-content:center;
+  gap:14px !important;
+  padding:10px 18px 14px !important;
+  overflow:hidden;
+}
+.tableGameMenu .gameImageButton{
+  flex:1 1 0;
+  min-height:0 !important;
+  max-height:calc((100dvh - 134px)/2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.tableGameMenu .gameImageButton img{
+  width:100%;
+  height:100% !important;
+  max-height:none !important;
+  object-fit:contain !important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.5";
+const APP_VERSION="092926.6";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
