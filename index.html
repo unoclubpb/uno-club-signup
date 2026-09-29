@@ -33,12 +33,50 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
   box-sizing:border-box;
 }
 .deleteSpecialGameButton{width:100%;min-height:48px;margin:.75rem 0 1rem;background:#fff;color:#b42318;border:2px solid #b42318;border-radius:10px;font-weight:800}
+
+/* Compact table-image game cards */
+.tableGameMenu{
+  gap:18px !important;
+  padding:14px 18px 18px;
+  min-height:calc(100vh - 92px);
+  align-content:start;
+}
+.tableGameMenu .gameImageButton{
+  position:relative;
+  overflow:hidden;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:14px;
+  background:#000 !important;
+  min-height:0 !important;
+  height:auto !important;
+  box-shadow:none;
+}
+.tableGameMenu .gameImageButton img{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:calc((100vh - 190px)/2);
+  object-fit:cover;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+}
+.tableGameMenu .gameImageButton .gameImageCount{
+  position:absolute !important;
+  top:10px !important;
+  right:12px !important;
+  z-index:3;
+  margin:0 !important;
+  padding:0 !important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.4";
+const APP_VERSION="092926.5";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -135,7 +173,7 @@ function render(){
   <button class="big todoMenuButton" id="todoMenuButton">To-Do</button><button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
   const imageForGame=x=>x==="Hold Em"?"HoldEm10.jpeg":x==="Omaha"?"Omaha9.jpeg":x==="Tournament"?"Tournament.jpeg":null;
-  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{const img=imageForGame(x);return img?`<button class="game gameImageButton" data-v="${x}" aria-label="${x}"><img src="${img}" alt="${x}"><span class="gameImageLabel">${x.toUpperCase()}</span><span class="gamecount">${gameCount(day,x)}</span></button>`:`<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
+  h+=`<section class="menu tableGameMenu">${games[day].map(x=>{const img=imageForGame(x);return img?`<button class="game gameImageButton" data-v="${x}" aria-label="${x}"><img src="${img}" alt="${x}"><span class="gameImageLabel">${x.toUpperCase()}</span><span class="gamecount gameImageCount">${gameCount(day,x)}</span></button>`:`<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
  a.innerHTML=h;wire();
 }
