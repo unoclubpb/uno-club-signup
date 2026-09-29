@@ -680,11 +680,17 @@ function wirePlayerDatabase(){
  }
  const del=document.querySelector("#dbDelete");if(del)del.onclick=deletePlayerDatabase;
 }
+function playerIsOnAnyCurrentList(p){
+ if(!p)return false;
+ return players.some(x=>(p.player_id&&x.player_id&&String(x.player_id)===String(p.player_id))||x.player_name.toLowerCase()===p.player_name.toLowerCase());
+}
 async function savePlayerDatabase(e){
  e.preventDefault();error="";
  const name=formatPlayerName(document.querySelector("#dbPlayerName").value);
  const he=document.querySelector("#dbHoldemSeat").value.trim(),om=document.querySelector("#dbOmahaSeat").value.trim();
  const notes=document.querySelector("#dbNotes").value.trim(),active=document.querySelector("#dbStatus").value==="active";
+ const existingPlayer=playerDbMode==="edit"?findDirectory(playerDbEditName):null;
+ if(existingPlayer?.active!==false&&!active&&playerIsOnAnyCurrentList(existingPlayer)){error="This player cannot be made inactive while they are currently on a game list.";render();return}
  if(!name){error="Please enter a player name.";render();return}
  if(he&&(!/^\d+$/.test(he)||+he<1||+he>10)){error="Hold Em preferred seat must be 1 through 10, or blank.";render();return}
  if(om&&(!/^\d+$/.test(om)||+om<1||+om>9)){error="Omaha preferred seat must be 1 through 9, or blank.";render();return}
@@ -708,6 +714,7 @@ async function savePlayerDatabase(e){
 }
 async function deletePlayerDatabase(){
  const p=findDirectory(playerDbEditName);if(!p)return;
+ if(playerIsOnAnyCurrentList(p)){error="This player cannot be deleted while they are currently on a game list.";render();return}
  if(!confirm(`Delete ${p.player_name} from the Player Database?`))return;
  const r=await sb.from("player_directory").delete().eq("player_name",p.player_name);
  if(r.error){error="Could not delete the player.";render();return}
