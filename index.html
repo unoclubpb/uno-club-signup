@@ -27,7 +27,7 @@ form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;di
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092826.12";
+const APP_VERSION="092826.13";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -49,6 +49,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,specialEdit=false,error="",pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[];
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -103,6 +104,7 @@ function render(){
  const a=document.querySelector("#app");let h="";
  if(page==="todo"){a.innerHTML=renderHeader("To-Do")+renderTodoPage();wireTodo();return}
  if(page==="playerdb"){a.innerHTML=renderHeader(playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+renderPlayerDatabase();wirePlayerDatabase();return}
+ if(page==="admin"){a.innerHTML=renderHeader(adminMode==="main"?"Admin":adminMode==="archives"?"List Archives":archiveViewId?"Archived List":archiveGame||"List Archives")+renderAdminPage();wireAdmin();return}
  if(page==="special"){a.innerHTML=renderHeader(specialSettings?specialSettings.game_name:"Special Game")+renderSpecialPage();wireSpecial();return}
  h+=renderHeader(game||day||"Uno Club Lists",game?`${day} Night`:"");
  if(!day){
@@ -110,7 +112,7 @@ function render(){
   const today=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
   h+=`<section class="menu">${Object.keys(games).map(x=>`<button class="big day ${x===today?"tonight":""}" data-v="${x}">${x}</button>`).join("")}
   <button class="big specialGameButton" id="specialGameButton">${esc(specialName)}${sc?`<span class="gamecount">${sc}</span>`:""}</button>
-  <button class="big todoMenuButton" id="todoMenuButton">To-Do</button><button class="big playerDatabaseButton" id="playerDatabaseButton">Player Database</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
+  <button class="big todoMenuButton" id="todoMenuButton">To-Do</button><button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
   h+=`<section class="menu">${games[day].map(x=>`<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`).join("")}</section>`;
  }else h+=renderPlayerPage();
@@ -155,6 +157,44 @@ function renderTodoPage(){
  <div class="todoSectionTitle"><h2>Completed</h2><span class="count">Most recent 25</span></div><div class="list">${!completed.length?'<div class="empty">No completed items yet.</div>':completed.map(t=>`<div class="todoRow completedRow"><div class="todoInfo"><span class="completedBadge">COMPLETED</span><div class="completedText">${esc(t.note)}</div><div class="todoTime">Entered: ${formatDateTime(t.created_at)}</div><div class="todoTime">Completed: ${formatDateTime(t.completed_at)}</div></div><button class="del" data-delete-completed="${t.id}">×</button></div>`).join("")}</div></section>`;
 }
 
+
+function archiveLabel(a){
+ const d=new Date(a.archive_date+"T12:00:00");
+ const ds=d.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"2-digit"});
+ const dayname=a.day==="Special Game"?d.toLocaleDateString("en-US",{weekday:"long"}):a.day;
+ return a.game==="Special Game"&&a.special_game_name?`${ds} ${dayname} — ${a.special_game_name}`:`${ds} ${dayname}`;
+}
+async function loadArchives(g){
+ const q=await sb.from("list_archives").select("*").eq("game",g).order("archive_date",{ascending:false}).order("archived_at",{ascending:false});
+ archives=q.error?[]:(q.data||[]);
+}
+async function openArchive(id){
+ const q=await sb.from("list_archive_players").select("*").eq("archive_id",id).order("archive_order");
+ archivePlayers=q.error?[]:(q.data||[]);archiveViewId=id;render();
+}
+function renderAdminPage(){
+ if(adminMode==="main")return `<section class="menu"><button class="big" id="adminPlayers">Player Database</button><button class="big" id="adminArchives">List Archives</button></section>`;
+ if(adminMode==="archives"&&!archiveGame)return `<section class="menu"><button class="big game archiveGameBtn" data-agame="Hold Em">Hold Em</button><button class="big game archiveGameBtn" data-agame="Omaha">Omaha</button><button class="big game archiveGameBtn" data-agame="Tournament">Tournament</button><button class="big game archiveGameBtn" data-agame="Special Game">Special Games</button></section>`;
+ if(archiveViewId){
+  const a=archives.find(x=>String(x.id)===String(archiveViewId));
+  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${countLabel(archivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(archivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>`<div class="row"><div class="num">${p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+ }
+ return `<section class="content"><div class="list">${archives.length?archives.map(a=>`<button class="playerDbRow" data-archive="${a.id}"><span>${esc(archiveLabel(a))}</span></button>`).join(""):'<div class="empty">No archived lists yet.</div>'}</div></section>`;
+}
+function wireAdmin(){
+ wireHomeLogo();
+ const back=document.querySelector("#back");
+ if(back)back.onclick=()=>{
+  if(archiveViewId){archiveViewId=null;archivePlayers=[];render();return}
+  if(archiveGame){archiveGame=null;archives=[];render();return}
+  if(adminMode==="archives"){adminMode="main";render();return}
+  page="main";render();
+ };
+ const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbMode="list";playerDbSearch="";playerDbDraftName="";render()};
+ const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
+ document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
+ document.querySelectorAll("[data-archive]").forEach(b=>b.onclick=()=>openArchive(b.dataset.archive));
+}
 function renderPlayerDatabase(){
  if(playerDbMode==="list"){
   const q=playerDbSearch.trim().toLowerCase();
@@ -241,7 +281,7 @@ function wire(){
  document.querySelectorAll(".game").forEach(b=>b.onclick=()=>{game=b.dataset.v;render()});
  const s=document.querySelector("#specialGameButton");if(s)s.onclick=()=>{page="special";day=null;game=null;specialEdit=false;error="";render()};
  const t=document.querySelector("#todoMenuButton");if(t)t.onclick=()=>{page="todo";error="";render()};
- const pdb=document.querySelector("#playerDatabaseButton");if(pdb)pdb.onclick=()=>{page="playerdb";playerDbMode="list";playerDbEditName=null;playerDbSearch="";playerDbDraftName="";error="";render()};
+ const adm=document.querySelector("#adminButton");if(adm)adm.onclick=()=>{page="admin";adminMode="main";archiveGame=null;archiveViewId=null;error="";render()};
  wirePlayerControls();
  const b=document.querySelector("#back");if(b)b.onclick=()=>{error="";if(game)game=null;else if(day)day=null;else page="main";render()};
 }
@@ -381,11 +421,21 @@ async function del(id){
 }
 function undoPlayerDelete(){if(!pendingDelete)return;const p=pendingDelete.player;if(deleteTimer)clearTimeout(deleteTimer);deleteTimer=null;pendingDelete=null;players.push(p);render()}
 async function clear(){
- if(pendingDelete)await finalizePendingDelete();const special=game==="Special Game",label=special&&specialSettings?specialSettings.game_name:`${day} ${game}`;
- if(!confirm(special?`Clear the entire ${label} list and reset Special Game?`:`Clear the entire ${label} list?`))return;
- const d=day,g=game,r=await sb.from("signup_players").delete().eq("day",d).eq("game",g);if(r.error){error=r.message;render();return}
+ if(pendingDelete)await finalizePendingDelete();
+ const special=game==="Special Game",label=special&&specialSettings?specialSettings.game_name:`${day} ${game}`;
+ if(!confirm(special?`Archive and clear the entire ${label} list?`:`Archive and clear the entire ${label} list?`))return;
+ const d=day,g=game;
+ if(!current().length){if(special){const sd=await sb.from("special_game_settings").delete().eq("id",1);if(!sd.error){specialSettings=null;day=game=null;page="main"}}render();return}
+ const now=new Date(),dateStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+ const r=await sb.rpc("archive_signup_list",{p_day:d,p_game:g,p_archive_date:dateStr,p_special_name:special&&specialSettings?specialSettings.game_name:null});
+ if(r.error){error="Could not archive and clear this list. "+r.error.message;render();return}
  players=players.filter(p=>!(p.day===d&&p.game===g));await touchList(d,g);
- if(special){await sb.from("special_game_settings").delete().eq("id",1);specialSettings=null;day=game=null;page="main";specialEdit=false}render();
+ if(special){
+  const sd=await sb.from("special_game_settings").delete().eq("id",1);
+  if(sd.error){error="The list was archived, but the Special Game setup could not be reset.";render();return}
+  specialSettings=null;day=null;game=null;page="main";specialEdit=false;
+ }
+ render();
 }
 async function save(id){const note=document.querySelector("#unoEntryD").value.trim(),r=await sb.from("signup_players").update({notes:note||null}).eq("id",id).select().single();if(r.error)error=r.message;else{players=players.map(p=>String(p.id)===String(id)?r.data:p);await touchList()}edit=null;render()}
 async function addTodo(e){e.preventDefault();const note=document.querySelector("#unoEntryE").value.trim();if(!note)return;const r=await sb.from("todo_items").insert({note}).select().single();if(r.error)error="Could not add the To-Do item.";else todos.push(r.data);render()}
