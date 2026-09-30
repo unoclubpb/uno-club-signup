@@ -344,12 +344,13 @@ header h1,header .headertext h1,header small,header .headertext small{color:#126
 .top10Table th{font-weight:900;background:#eee}
 .top10Table th:first-child,.top10Table td:first-child{text-align:left}
 .top10Table td:first-child{font-weight:800}
+.top10PlayerName{background:none!important;border:0!important;padding:0!important;font:inherit;font-weight:800;color:#1262c6!important;text-decoration:underline;cursor:pointer;text-align:left}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.37";
+const APP_VERSION="092926.38";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -589,7 +590,7 @@ async function loadTop10Players(){
  top10Players=[...totals.values()].sort((a,b)=>b.total-a.total||b.cash-a.cash||b.tournaments-a.tournaments||a.name.localeCompare(b.name)).slice(0,10);
 }
 function renderTop10Players(){
- return `<section class="content top10Wrap">${top10Players.length?`<table class="top10Table"><thead><tr><th>Name</th><th>Cash Games</th><th>Tournaments</th></tr></thead><tbody>${top10Players.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.cash}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No archived game data yet.</div>'}</section>`;
+ return `<section class="content top10Wrap">${top10Players.length?`<table class="top10Table"><thead><tr><th>Name</th><th>Cash Games</th><th>Tournaments</th></tr></thead><tbody>${top10Players.map(p=>`<tr><td><button class="top10PlayerName" data-top10-player="${esc(p.name)}">${esc(p.name)}</button></td><td>${p.cash}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No archived game data yet.</div>'}</section>`;
 }
 function renderAdminPage(){
  if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button><button class="big top10Button" id="adminTop10">Top 10 Players</button></section>`;
@@ -613,6 +614,7 @@ function wireAdmin(){
  const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
  const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
  const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";await loadTop10Players();render()};
+ document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="edit";playerDbEditName=b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";render()});
  document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
  document.querySelectorAll("[data-archive]").forEach(b=>b.onclick=()=>openArchive(b.dataset.archive));
 }
