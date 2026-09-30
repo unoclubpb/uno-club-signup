@@ -334,19 +334,14 @@ body:has(.tableGameMenu){
 .cssPokerTable .tournamentBlankSeat{
   color:transparent !important;
 }
-/* v092926.35 aesthetic refresh */
+/* v092926.36 — blue banner lettering only */
 header h1,header .headertext h1,header small,header .headertext small{color:#1262c6!important}
-button,button *{color:#000!important}
-.blackPage{background:#000!important;color:#fff!important;min-height:calc(100dvh - 74px)}
-.blackPage h1,.blackPage h2,.blackPage h3,.blackPage .count,.blackPage .fieldwrap,.blackPage .fieldhint,.blackPage .empty,.blackPage .lastUpdated,.blackPage label,.blackPage p{color:#fff!important}
-.blackPage button{border-color:#fff!important;color:#000!important}
-.blackPage button *{color:#000!important}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.35";
+const APP_VERSION="092926.36";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -482,8 +477,8 @@ function renderCssPokerTable(d,g){
 }
 function render(){
  const a=document.querySelector("#app");let h="";
- if(page==="todo"){a.innerHTML=renderHeader("To-Do")+`<div class="blackPage">${renderTodoPage()}</div>`;wireTodo();return}
- if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?(playerHistoryView==="totals"?"Total Games Played":playerHistoryView==="dates"?"Dates Played":"Game Detail"):playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+`<div class="blackPage">${renderPlayerDatabase()}</div>`;wirePlayerDatabase();return}
+ if(page==="todo"){a.innerHTML=renderHeader("To-Do")+renderTodoPage();wireTodo();return}
+ if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?(playerHistoryView==="totals"?"Total Games Played":playerHistoryView==="dates"?"Dates Played":"Game Detail"):playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+renderPlayerDatabase();wirePlayerDatabase();return}
  if(page==="admin"){
  let adminHeader;
  if(archiveViewId){
@@ -493,14 +488,14 @@ function render(){
  }else{
   adminHeader=renderHeader(adminMode==="main"?"Admin":"List Archives");
  }
- a.innerHTML=adminHeader+`<div class="blackPage">${renderAdminPage()}</div>`;wireAdmin();return
+ a.innerHTML=adminHeader+renderAdminPage();wireAdmin();return
 }
- if(page==="special"){a.innerHTML=renderHeader(specialSettings?specialSettings.game_name:"Special Game")+`<div class="blackPage">${renderSpecialPage()}</div>`;wireSpecial();return}
+ if(page==="special"){a.innerHTML=renderHeader(specialSettings?specialSettings.game_name:"Special Game")+renderSpecialPage();wireSpecial();return}
  h+=renderHeader(game||day||"Uno Club Lists",game?`${day} Night`:"");
  if(!day){
   const specialName=specialSettings?specialSettings.game_name:"Special Game",sc=specialSettings?specialCount():0;
   const today=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
-  h+=`<section class="menu blackPage">${Object.keys(games).map(x=>`<button class="big day ${x===today?"tonight":""}" data-v="${x}">${x}</button>`).join("")}
+  h+=`<section class="menu">${Object.keys(games).map(x=>`<button class="big day ${x===today?"tonight":""}" data-v="${x}">${x}</button>`).join("")}
   <button class="big specialGameButton" id="specialGameButton">${esc(specialName)}${sc?`<span class="gamecount">${sc}</span>`:""}</button>
   <button class="big todoMenuButton" id="todoMenuButton">To-Do</button><button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
