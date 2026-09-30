@@ -345,12 +345,12 @@ header h1,header .headertext h1,header small,header .headertext small{color:#126
 .top10Table th:first-child,.top10Table td:first-child{text-align:left}
 .top10Table td:first-child{font-weight:800}
 .top10PlayerName{background:none!important;border:0!important;padding:0!important;font:inherit;font-weight:800;color:#1262c6!important;text-decoration:underline;cursor:pointer;text-align:left}
-</style>
+.lastPlayedInfo{font-size:.78rem;color:#000;margin-top:5px;font-weight:500}\n</style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.38";
+const APP_VERSION="092926.39";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -372,7 +372,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[];
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -614,7 +614,7 @@ function wireAdmin(){
  const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
  const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
  const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";await loadTop10Players();render()};
- document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="edit";playerDbEditName=b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";render()});
+ document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=async()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="edit";playerDbEditName=b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";playerLastPlayed=null;await loadPlayerLastPlayed(playerDbEditName);render()});
  document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
  document.querySelectorAll("[data-archive]").forEach(b=>b.onclick=()=>openArchive(b.dataset.archive));
 }
@@ -640,6 +640,24 @@ async function loadPlayerHistory(name){
 async function openPlayerHistoryArchive(id){
  const q=await sb.from("list_archive_players").select("*").eq("archive_id",id).order("archive_order");
  playerHistoryArchivePlayers=q.error?[]:(q.data||[]);playerHistoryArchiveId=id;render();
+}
+async function loadPlayerLastPlayed(name){
+ const dp=findDirectory(name);
+ let q=sb.from("list_archive_players").select("archive_id,was_alternate,was_late");
+ q=dp?.player_id?q.eq("player_id",dp.player_id):q.eq("player_name",name);
+ const pr=await q;
+ if(pr.error){playerLastPlayed=null;return}
+ const ids=[...new Set((pr.data||[]).map(x=>x.archive_id))];
+ if(!ids.length){playerLastPlayed=null;return}
+ const ar=await sb.from("list_archives").select("*").in("id",ids).order("archive_date",{ascending:false}).order("archived_at",{ascending:false}).limit(1);
+ playerLastPlayed=ar.error||!ar.data?.length?null:ar.data[0];
+}
+function lastPlayedText(){
+ if(!playerLastPlayed)return "No games recorded";
+ const d=new Date(playerLastPlayed.archive_date+"T12:00:00");
+ const ds=d.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"2-digit"});
+ const g=playerLastPlayed.game==="Special Game"?(playerLastPlayed.special_game_name||"Special Game"):playerLastPlayed.game;
+ return `${ds} — ${g}`;
 }
 function renderPlayerDatabase(){
  if(playerHistoryArchiveId){
@@ -677,7 +695,7 @@ function renderPlayerDatabase(){
  const existing=playerDbMode==="edit"?findDirectory(playerDbEditName):null;
  const name=existing?.player_name||(playerDbMode==="add"?playerDbDraftName:""),he=existing?.hold_em_preferred_seat??"",om=existing?.omaha_preferred_seat??"",notes=existing?.notes||"",active=existing?.active!==false;
  return `<section class="content"><form id="playerDbForm" class="playerDbForm" autocomplete="off">
- <div class="fieldwrap"><div>Player Name</div><input id="dbPlayerName" value="${esc(name)}" maxlength="80" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
+ <div class="fieldwrap"><div>Player Name</div><input id="dbPlayerName" value="${esc(name)}" maxlength="80" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false">${existing?`<div class="lastPlayedInfo">Last Played: ${esc(lastPlayedText())}</div>`:""}</div>
  <div class="fieldwrap"><div>Hold Em Preferred Seat</div><div class="fieldhint">Optional — 1 through 10</div><input id="dbHoldemSeat" inputmode="numeric" value="${he}" autocomplete="off"></div>
  <div class="fieldwrap"><div>Omaha Preferred Seat</div><div class="fieldhint">Optional — 1 through 9</div><input id="dbOmahaSeat" inputmode="numeric" value="${om}" autocomplete="off"></div>
  <div class="fieldwrap"><div>Status</div><div class="statusToggle"><button type="button" id="dbActive" class="${active?"statusActiveSelected":"statusUnselected"}">Active</button><button type="button" id="dbInactive" class="${!active?"statusInactiveSelected":"statusUnselected"}">Inactive</button></div><input type="hidden" id="dbStatus" value="${active?"active":"inactive"}"></div>
@@ -697,7 +715,7 @@ function playerDbResultsHtml(){
  return rows.length?rows.map(p=>`<button class="playerDbRow ${p.active===false?"inactivePlayer":""}" data-db-player="${esc(p.player_name)}"><span>${esc(p.player_name)}</span><small class="${p.active===false?"inactiveBadge":"activeBadge"}">${p.active===false?"Inactive":"Active"}</small></button>`).join(""):'<div class="empty">No players found.</div>';
 }
 function wirePlayerDbRows(){
- document.querySelectorAll("[data-db-player]").forEach(b=>b.onclick=()=>{playerDbMode="edit";playerDbEditName=b.dataset.dbPlayer;error="";render()});
+ document.querySelectorAll("[data-db-player]").forEach(b=>b.onclick=async()=>{playerDbMode="edit";playerDbEditName=b.dataset.dbPlayer;playerLastPlayed=null;error="";await loadPlayerLastPlayed(playerDbEditName);render()});
 }
 function wirePlayerDatabase(){
  wireHomeLogo();
