@@ -336,12 +336,20 @@ body:has(.tableGameMenu){
 }
 /* v092926.36 — blue banner lettering only */
 header h1,header .headertext h1,header small,header .headertext small{color:#1262c6!important}
+/* v092926.37 Top 10 Players */
+.top10Button{background:#1262c6!important;color:#fff!important}
+.top10Wrap{padding:18px}
+.top10Table{width:100%;border-collapse:collapse;background:#fff;border:2px solid #000}
+.top10Table th,.top10Table td{padding:12px 8px;border-bottom:1px solid #bbb;text-align:center}
+.top10Table th{font-weight:900;background:#eee}
+.top10Table th:first-child,.top10Table td:first-child{text-align:left}
+.top10Table td:first-child{font-weight:800}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.36";
+const APP_VERSION="092926.37";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -363,7 +371,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[];
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[];
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -486,7 +494,7 @@ function render(){
  }else if(archiveGame){
   adminHeader=renderArchiveHeader(archiveGame==="Special Game"?"Special Games":archiveGame);
  }else{
-  adminHeader=renderHeader(adminMode==="main"?"Admin":"List Archives");
+  adminHeader=renderHeader(adminMode==="main"?"Admin":adminMode==="top10"?"Top 10 Players":"List Archives");
  }
  a.innerHTML=adminHeader+renderAdminPage();wireAdmin();return
 }
@@ -560,8 +568,32 @@ async function openArchive(id){
 function renderArchiveHeader(secondLine){
  return `<header class="top"><button class="back" id="back" aria-label="Back">‹</button><div class="title" style="position:absolute;left:0;right:78px;text-align:center;line-height:1.15;pointer-events:none"><div>List Archives</div><div>${esc(secondLine)}</div></div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
 }
+async function loadTop10Players(){
+ const [ap,ar]=await Promise.all([
+  sb.from("list_archive_players").select("archive_id,player_id,player_name,was_alternate,was_late"),
+  sb.from("list_archives").select("id,game")
+ ]);
+ if(ap.error||ar.error){top10Players=[];error="Could not load Top 10 Players.";return}
+ const gamesById=new Map((ar.data||[]).map(a=>[String(a.id),a.game]));
+ const totals=new Map();
+ (ap.data||[]).forEach(p=>{
+  const g=gamesById.get(String(p.archive_id));if(!g)return;
+  const key=p.player_id?`id:${p.player_id}`:`name:${String(p.player_name||"").toLowerCase()}`;
+  if(!totals.has(key))totals.set(key,{name:p.player_name||"",cash:0,tournaments:0,total:0});
+  const t=totals.get(key);
+  if(g==="Tournament")t.tournaments++;
+  else if(g==="Hold Em"||g==="Omaha"||g==="Special Game")t.cash++;
+  else return;
+  t.total++;
+ });
+ top10Players=[...totals.values()].sort((a,b)=>b.total-a.total||b.cash-a.cash||b.tournaments-a.tournaments||a.name.localeCompare(b.name)).slice(0,10);
+}
+function renderTop10Players(){
+ return `<section class="content top10Wrap">${top10Players.length?`<table class="top10Table"><thead><tr><th>Name</th><th>Cash Games</th><th>Tournaments</th></tr></thead><tbody>${top10Players.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.cash}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No archived game data yet.</div>'}</section>`;
+}
 function renderAdminPage(){
- if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button></section>`;
+ if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button><button class="big top10Button" id="adminTop10">Top 10 Players</button></section>`;
+ if(adminMode==="top10")return renderTop10Players();
  if(adminMode==="archives"&&!archiveGame)return `<section class="menu archiveMenu"><button class="big game archiveGameBtn" data-agame="Hold Em">Hold Em</button><button class="big game archiveGameBtn" data-agame="Omaha">Omaha</button><button class="big game archiveGameBtn" data-agame="Tournament">Tournament</button><button class="big game archiveGameBtn" data-agame="Special Game">Special Games</button></section>`;
  if(archiveViewId){
   const a=archives.find(x=>String(x.id)===String(archiveViewId));
@@ -575,11 +607,12 @@ function wireAdmin(){
  if(back)back.onclick=()=>{
   if(archiveViewId){archiveViewId=null;archivePlayers=[];render();return}
   if(archiveGame){archiveGame=null;archives=[];render();return}
-  if(adminMode==="archives"){adminMode="main";render();return}
+  if(adminMode==="archives"||adminMode==="top10"){adminMode="main";top10Players=[];render();return}
   page="main";render();
  };
  const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
  const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
+ const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";await loadTop10Players();render()};
  document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
  document.querySelectorAll("[data-archive]").forEach(b=>b.onclick=()=>openArchive(b.dataset.archive));
 }
