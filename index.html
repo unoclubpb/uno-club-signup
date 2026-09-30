@@ -379,12 +379,15 @@ html,body,#app{max-width:100%;overflow-x:hidden}
 }
 .cssPokerTable .unseatedLine{display:block;white-space:nowrap;margin-top:2px}
 .cssPokerTable .unseatedLine:first-child{margin-top:0}
+/* v092926.47 — larger player names on Hold Em/Omaha tables */
+.cssPokerTable .cssSeat.occupied span{font-size:clamp(8px,2.35vw,14px)!important;line-height:1!important;max-width:96%;overflow:hidden;text-overflow:ellipsis}
+.cssPokerTable .unseatedNames{font-size:clamp(8px,2.35vw,14px)!important}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.46";
+const APP_VERSION="092926.47";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
