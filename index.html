@@ -386,12 +386,15 @@ html,body,#app{max-width:100%;overflow-x:hidden}
 /* v092926.48 — game list action buttons */
 .textlist{background:#2e9b45!important;color:#fff!important;border:2px solid #000!important}
 .clear{background:#c62828!important;color:#fff!important;border:2px solid #000!important}
+
+/* v092926.49 — standardize Archive List button typography */
+.clear{font-weight:700!important}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.48";
+const APP_VERSION="092926.49";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
