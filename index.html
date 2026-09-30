@@ -377,12 +377,14 @@ html,body,#app{max-width:100%;overflow-x:hidden}
  z-index:20!important;
  pointer-events:none!important;
 }
+.cssPokerTable .unseatedLine{display:block;white-space:nowrap;margin-top:2px}
+.cssPokerTable .unseatedLine:first-child{margin-top:0}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.44";
+const APP_VERSION="092926.45";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -523,7 +525,9 @@ function renderCssPokerTable(d,g){
   const p=regular.find(x=>String(x.preferred_seat??"")===String(n)),xy=pos[n];
   seats+=`<div class="cssSeat ${p?"occupied":""}" style="left:${xy[0]}%;top:${xy[1]}%"><span>${p?esc(p.player_name):`SEAT ${n}`}</span></div>`;
  }
- const unseatedNames=unseated.length?`<div class="unseatedNames">${unseated.map(p=>esc(p.player_name)).join(" / ")}</div>`:"";
+ const unseatedLines=[];
+ for(let i=0;i<unseated.length;i+=3)unseatedLines.push(unseated.slice(i,i+3).map(p=>esc(p.player_name)).join(" / "));
+ const unseatedNames=unseatedLines.length?`<div class="unseatedNames">${unseatedLines.map(line=>`<div class="unseatedLine">${line}</div>`).join("")}</div>`:"";
  return `<div class="cssPokerTable"><div class="felt"></div>${seats}<div class="tableTitle">${g.toUpperCase()}</div>${unseatedNames}<div class="cssCount">${gameCount(d,g)}</div></div>`;
 }
 function render(){
