@@ -361,12 +361,28 @@ header h1,header .headertext h1,header small,header .headertext small{color:#126
 .editor,.editor .fieldwrap{min-width:0;max-width:100%;box-sizing:border-box}
 .editor input{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
 html,body,#app{max-width:100%;overflow-x:hidden}
+.cssPokerTable .unseatedNames{
+ position:absolute!important;
+ left:18%!important;
+ right:18%!important;
+ top:56%!important;
+ transform:none!important;
+ color:#ffd400!important;
+ font-weight:900!important;
+ font-size:clamp(6px,1.8vw,11px)!important;
+ line-height:1!important;
+ text-align:center!important;
+ white-space:normal!important;
+ text-shadow:0 1px 2px #000!important;
+ z-index:20!important;
+ pointer-events:none!important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.43";
+const APP_VERSION="092926.44";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
