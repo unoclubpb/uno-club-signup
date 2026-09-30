@@ -346,10 +346,17 @@ header h1,header .headertext h1,header small,header .headertext small{color:#126
 .top10Table td:first-child{font-weight:800}
 .top10PlayerName{background:none!important;border:0!important;padding:0!important;font:inherit;font-weight:800;color:#1262c6!important;text-decoration:underline;cursor:pointer;text-align:left}
 .lastPlayedInfo{font-size:.78rem;color:#000;margin-top:5px;font-weight:500}\n.cssPokerTable .unseatedNames{
- position:absolute;left:20%;right:20%;top:61%;
- color:#ffd400;font-weight:900;font-size:clamp(7px,2vw,11px);
- line-height:1.15;text-align:center;white-space:normal;
- text-shadow:0 1px 2px #000,0 0 2px #000;z-index:4;
+ position:absolute;
+ left:20%;right:20%;top:57%;
+ color:#ffd400;
+ font-weight:900;
+ font-size:clamp(6px,1.8vw,11px);
+ line-height:1;
+ text-align:center;
+ white-space:normal;
+ text-shadow:0 1px 2px #000;
+ z-index:7;
+ pointer-events:none;
 }
 .editor,.editor .fieldwrap{min-width:0;max-width:100%;box-sizing:border-box}
 .editor input{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
@@ -359,7 +366,7 @@ html,body,#app{max-width:100%;overflow-x:hidden}
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.42";
+const APP_VERSION="092926.43";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
