@@ -384,7 +384,7 @@ html,body,#app{max-width:100%;overflow-x:hidden}
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.45";
+const APP_VERSION="092926.46";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -586,7 +586,7 @@ function renderPlayerPage(isSpecial=false){
  ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>
  ${edit==p.id?`<div class="editor">${game!=="Tournament"?`<div class="fieldwrap"><div>Preferred Seat</div><input id="unoEditSeat" inputmode="numeric" value="${p.preferred_seat??""}" autocomplete="off"></div>`:""}<div class="fieldwrap"><div>Notes</div><input id="unoEntryD" value="${esc(p.notes||"")}" autocomplete="new-password"></div><div><button class="save" data-save="${p.id}">Save Changes</button><button class="cancel" id="cancel">Cancel</button></div></div>`:""}
  </div><button class="del" data-del="${p.id}">×</button></div>`).join("")}</div></section>
- ${pendingDelete?`<div class="undoBar"><span>${esc(pendingDelete.player.player_name)} removed</span><button id="undoDelete">Undo</button></div>`:""}`;
+`;
 }
 function renderTodoPage(){
  const active=todos.filter(t=>!t.completed_at).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
@@ -897,7 +897,6 @@ function wirePlayerControls(){
  document.querySelectorAll("[data-save]").forEach(b=>b.onclick=()=>save(b.dataset.save));
  const cl=document.querySelector("#clear");if(cl)cl.onclick=clear;
  const tl=document.querySelector("#textlist");if(tl)tl.onclick=textList;
- const u=document.querySelector("#undoDelete");if(u)u.onclick=undoPlayerDelete;
 }
 function wireTodo(){
  wireHomeLogo();
@@ -999,16 +998,15 @@ async function add(e){
  }
  render();
 }
-async function finalizePendingDelete(){
- if(!pendingDelete)return;const p=pendingDelete.player;pendingDelete=null;if(deleteTimer){clearTimeout(deleteTimer);deleteTimer=null}
- const r=await sb.from("signup_players").delete().eq("id",p.id);
- if(r.error){players.push(p);error=r.message}else await touchList(p.day,p.game);render();
-}
 async function del(id){
- if(pendingDelete)await finalizePendingDelete();
- const p=players.find(x=>String(x.id)===String(id));if(!p)return;pendingDelete={player:{...p}};players=players.filter(x=>String(x.id)!==String(id));render();deleteTimer=setTimeout(finalizePendingDelete,3000);
+ const p=players.find(x=>String(x.id)===String(id));if(!p)return;
+ if(!confirm(`Are you sure you want to delete ${p.player_name}?\n\nOnly delete this player if they did not show up.`))return;
+ const r=await sb.from("signup_players").delete().eq("id",p.id);
+ if(r.error){error=r.message;render();return}
+ players=players.filter(x=>String(x.id)!==String(id));
+ await touchList(p.day,p.game);
+ render();
 }
-function undoPlayerDelete(){if(!pendingDelete)return;const p=pendingDelete.player;if(deleteTimer)clearTimeout(deleteTimer);deleteTimer=null;pendingDelete=null;players.push(p);render()}
 async function clear(){
  if(pendingDelete)await finalizePendingDelete();
  const special=game==="Special Game",label=special&&specialSettings?specialSettings.game_name:`${day} ${game}`;
