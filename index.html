@@ -494,12 +494,21 @@ header{
   margin:.2rem 0 .55rem;
 }
 
+
+/* v100126.68 — Send a Copy matches Add Player width */
+.textlist{
+  width:100%!important;
+}
+.listactions:has(.textlist){
+  width:100%!important;
+}
+
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100126.67";
+const APP_VERSION="100126.68";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
