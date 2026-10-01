@@ -426,12 +426,17 @@ html,body,#app{max-width:100%;overflow-x:hidden}
 .cssPokerTable .tableAttendance{
   top:44%!important;
 }
+
+/* v092926.55 — move table attendance line higher */
+.cssPokerTable .tableAttendance{
+  top:39%!important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.54";
+const APP_VERSION="092926.55";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
