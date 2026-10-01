@@ -517,12 +517,15 @@ header{
   box-sizing:border-box!important;
 }
 
+
+/* v100126.70 — center all automatic archive notices */
+.archiveNotice{width:100%!important;text-align:center!important;box-sizing:border-box!important;margin:.55rem 0!important}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100126.69";
+const APP_VERSION="100126.70";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
