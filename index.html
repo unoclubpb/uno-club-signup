@@ -479,12 +479,33 @@ header{
   .playerDbTop{top:118px}
 }
 
+
+/* v100126.62 — Player Database fixed controls with clean scrolling */
+.playerDbTop{
+  position:sticky!important;
+  top:118px!important;
+  z-index:950!important;
+  background:#f5f6f8!important;
+  margin:0 -1rem 1rem!important;
+  padding:1rem 1rem .85rem!important;
+  box-shadow:0 2px 0 rgba(0,0,0,.08);
+}
+/* Remove the content gap above the sticky Player Database controls. */
+.content:has(.playerDbTop){
+  padding-top:0!important;
+}
+/* Ensure player rows always pass underneath the fixed controls. */
+.playerDbList{
+  position:relative;
+  z-index:1;
+}
+
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100126.61";
+const APP_VERSION="100126.62";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
