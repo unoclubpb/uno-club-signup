@@ -476,12 +476,21 @@ header{
   max-height:calc(100dvh - 162px)!important;
 }
 
+
+/* v100126.65 — successful signup feedback */
+#signupAddButton.playerAddedFeedback{
+  background:#2e9b45!important;
+  color:#fff!important;
+  border-color:#000!important;
+  font-weight:900!important;
+}
+
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100126.64";
+const APP_VERSION="100126.65";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -681,7 +690,7 @@ function renderPlayerPage(isSpecial=false){
  <div class="fieldwrap"><div>Player Name</div><input id="unoEntryA" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false"><div id="nameSuggestions" class="suggestions"></div></div>
  ${game!=="Tournament"&&!lateMode&&rc<limit(game)?`<div class="fieldwrap"><div>Preferred Seat</div><div class="fieldhint">(optional — 1 through ${seatLimit})</div><input id="unoEntryB" inputmode="numeric" autocomplete="new-password"><div id="seatHint" class="fieldhint"></div></div>`:""}
  <div class="fieldwrap"><div>Notes</div><div class="fieldhint">(optional)</div><input id="unoEntryC" autocomplete="new-password" autocorrect="off" spellcheck="false"></div>
- <div id="altmsg"></div><button class="add">${lateMode?"Add Late Arrival":"Add Player"}</button></form>
+ <div id="altmsg"></div><button class="add" id="signupAddButton">${lateMode?"Add Late Arrival":"Add Player"}</button></form>
  ${!specialEdit&&error?`<p class="error">${esc(error)}</p>`:""}
  <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}${lates.length?` / ${countLabel(lates.length,"Late Arrival","Late Arrivals")}`:""}</span><span class="attendanceSummary"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
  <div class="listactions">${current().length?`<button class="textlist" id="textlist">Send a Copy</button>`:""}${isSpecial?`<button class="clear" id="clear">${players.filter(p=>p.day==="Special Game"&&p.game==="Special Game").length===0?"Delete Game":"Archive List"}</button>`:current().length?`<button class="clear" id="clear">Archive List</button>`:""}</div></div>
@@ -1101,6 +1110,17 @@ async function add(e){
   else if((game==="Hold Em"||game==="Omaha")&&!findDirectory(name))await updateDirectory(name,null);
   else if(!findDirectory(name))await updateDirectory(name,null);
   await touchList();
+  const addBtn=document.querySelector("#signupAddButton");
+  if(addBtn){
+   addBtn.textContent="Player Added";
+   addBtn.classList.add("playerAddedFeedback");
+   addBtn.disabled=true;
+   document.querySelector("#unoEntryA").value="";
+   if(document.querySelector("#unoEntryB"))document.querySelector("#unoEntryB").value="";
+   document.querySelector("#unoEntryC").value="";
+   setTimeout(()=>render(),2000);
+   return;
+  }
  }
  render();
 }
