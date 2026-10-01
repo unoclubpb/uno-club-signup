@@ -421,12 +421,17 @@ html,body,#app{max-width:100%;overflow-x:hidden}
 .arrivalCheck.checked{background:#2e9b45;color:#fff;border-color:#000}
 .cssPokerTable .tableAttendance{position:absolute;left:20%;right:20%;top:42%;text-align:center;font-size:clamp(7px,2vw,12px);font-weight:900;z-index:8;white-space:nowrap;text-shadow:0 1px 1px rgba(255,255,255,.25)}
 .cssPokerTable .tableAttendance .arrivedCount{color:#4ee267!important}.cssPokerTable .tableAttendance .attendanceSlash{color:#000!important}.cssPokerTable .tableAttendance .expectedCount{color:#ff8c00!important}
+
+/* v092926.54 — symmetrical table attendance positioning */
+.cssPokerTable .tableAttendance{
+  top:44%!important;
+}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.53";
+const APP_VERSION="092926.54";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
