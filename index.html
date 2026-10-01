@@ -413,12 +413,20 @@ html,body,#app{max-width:100%;overflow-x:hidden}
   color:#fff!important;
   font-weight:700!important;
 }
+/* v092926.53 attendance tracking */
+.attendanceSummary{display:block;margin-top:3px;font-size:.82rem;font-weight:900}
+.arrivedCount{color:#198c2e!important}.attendanceSlash{color:#000!important}.expectedCount{color:#e67800!important}
+.row.arrivedRow{border:1.5px solid #000!important}
+.arrivalCheck{flex:0 0 30px;width:30px;height:30px;padding:0;margin-right:6px;border:2px solid #777;border-radius:50%;background:#fff;color:#aaa;font-size:18px;font-weight:900;line-height:26px}
+.arrivalCheck.checked{background:#2e9b45;color:#fff;border-color:#000}
+.cssPokerTable .tableAttendance{position:absolute;left:20%;right:20%;top:42%;text-align:center;font-size:clamp(7px,2vw,12px);font-weight:900;z-index:8;white-space:nowrap;text-shadow:0 1px 1px rgba(255,255,255,.25)}
+.cssPokerTable .tableAttendance .arrivedCount{color:#4ee267!important}.cssPokerTable .tableAttendance .attendanceSlash{color:#000!important}.cssPokerTable .tableAttendance .expectedCount{color:#ff8c00!important}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.52";
+const APP_VERSION="092926.53";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -448,6 +456,11 @@ const limit=g=>g==="Special Game"?(specialSettings?+specialSettings.total_seats:
 const maxPreferredSeat=g=>g==="Special Game"?(specialSettings?+specialSettings.total_seats:10):g==="Omaha"?9:10;
 const current=()=>players.filter(p=>p.day===day&&p.game===game);
 const gameCount=(d,g)=>players.filter(p=>p.day===d&&p.game===g).length;
+const attendanceFor=(d,g)=>{
+ const list=players.filter(p=>p.day===d&&p.game===g);
+ const arrived=list.filter(p=>p.arrived===true||p.is_late===true).length;
+ return {arrived,expected:Math.max(0,list.length-arrived)};
+};
 const specialCount=()=>players.filter(p=>p.day==="Special Game"&&p.game==="Special Game").length;
 const countLabel=(n,a,b)=>`${n} ${n===1?a:b}`;
 const sortBySignup=a=>[...a].sort((x,y)=>new Date(x.created_at)-new Date(y.created_at)||(Number(x.id)||0)-(Number(y.id)||0));
@@ -562,7 +575,8 @@ function renderCssPokerTable(d,g){
  const unseatedLines=[];
  for(let i=0;i<unseated.length;i+=3)unseatedLines.push(unseated.slice(i,i+3).map(p=>esc(p.player_name)).join(" / "));
  const unseatedNames=unseatedLines.length?`<div class="unseatedNames">${unseatedLines.map(line=>`<div class="unseatedLine">${line}</div>`).join("")}</div>`:"";
- return `<div class="cssPokerTable"><div class="felt"></div>${seats}<div class="tableTitle">${g.toUpperCase()}</div>${unseatedNames}<div class="cssCount">${gameCount(d,g)}</div></div>`;
+ const attendance=attendanceFor(d,g);
+ return `<div class="cssPokerTable"><div class="felt"></div>${seats}<div class="tableAttendance"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></div><div class="tableTitle">${g.toUpperCase()}</div>${unseatedNames}<div class="cssCount">${gameCount(d,g)}</div></div>`;
 }
 function render(){
  const a=document.querySelector("#app");let h="";
@@ -604,7 +618,7 @@ function renderSpecialPage(){
  day="Special Game";game="Special Game";return renderPlayerPage(true);
 }
 function renderPlayerPage(isSpecial=false){
- const sh=shown(),regular=sh.filter(p=>!p.alt&&!p.isLate),alts=sh.filter(p=>p.alt),lates=sh.filter(p=>p.isLate),rc=regular.length,seatLimit=maxPreferredSeat(game),lateMode=!isSpecial&&isLateArrivalTime();
+ const sh=shown(),regular=sh.filter(p=>!p.alt&&!p.isLate),alts=sh.filter(p=>p.alt),lates=sh.filter(p=>p.isLate),rc=regular.length,seatLimit=maxPreferredSeat(game),lateMode=!isSpecial&&isLateArrivalTime(),attendance=attendanceFor(day,game);
  return `<section class="content">
  ${isSpecial?(specialEdit?specialSettingsForm(true):`<div class="specialInfo"><button class="specialNameEdit" id="specialNameEdit">${esc(specialSettings.game_name)}</button> · ${specialSettings.total_seats} Seats</div>`):""}
  <form id="form" autocomplete="off">
@@ -613,13 +627,13 @@ function renderPlayerPage(isSpecial=false){
  <div class="fieldwrap"><div>Notes</div><div class="fieldhint">(optional)</div><input id="unoEntryC" autocomplete="new-password" autocorrect="off" spellcheck="false"></div>
  <div id="altmsg"></div><button class="add">${lateMode?"Add Late Arrival":"Add Player"}</button></form>
  ${!specialEdit&&error?`<p class="error">${esc(error)}</p>`:""}
- <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}${lates.length?` / ${countLabel(lates.length,"Late Arrival","Late Arrivals")}`:""}</span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
+ <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}${lates.length?` / ${countLabel(lates.length,"Late Arrival","Late Arrivals")}`:""}</span><span class="attendanceSummary"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
  <div class="listactions">${current().length?`<button class="textlist" id="textlist">Send a Copy</button>`:""}${isSpecial?`<button class="clear" id="clear">${players.filter(p=>p.day==="Special Game"&&p.game==="Special Game").length===0?"Delete Game":"Archive List"}</button>`:current().length?`<button class="clear" id="clear">Archive List</button>`:""}</div></div>
- <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row"><div class="num">${p.isLate?"L":p.alt?"A":p.num}</div><div class="info">
+ <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row ${p.arrived||p.isLate?"arrivedRow":""}"><div class="num">${p.isLate?"L":p.alt?"A":p.num}</div><div class="info">
  <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.isLate?'<span class="red">LATE ARRIVAL</span>':p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
  ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>
  ${edit==p.id?`<div class="editor">${game!=="Tournament"?`<div class="fieldwrap"><div>Preferred Seat</div><input id="unoEditSeat" inputmode="numeric" value="${p.preferred_seat??""}" autocomplete="off"></div>`:""}<div class="fieldwrap"><div>Notes</div><input id="unoEntryD" value="${esc(p.notes||"")}" autocomplete="new-password"></div><div><button class="save" data-save="${p.id}">Save Changes</button><button class="cancel" id="cancel">Cancel</button></div></div>`:""}
- </div><button class="del" data-del="${p.id}">×</button></div>`).join("")}</div></section>
+ </div><button class="arrivalCheck ${p.arrived||p.isLate?"checked":""}" data-arrived="${p.id}" aria-label="${p.arrived||p.isLate?"Mark expected":"Mark arrived"}">✓</button><button class="del" data-del="${p.id}">×</button></div>`).join("")}</div></section>
 `;
 }
 function renderTodoPage(){
@@ -925,6 +939,7 @@ function wirePlayerControls(){
   notes.oninput=()=>{const rc=shown().filter(p=>!p.alt).length;alt.innerHTML=late(notes.value)||rc>=limit(game)?'<span class="red">This player will be added as an ALTERNATE.</span>':""};
   form.onsubmit=add;
  }
+ document.querySelectorAll("[data-arrived]").forEach(b=>b.onclick=()=>toggleArrived(b.dataset.arrived));
  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>del(b.dataset.del));
  document.querySelectorAll(".name").forEach(b=>b.onclick=()=>{edit=b.dataset.id;render()});
  const c=document.querySelector("#cancel");if(c)c.onclick=()=>{edit=null;render()};
@@ -1021,7 +1036,7 @@ async function add(e){
   if(current().some(p=>String(p.preferred_seat??"")===String(+seat))){addPlayerDraft={name,seat,notes};error="That preferred seat is already taken. Choose another seat or leave the seat blank.";render();return}
  }
  const savedSeat=game==="Tournament"||alt||lateArrival?null:(seat?+seat:null);
- const r=await sb.from("signup_players").insert({day,game,player_name:name,preferred_seat:savedSeat,notes:notes||null,is_late:lateArrival}).select().single();
+ const r=await sb.from("signup_players").insert({day,game,player_name:name,preferred_seat:savedSeat,notes:notes||null,is_late:lateArrival,arrived:lateArrival}).select().single();
  if(r.error){error=r.code==="23505"?"That player name or preferred seat is already on this list.":r.message}
  else{
   players.push(r.data);
@@ -1031,6 +1046,14 @@ async function add(e){
   await touchList();
  }
  render();
+}
+async function toggleArrived(id){
+ const p=players.find(x=>String(x.id)===String(id));if(!p)return;
+ if(p.is_late)return;
+ const next=!(p.arrived===true);
+ const r=await sb.from("signup_players").update({arrived:next}).eq("id",p.id).select().single();
+ if(r.error){error=r.message;render();return}
+ Object.assign(p,r.data);render();
 }
 async function del(id){
  const p=players.find(x=>String(x.id)===String(id));if(!p)return;
