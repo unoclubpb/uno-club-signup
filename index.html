@@ -525,7 +525,7 @@ header{
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100126.70";
+const APP_VERSION="100126.71";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1213,7 +1213,11 @@ async function save(id){
  if(seatEl)changes.preferred_seat=seat?+seat:null;
  const r=await sb.from("signup_players").update(changes).eq("id",id).select().single();
  if(r.error){error=r.message;render();return}
- players=players.map(x=>String(x.id)===String(id)?r.data:x);await touchList();edit=null;error="";render()
+ players=players.map(x=>String(x.id)===String(id)?r.data:x);
+ if(seatEl&&(p.game==="Hold Em"||p.game==="Omaha")){
+  await updateDirectory(p.player_name,seat?+seat:null);
+ }
+ await touchList();edit=null;error="";render()
 }
 async function addTodo(e){e.preventDefault();const note=document.querySelector("#unoEntryE").value.trim();if(!note)return;const r=await sb.from("todo_items").insert({note}).select().single();if(r.error)error="Could not add the To-Do item.";else todos.push(r.data);render()}
 async function saveTodoEdit(id){const note=document.querySelector("#unoEntryF").value.trim();if(!note){error="To-Do item cannot be blank.";render();return}const r=await sb.from("todo_items").update({note}).eq("id",id).is("completed_at",null).select().single();if(r.error)error="Could not save the To-Do item.";else{todos=todos.map(t=>String(t.id)===String(id)?r.data:t);todoEdit=null}render()}
