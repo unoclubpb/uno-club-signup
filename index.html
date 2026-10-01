@@ -436,7 +436,7 @@ html,body,#app{max-width:100%;overflow-x:hidden}
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="092926.55";
+const APP_VERSION="092926.56";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -563,7 +563,8 @@ function renderCssTournamentTable(d){
   const xy=pos[n];
   seats+=`<div class="cssSeat tournamentBlankSeat" style="left:${xy[0]}%;top:${xy[1]}%"></div>`;
  }
- return `<div class="cssPokerTable cssTournamentTable"><div class="felt"></div>${seats}<div class="tableTitle">TOURNAMENT</div><div class="cssCount">${gameCount(d,"Tournament")}</div></div>`;
+ const attendance=attendanceFor(d,"Tournament");
+ return `<div class="cssPokerTable cssTournamentTable"><div class="felt"></div>${seats}<div class="tableAttendance"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></div><div class="tableTitle">TOURNAMENT</div><div class="cssCount">${gameCount(d,"Tournament")}</div></div>`;
 }
 function renderCssPokerTable(d,g){
  const pos=CSS_TABLE_POSITIONS[g],max=g==="Hold Em"?10:9;
