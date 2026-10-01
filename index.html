@@ -499,7 +499,7 @@ header{
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100126.66";
+const APP_VERSION="100126.67";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -702,7 +702,7 @@ function renderPlayerPage(isSpecial=false){
  <div id="altmsg"></div><button class="add" id="signupAddButton">${lateMode?"Add Late Arrival":"Add Player"}</button></form>
  ${!specialEdit&&error?`<p class="error">${esc(error)}</p>`:""}
  <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}${lates.length?` / ${countLabel(lates.length,"Late Arrival","Late Arrivals")}`:""}</span><span class="attendanceSummary"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
- <div class="listactions">${current().length?`<button class="textlist" id="textlist">Send a Copy</button>`:""}${isSpecial?`<button class="clear" id="clear">${players.filter(p=>p.day==="Special Game"&&p.game==="Special Game").length===0?"Delete Game":"Archive List"}</button>`:current().length?`<button class="clear" id="clear">Archive List</button>`:""}</div></div>
+ <div class="listactions">${current().length?`<button class="textlist" id="textlist">Send a Copy</button>`:""}${isSpecial?`<button class="clear" id="clear">${players.filter(p=>p.day==="Special Game"&&p.game==="Special Game").length===0?"Delete Game":"Archive List"}</button>`:""}</div></div>
  ${!isSpecial?`<div class="archiveNotice">${game==="Tournament"?"Tournament will archive at 10pm":`Game will archive at 3am ${day==="Monday"?"Tuesday":day==="Wednesday"?"Thursday":day==="Thursday"?"Friday":""}`}</div>`:""}
  <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row ${p.arrived||p.isLate?"arrivedRow":""}"><div class="num">${p.isLate?"L":p.alt?"A":p.num}</div><div class="info">
  <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.isLate?'<span class="red">LATE ARRIVAL</span>':p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
