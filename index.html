@@ -503,12 +503,26 @@ header{
   width:100%!important;
 }
 
+
+/* v100126.69 — align Send a Copy to the inner width of the Add Player button */
+.head .listactions{
+  width:calc(100% - 2rem)!important;
+  margin-left:1rem!important;
+  margin-right:1rem!important;
+  box-sizing:border-box!important;
+}
+.head .listactions .textlist{
+  width:100%!important;
+  flex:1 1 100%!important;
+  box-sizing:border-box!important;
+}
+
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100126.68";
+const APP_VERSION="100126.69";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
