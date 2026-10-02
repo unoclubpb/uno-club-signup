@@ -525,7 +525,7 @@ header{
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100126.71";
+const APP_VERSION="100126.72";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1138,7 +1138,7 @@ async function add(e){
   if(current().some(p=>String(p.preferred_seat??"")===String(+seat))){addPlayerDraft={name,seat,notes};error="That preferred seat is already taken. Choose another seat or leave the seat blank.";render();return}
  }
  const savedSeat=game==="Tournament"||alt||lateArrival?null:(seat?+seat:null);
- const r=await sb.from("signup_players").insert({day,game,player_name:name,preferred_seat:savedSeat,notes:notes||null,is_late:lateArrival,arrived:lateArrival}).select().single();
+ const linkedPlayer=findDirectory(name);\n const r=await sb.from("signup_players").insert({day,game,player_id:linkedPlayer?.player_id??null,player_name:name,preferred_seat:savedSeat,notes:notes||null,is_late:lateArrival,arrived:lateArrival}).select().single();
  if(r.error){error=r.code==="23505"?"That player name or preferred seat is already on this list.":r.message}
  else{
   players.push(r.data);
