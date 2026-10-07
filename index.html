@@ -527,7 +527,7 @@ select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.80";
+const APP_VERSION="100726.81";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -595,18 +595,20 @@ async function touchList(d=day,g=game){
  if(!r.error){listUpdates=listUpdates.filter(x=>!(x.day===d&&x.game===g));listUpdates.push(r.data)}
 }
 async function load(){
- const [pr,tr,sr,ur,dr]=await Promise.all([
+ const [pr,tr,sr,ur,dr,thr]=await Promise.all([
   sb.from("signup_players").select("*").order("created_at").order("id"),
   sb.from("todo_items").select("*").order("created_at"),
   sb.from("special_game_settings").select("*").eq("id",1).maybeSingle(),
   sb.from("list_updates").select("*"),
-  sb.from("player_directory").select("*").order("player_name")
+  sb.from("player_directory").select("*").order("player_name"),
+  sb.rpc("get_tournament_history")
  ]);
  if(pr.error)error="Could not load the player list.";else players=pr.data||[];
  if(tr.error)error="Could not load the To-Do list.";else todos=tr.data||[];
  if(sr.error)error="Could not load the Special Game settings.";else specialSettings=sr.data||null;
  listUpdates=ur.error?[]:(ur.data||[]);
  directory=dr.error?[]:(dr.data||[]);
+ if(!thr.error)tournamentHistory=Array.isArray(thr.data)?thr.data:(thr.data?[thr.data]:[]);
  render();
 }
 function renderHeader(title,subtitle=""){
@@ -1402,6 +1404,7 @@ async function clear(){
  const r=await sb.rpc("archive_signup_list",{p_day:d,p_game:g,p_archive_date:dateStr,p_special_name:special&&specialSettings?specialSettings.game_name:null});
  if(r.error){error="Could not archive and clear this list. "+r.error.message;render();return}
  players=players.filter(p=>!(p.day===d&&p.game===g));await touchList(d,g);
+ if(g==="Tournament")await loadTournamentHistory();
  if(special){
   const sd=await sb.from("special_game_settings").delete().eq("id",1);
   if(sd.error){error="The list was archived, but the Special Game setup could not be reset.";render();return}
