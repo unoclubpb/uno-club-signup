@@ -514,7 +514,7 @@ select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.76";
+const APP_VERSION="100726.77";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -678,7 +678,7 @@ function render(){
  }else if(archiveGame){
   adminHeader=renderArchiveHeader(archiveGame==="Special Game"?"Special Games":archiveGame);
  }else{
-  adminHeader=renderHeader(adminMode==="main"?"Admin":adminMode==="top10"?"Top 10 Players":adminMode==="tournamentHistory"?"Tournament History":adminMode==="tournamentAdd"?"Add Tournament":adminMode==="tournamentTypes"?"Manage Tournament Types":adminMode==="tournamentTypeHistory"?"Tournament History":"List Archives");
+  adminHeader=renderHeader(adminMode==="main"?"Admin":adminMode==="top10"?"Top 10 Players":adminMode==="tournamentHistory"?"Tournament History":adminMode==="tournamentAdd"?"Add Tournament":adminMode==="tournamentTypes"?"Manage Tournament Types":adminMode==="tournamentTypeHistory"?"Tournament History":adminMode==="tournamentUpcoming"?"Upcoming Tournaments":adminMode==="tournamentPast"?"Past Tournaments":"List Archives");
  }
  a.innerHTML=adminHeader+renderAdminPage();wireAdmin();return
 }
@@ -798,17 +798,17 @@ function scheduledForDate(date,isSpecial){return scheduledTournaments().find(t=>
 function selectedTournamentEdit(){return tournamentEditId?tournamentHistory.find(t=>String(t.id)===String(tournamentEditId)&&!t.archived_at)||null:null}
 
 function renderTournamentHistoryPage(){
- return `<section class="content">
-  <div class="tournamentAdminTools">
-   <button class="big tournamentManageButton" id="manageTournamentTypes">Manage Tournament Types</button>
-   <button class="big tournamentAddButton" id="addTournamentHistory">Add Tournament</button>
-  </div>
+ return `<section class="menu tournamentHistoryMenu">
+  <button class="big tournamentAddButton" id="upcomingTournaments">Upcoming Tournaments</button>
+  <button class="big tournamentHistoryButton" id="pastTournaments">Past Tournaments</button>
+  <button class="big tournamentManageButton" id="manageTournamentTypes">Manage Tournament Types</button>
   ${error?`<p class="error">${esc(error)}</p>`:""}
  </section>`;
 }
 function renderUpcomingTournaments(){
  const upcoming=scheduledTournaments();
- return `<div class="head"><h2>Upcoming Tournaments</h2></div>
+ return `<section class="content"><button class="big tournamentAddButton" id="addTournamentHistory">Add Tournament</button>
+ <div class="head"><h2>Upcoming Tournaments</h2></div>
  <div class="tournamentHistoryList">${upcoming.length?upcoming.map(t=>`<div class="tournamentHistoryRow">
   <button type="button" class="tournamentUpcomingOpen" data-edit-tournament="${t.id}">
    <div class="tournamentHistoryDate">${esc(tournamentDateLabel(t.tournament_date))}</div>
@@ -816,7 +816,16 @@ function renderUpcomingTournaments(){
    ${t.is_special?'<span class="specialTournamentBadge">SPECIAL TOURNAMENT</span>':""}
   </button>
   <button class="tournamentDelete" data-delete-tournament="${t.id}" aria-label="Delete scheduled tournament">×</button>
- </div>`).join(""):'<div class="empty">No upcoming tournaments scheduled.</div>'}</div>`;
+ </div>`).join(""):'<div class="empty">No upcoming tournaments scheduled.</div>'}</div></section>`;
+}
+function renderPastTournaments(){
+ const past=archivedTournaments().sort((a,b)=>b.tournament_date.localeCompare(a.tournament_date)||Number(b.id)-Number(a.id));
+ return `<section class="content"><div class="head"><h2>Past Tournaments</h2></div>
+ <div class="tournamentHistoryList">${past.length?past.map(t=>`<div class="tournamentHistoryRow"><div class="tournamentHistoryInfo">
+  <div class="tournamentHistoryDate">${esc(tournamentDateLabel(t.tournament_date))}</div>
+  <div class="tournamentHistoryType">${esc(t.tournament_type_name)}</div>
+  ${t.is_special?'<span class="specialTournamentBadge">SPECIAL TOURNAMENT</span>':""}
+ </div></div>`).join(""):'<div class="empty">No past tournaments yet.</div>'}</div></section>`;
 }
 function renderTournamentAddPage(){
  const editing=selectedTournamentEdit(),draft=tournamentDraft||{};
@@ -840,7 +849,6 @@ function renderTournamentAddPage(){
    ${error?`<p class="error">${esc(error)}</p>`:""}
    <button class="save tournamentSaveButton">${activeEdit?"Save Changes":"Save Tournament"}</button>
   </form>
-  ${renderUpcomingTournaments()}
  </section>`;
 }
 function renderTournamentTypesPage(){
@@ -880,6 +888,8 @@ function renderAdminPage(){
  if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button><button class="big top10Button" id="adminTop10">Top 10 Players</button><button class="big tournamentHistoryButton" id="adminTournamentHistory">Tournament History</button></section>`;
  if(adminMode==="top10")return renderTop10Players();
  if(adminMode==="tournamentHistory")return renderTournamentHistoryPage();
+ if(adminMode==="tournamentUpcoming")return renderUpcomingTournaments();
+ if(adminMode==="tournamentPast")return renderPastTournaments();
  if(adminMode==="tournamentAdd")return renderTournamentAddPage();
  if(adminMode==="tournamentTypes")return renderTournamentTypesPage();
  if(adminMode==="tournamentTypeHistory")return renderTournamentTypeHistoryPage();
@@ -897,7 +907,8 @@ function wireAdmin(){
   if(archiveViewId){archiveViewId=null;archivePlayers=[];render();return}
   if(archiveGame){archiveGame=null;archives=[];render();return}
   if(adminMode==="tournamentTypeHistory"){adminMode="tournamentTypes";tournamentTypeViewId=null;render();return}
-  if(adminMode==="tournamentAdd"||adminMode==="tournamentTypes"){adminMode="tournamentHistory";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
+  if(adminMode==="tournamentAdd"){adminMode="tournamentUpcoming";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
+  if(adminMode==="tournamentUpcoming"||adminMode==="tournamentPast"||adminMode==="tournamentTypes"){adminMode="tournamentHistory";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
   if(adminMode==="tournamentHistory"){adminMode="main";error="";render();return}
   if(adminMode==="archives"||adminMode==="top10"){adminMode="main";top10Players=[];render();return}
   page="main";render();
@@ -906,6 +917,8 @@ function wireAdmin(){
  const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
  const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";await loadTop10Players();render()};
  const th=document.querySelector("#adminTournamentHistory");if(th)th.onclick=async()=>{error="";adminMode="tournamentHistory";await loadTournamentData();render()};
+ const upcomingBtn=document.querySelector("#upcomingTournaments");if(upcomingBtn)upcomingBtn.onclick=()=>{error="";adminMode="tournamentUpcoming";render()};
+ const pastBtn=document.querySelector("#pastTournaments");if(pastBtn)pastBtn.onclick=()=>{error="";adminMode="tournamentPast";render()};
  const addBtn=document.querySelector("#addTournamentHistory");if(addBtn)addBtn.onclick=()=>{error="";tournamentEditId=null;tournamentDraft={date:upcomingWednesdayDate(),isSpecial:false,typeId:""};adminMode="tournamentAdd";render()};
  const manage=document.querySelector("#manageTournamentTypes");if(manage)manage.onclick=()=>{error="";tournamentReturnToAdd=false;adminMode="tournamentTypes";render()};
 
@@ -959,7 +972,7 @@ function wireAdmin(){
    else error="Could not save that tournament.";
    render();return
   }
-  await loadTournamentData();tournamentEditId=null;tournamentDraft=null;adminMode="tournamentHistory";render();
+  await loadTournamentData();tournamentEditId=null;tournamentDraft=null;adminMode="tournamentUpcoming";render();
  };
 
  const typeForm=document.querySelector("#tournamentTypeForm");
