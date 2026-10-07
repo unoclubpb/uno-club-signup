@@ -527,12 +527,48 @@ select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;
 .todoTitleRow{display:flex;align-items:center;gap:8px}
 .todoSortToggle{height:30px;padding:0 9px;border:2px solid #000;border-radius:7px;background:#fff;color:#000;font-size:13px;font-weight:900;line-height:24px;white-space:nowrap}
 
+
+/* v100726.88 — semantic button color system
+   Purple=navigation, Blue=view/info, Green=add/save, Orange=edit/change,
+   Black=admin/manage, Red=delete/destructive, Gray=cancel/secondary.
+   Yellow remains reserved for TODAY/TONIGHT highlighting. */
+:root{
+ --uno-purple:#6a3dad;
+ --uno-blue:#1262c6;
+ --uno-green:#2e9b45;
+ --uno-orange:#e67800;
+ --uno-black:#171717;
+ --uno-red:#c62828;
+ --uno-gray:#6b7280;
+}
+.menu .day,.specialGameButton{background:var(--uno-purple)!important;color:#fff!important;border:2px solid #000!important}
+.tonight{box-shadow:0 0 0 4px #FFEF00,0 4px 12px rgba(0,0,0,.18)!important}
+.tonight::after{background:#FFEF00!important;color:#000!important}
+
+.todoMenuButton,.adminPlayersButton,.adminArchivesButton,.top10Button,
+#upcomingTournaments,#pastTournaments,.textlist{background:var(--uno-blue)!important;color:#fff!important;border:2px solid #000!important}
+
+.add,.save,.todoAddButton,.todoCompleteButton,.playerDbAdd,
+.tournamentAddButton,.tournamentSaveButton{background:var(--uno-green)!important;color:#fff!important;border:2px solid #000!important}
+
+.adminMainMenu #adminTournamentHistory,.tournamentManageButton,
+#manageTournamentTypes{background:var(--uno-black)!important;color:#fff!important;border:2px solid #000!important}
+
+.cancel,.statusToggle .statusUnselected{background:var(--uno-gray)!important;color:#fff!important;border:2px solid #000!important}
+
+.del,.clear,.dangerButton,.deleteSpecialGameButton,.tournamentDelete,
+.todoEditor .cancel,.editor .cancel{background:var(--uno-red)!important;color:#fff!important;border:2px solid #000!important}
+
+.specialNameEdit,.todoEditable,.name,.top10PlayerName{color:var(--uno-orange)!important}
+.statusActiveSelected{background:var(--uno-green)!important;color:#fff!important}
+.statusInactiveSelected{background:var(--uno-red)!important;color:#fff!important}
+
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.87";
+const APP_VERSION="100726.88";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
