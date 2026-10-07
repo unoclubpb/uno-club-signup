@@ -563,12 +563,19 @@ select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;
 .statusActiveSelected{background:var(--uno-green)!important;color:#fff!important}
 .statusInactiveSelected{background:var(--uno-red)!important;color:#fff!important}
 
+
+/* v100726.89 — typography */
+.todoRow:not(.completedRow) .todoEditable,
+.todoRow:not(.completedRow) .todoInfo,
+.todoRow:not(.completedRow) .todoInfo *{color:#000!important}
+header h1,header .headertext h1,header small,header .headertext small{color:#fff!important}
+
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.88";
+const APP_VERSION="100726.89";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
