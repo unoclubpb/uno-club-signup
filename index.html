@@ -517,8 +517,8 @@ select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;
 .cssPokerTable .tableAttendance{top:57%!important}
 .cssPokerTable .upcomingTournamentName{
  position:absolute;left:18%;right:18%;top:39%;
- color:#ffd400;font-weight:900;font-size:clamp(10.5px,3vw,18px);
- line-height:1;text-align:center;white-space:normal;text-shadow:0 1px 2px #000;
+ color:#fff;font-weight:900;font-size:clamp(1.35rem,7vw,2.4rem);
+ line-height:1;text-align:center;white-space:nowrap;text-shadow:0 3px 4px #000;
  z-index:20;pointer-events:none
 }
 
@@ -527,7 +527,7 @@ select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.81";
+const APP_VERSION="100726.82";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -658,7 +658,8 @@ function renderCssTournamentTable(d){
  }
  const attendance=attendanceFor(d,"Tournament");
  const nextRegular=scheduledTournaments().filter(t=>t.is_special!==true&&new Date(t.tournament_date+"T12:00:00").getDay()===3).sort((a,b)=>a.tournament_date.localeCompare(b.tournament_date)||Number(a.id)-Number(b.id))[0]||null;
- const upcomingName=nextRegular?`<div class="upcomingTournamentName">${esc(nextRegular.tournament_type_name)}</div>`:"";
+ const upcomingDisplayName=nextRegular?String(nextRegular.tournament_type_name||"").replace(/\s*\([^)]*\)\s*$/,"").trim():"";
+ const upcomingName=upcomingDisplayName?`<div class="upcomingTournamentName">${esc(upcomingDisplayName)}</div>`:"";
  return `<div class="cssPokerTable cssTournamentTable"><div class="felt"></div>${seats}${upcomingName}<div class="tableTitle">TOURNAMENT</div>${attendance.arrived+attendance.expected>0?`<div class="tableAttendance"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></div>`:""}<div class="cssCount">${gameCount(d,"Tournament")}</div></div>`;
 }
 function renderCssPokerTable(d,g){
