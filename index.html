@@ -10,18 +10,32 @@
 <meta http-equiv="Expires" content="0">
 <title>Uno Club Lists</title>
 <style>
-*{box-sizing:border-box}html{overscroll-behavior-y:none;background:#f5f6f8}body{margin:0;min-height:100dvh;background:#f5f6f8;color:#0b0b0b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,textarea{font:inherit}
+*{box-sizing:border-box}html{overscroll-behavior-y:none;background:#f5f6f8}body{margin:0;min-height:100dvh;background:#f5f6f8;color:#0b0b0b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,textarea,select{font:inherit}
 header{min-height:118px;background:#0b0b0b;color:#fff;display:flex;align-items:center;gap:.8rem;padding:1.2rem max(1rem,calc((100vw - 620px)/2 + 1rem));position:sticky;top:0;z-index:1000}header b{color:#79a5f4;font-size:.76rem;letter-spacing:.16em}.headertext{flex:1;text-align:center}.headerlogo{width:78px;height:78px;object-fit:contain;border-radius:12px;margin-left:auto;flex:none;cursor:pointer}h1{margin:.15rem 0 0;font-size:clamp(2rem,8vw,2.7rem);line-height:1}.back{width:46px;height:46px;border:2px solid #000;background:#171717;color:#fff;border-radius:10px;flex:none}
 .menu,.content{max-width:620px;margin:auto;padding:1.25rem 1rem 4rem}.menu{display:grid;gap:1rem;padding-top:2rem}.specialGameButton{margin-top:0!important}.todoMenuButton{margin-top:0!important;background:#FFEF00!important;color:#000!important;border:2px solid #000!important}
 .big,.add,.save,.textlist{background:#1e5acb;color:#fff;border:2px solid #000;border-radius:10px;font-weight:800}.big{min-height:58px;font-size:1.2rem}.menu{gap:.65rem;padding-top:1rem}.menu .game{min-height:174px;font-size:1.55rem}.todoMenuButton{margin-top:58px!important}.playerDatabaseButton{margin-top:58px!important;background:#c62828!important;color:#fff!important;border:2px solid #000!important}.game,.specialGameButton,.day{position:relative}.tonight{box-shadow:0 0 0 4px #FFEF00,0 4px 12px rgba(0,0,0,.18);transform:scale(1.015)}.tonight::after{content:"TONIGHT";position:absolute;left:10px;top:8px;font-size:.65rem;letter-spacing:.08em;background:#FFEF00;color:#000;border:1px solid #000;border-radius:5px;padding:2px 5px}
 .gamecount{position:absolute;top:9px;right:11px;min-width:27px;height:27px;padding:0 7px;border-radius:14px;background:#fff;color:#1e5acb;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900}
-form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;display:grid;gap:1rem}.fieldwrap{display:grid;gap:.45rem;font-weight:700}.fieldhint{font-size:.83rem;font-weight:400;color:#666}input,textarea{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;background:#fff;color:#0b0b0b}textarea{min-height:82px;resize:vertical}.add{min-height:50px}.todoAddButton{background:#FFEF00!important;color:#000!important;border:2px solid #000!important}.red,.error{color:#b42318;font-weight:800}
+form{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:1rem;display:grid;gap:1rem}.fieldwrap{display:grid;gap:.45rem;font-weight:700}.fieldhint{font-size:.83rem;font-weight:400;color:#666}input,textarea,select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;background:#fff;color:#0b0b0b}textarea{min-height:82px;resize:vertical}.add{min-height:50px}.todoAddButton{background:#FFEF00!important;color:#000!important;border:2px solid #000!important}.red,.error{color:#b42318;font-weight:800}
 .suggestions{display:none;border:1px solid #bbb;border-radius:8px;background:#fff;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.12)}.suggestions.show{display:block}.suggestion{display:block;width:100%;text-align:left;padding:.65rem .75rem;background:#fff;border:0;border-bottom:1px solid #eee;color:#111}.suggestion:last-child{border-bottom:0}.suggestion small{display:block;color:#666;margin-top:2px}
-.head{display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin:1.5rem 0 .65rem}.head h2{margin:0}.listactions{display:flex;gap:.5rem}.textlist,.clear{padding:.65rem .8rem}.clear{background:#fff;color:#b42318;border:2px solid #000;border-radius:8px}.list{display:grid;gap:.55rem}.empty,.row,.todoRow{background:#fff;border:1px solid #d9d9d9;border-radius:10px}.empty{padding:1.5rem;text-align:center;color:#666}.row{min-height:64px;display:flex;align-items:center;gap:.75rem;padding:.65rem}.num{width:30px;height:30px;border-radius:50%;background:#eaf0fb;color:#1e5acb;display:grid;place-items:center;font-weight:800;flex:none}.info{min-width:0;flex:1;display:grid;gap:.15rem}.info span{font-size:.84rem;color:#666}.name{width:fit-content;padding:0;border:0;background:transparent;font-weight:800;text-decoration:underline}.del{width:44px;height:44px;border:2px solid #000;border-radius:9px;background:#f5e8e7;color:#b42318;font-size:22px;flex:none}.note{font-style:italic!important;color:#333!important}.signupTime{font-size:.76rem!important;color:#888!important}.editor{display:grid;gap:.4rem;margin-top:.3rem}.editor div{display:flex;gap:.4rem}.editor button{padding:.5rem .7rem;border-radius:8px}.cancel{background:#fff;border:2px solid #000}.count{color:#666;font-weight:700;font-size:.9rem}.lastUpdated{display:block;margin-top:.18rem;color:#888;font-size:.76rem}
+.head{display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin:1.5rem 0 .65rem}.head h2{margin:0}.listactions{display:flex;gap:.5rem}.textlist,.clear{padding:.65rem .8rem}.clear{background:#fff;color:#b42318;border:2px solid #000;border-radius:8px}.list{display:grid;gap:.55rem}.empty,.row,.todoRow{background:#fff;border:1px solid #d9d9d9;border-radius:10px}.empty{padding:1.5rem;text-align:center;color:#666}.row{min-height:64px;display:flex;align-items:center;gap:.75rem;padding:.65rem}.num{width:30px;height:30px;border-radius:50%;background:#eaf0fb;color:#1e5acb;display:grid;place-items:center;font-weight:800;flex:none}.info{min-width:0;flex:1;display:grid;gap:.15rem}.info span{font-size:.84rem;color:#666}.name{width:fit-content;padding:0;border:0;background:transparent;font-weight:800;text-decoration:underline}.del{width:44px;height:44px;border:2px solid #000;border-radius:9px;background:#f5e8e7;color:#b42318;font-size:22px;flex:none}.note{font-style:italic!important;color:#333!important}.signupTime{font-size:.76rem!important;color:#888!important}.editor{display:grid;gap:.4rem;margin-top:.3rem}.editor div{display:flex;gap:.4rem}.editor button{padding:.5rem .7rem;border-radius:8px}.cancel{background:#fff;border:2px solid #000}.count{color:#666;font-weight:700;font-size:.9rem}.lastUpdated{display:block;margin-top:.18rem;color:#888;font-size:.76rem}.autoArchiveNotice{margin:0 0 .55rem;color:#b42318;font-size:.78rem;font-weight:700}
 .undoBar{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92vw,560px);background:#171717;color:#fff;border:2px solid #000;border-radius:10px;padding:.8rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;z-index:2000}.undoBar button{background:#FFEF00;color:#000;border:2px solid #000;border-radius:8px;padding:.5rem .9rem;font-weight:900}.appVersion{position:fixed;left:10px;bottom:calc(8px + env(safe-area-inset-bottom));font-size:.68rem;color:#000;z-index:10}
 .specialInfo{background:#fff;border:1px solid #d9d9d9;border-radius:12px;padding:.85rem 1rem;margin-bottom:1rem;font-weight:700}.specialNameEdit{padding:0;border:0;background:transparent;color:#0b0b0b;font-weight:800;text-decoration:underline dotted;cursor:pointer}.specialEditButtons{display:flex;gap:.5rem}.specialEditButtons button{flex:1;min-height:46px;border-radius:8px}
 .todoSectionTitle{margin:1.5rem 0 .65rem}.todoSectionTitle h2{margin:0}.todoRow{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem}.todoInfo{flex:1;display:grid;gap:.3rem}.todoEditable{width:fit-content;max-width:100%;padding:0;border:0;background:transparent;color:#0b0b0b;font-weight:800;text-align:left;text-decoration:underline dotted}.todoTime{font-size:.78rem;color:#666}.todoEditor{display:grid;gap:.5rem}.todoEditButtons{display:flex;gap:.5rem}.completedRow{opacity:.78}.completedText{text-decoration:line-through}.completedBadge{display:inline-block;width:fit-content;font-size:.72rem;font-weight:800;color:#2e7d32;background:#e7f4e8;border-radius:999px;padding:.2rem .5rem}
-.playerDbTop{display:grid;gap:.75rem;margin-bottom:1rem}.playerDbAdd{min-height:50px}.playerDbList{display:grid;gap:.55rem}.playerDbRow{width:100%;background:#fff;border:1px solid #d9d9d9;border-radius:10px;padding:.85rem 1rem;text-align:left;font-weight:800;display:flex;justify-content:space-between;align-items:center}.playerDbRow small{font-weight:800;color:#000;padding:.25rem .55rem;border:1px solid #000;border-radius:6px}.playerDbRow small.activeBadge{background:#65d66e}.playerDbRow small.inactiveBadge{background:#ef6b6b}.inactivePlayer{opacity:1}.playerDbForm{display:grid;gap:1rem}.statusToggle{display:flex;gap:.5rem}.statusToggle button{flex:1;min-height:44px;border:2px solid #000;border-radius:8px;font-weight:800;color:#000}.statusActiveSelected{background:#65d66e;color:#000}.statusInactiveSelected{background:#ef6b6b;color:#000}.statusUnselected{background:#fff;color:#000}.dangerButton{min-height:48px;background:#fff;color:#b42318;border:2px solid #b42318;border-radius:10px;font-weight:800}.dbActions{display:flex;gap:.6rem}.dbActions button{flex:1;min-height:48px}.dbNotes{text-transform:none}.adminMainMenu .big{min-height:174px;font-size:1.55rem}.adminPlayersButton{background:#65d66e!important;color:#000!important}.adminArchivesButton{background:#e4b83f!important;color:#000!important}.archiveMenu .archiveGameBtn{min-height:87px!important;font-size:1.35rem!important}.gameImageButton{position:relative;width:100%;min-height:0!important;height:auto!important;padding:0;border:2px solid #000;border-radius:12px;overflow:hidden;background:#fff;display:block}.gameImageButton img{display:block;width:100%;height:auto}.gameImageButton .gameImageLabel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:clamp(1.5rem,7vw,2.35rem);font-weight:900;color:#fff;text-shadow:0 2px 4px #000,0 0 8px #000;white-space:nowrap}.gameImageButton .gamecount{z-index:2}@media(max-width:430px){.head{align-items:flex-start;flex-direction:column}.listactions{width:100%}.textlist,.clear{flex:1}.headerlogo{width:68px;height:68px}}
+.playerDbTop{display:grid;gap:.75rem;margin-bottom:1rem}.playerDbAdd{min-height:50px}.playerDbList{display:grid;gap:.55rem}.playerDbRow{width:100%;background:#fff;border:1px solid #d9d9d9;border-radius:10px;padding:.85rem 1rem;text-align:left;font-weight:800;display:flex;justify-content:space-between;align-items:center}.playerDbRow small{font-weight:800;color:#000;padding:.25rem .55rem;border:1px solid #000;border-radius:6px}.playerDbRow small.activeBadge{background:#65d66e}.playerDbRow small.inactiveBadge{background:#ef6b6b}.inactivePlayer{opacity:1}.playerDbForm{display:grid;gap:1rem}.statusToggle{display:flex;gap:.5rem}.statusToggle button{flex:1;min-height:44px;border:2px solid #000;border-radius:8px;font-weight:800;color:#000}.statusActiveSelected{background:#65d66e;color:#000}.statusInactiveSelected{background:#ef6b6b;color:#000}.statusUnselected{background:#fff;color:#000}.dangerButton{min-height:48px;background:#fff;color:#b42318;border:2px solid #b42318;border-radius:10px;font-weight:800}.dbActions{display:flex;gap:.6rem}.dbActions button{flex:1;min-height:48px}.dbNotes{text-transform:none}.adminMainMenu .big{min-height:58px;font-size:1.2rem}.adminPlayersButton{background:#65d66e!important;color:#000!important}
+.tournamentAdminTools{display:grid;gap:.75rem;margin-bottom:1rem}
+.tournamentAdminTools .big{min-height:58px}
+.tournamentHistoryList{display:grid;gap:.55rem}
+.tournamentHistoryRow{background:#fff;border:1px solid #d9d9d9;border-radius:10px;padding:.75rem .85rem;display:flex;align-items:center;gap:.75rem}
+.tournamentHistoryInfo{flex:1;min-width:0;display:grid;gap:.2rem}
+.tournamentHistoryDate{font-weight:850}
+.tournamentHistoryType{color:#444;font-size:.92rem}
+.specialTournamentBadge{display:inline-block;width:fit-content;font-size:.7rem;font-weight:850;color:#7a1f1f;background:#ffe6e6;border:1px solid #d9a7a7;border-radius:999px;padding:.15rem .45rem}
+.tournamentDelete{width:42px;height:42px;flex:none;border:2px solid #000;border-radius:9px;background:#f5e8e7;color:#b42318;font-size:21px}
+.tournamentTypeRow{background:#fff;border:1px solid #d9d9d9;border-radius:10px;padding:.75rem .85rem;display:flex;align-items:center;gap:.75rem;font-weight:800}
+.tournamentTypeRow span{flex:1}
+.checkRow{display:flex;align-items:center;gap:.65rem;font-weight:800}
+.checkRow input{width:22px;height:22px;min-height:0;margin:0}
+.tournamentNote{font-size:.82rem;color:#666;line-height:1.35}.adminArchivesButton{background:#e4b83f!important;color:#000!important}.archiveMenu .archiveGameBtn{min-height:87px!important;font-size:1.35rem!important}.gameImageButton{position:relative;width:100%;min-height:0!important;height:auto!important;padding:0;border:2px solid #000;border-radius:12px;overflow:hidden;background:#fff;display:block}.gameImageButton img{display:block;width:100%;height:auto}.gameImageButton .gameImageLabel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:clamp(1.5rem,7vw,2.35rem);font-weight:900;color:#fff;text-shadow:0 2px 4px #000,0 0 8px #000;white-space:nowrap}.gameImageButton .gamecount{z-index:2}@media(max-width:430px){.head{align-items:flex-start;flex-direction:column}.listactions{width:100%}.textlist,.clear{flex:1}.headerlogo{width:68px;height:68px}}
 
 /* Monday / Wednesday / Thursday table-image selection */
 .tableGameMenu{
@@ -486,68 +500,21 @@ header{
 }
 
 
-/* v100126.66 — revised automatic archive wording */
-.archiveNotice{
-  color:#b42318;
-  font-size:.78rem;
-  font-weight:700;
-  margin:.2rem 0 .55rem;
-}
-
-
-/* v100126.68 — Send a Copy matches Add Player width */
-.textlist{
-  width:100%!important;
-}
-.listactions:has(.textlist){
-  width:100%!important;
-}
-
-
-/* v100126.69 — align Send a Copy to the inner width of the Add Player button */
-.head .listactions{
-  width:calc(100% - 2rem)!important;
-  margin-left:1rem!important;
-  margin-right:1rem!important;
-  box-sizing:border-box!important;
-}
-.head .listactions .textlist{
-  width:100%!important;
-  flex:1 1 100%!important;
-  box-sizing:border-box!important;
-}
-
-
-/* v100126.70 — center all automatic archive notices */
-.archiveNotice{width:100%!important;text-align:center!important;box-sizing:border-box!important;margin:.55rem 0!important}
-
-/* v100126.74 — Hold Em/Omaha table names reflect arrival status */
-.cssPokerTable .cssSeat.occupied span.playerExpected,.cssPokerTable .unseatedNames .playerExpected{color:#ff8c00!important}
-.cssPokerTable .cssSeat.occupied span.playerArrived,.cssPokerTable .unseatedNames .playerArrived{color:#4ee267!important}
-.cssPokerTable .unseatedNames .nameSlash{color:#fff!important}
-
-/* v100126.75 — Tournament History */
-.tournamentAdminTools{display:grid;gap:.75rem;margin-bottom:1rem}
-.tournamentAdminTools .big{min-height:58px}
-.tournamentHistoryList{display:grid;gap:.55rem}
-.tournamentHistoryRow{background:#fff;border:1px solid #d9d9d9;border-radius:10px;padding:.75rem .85rem;display:flex;align-items:center;gap:.75rem}
-.tournamentHistoryInfo{flex:1;min-width:0;display:grid;gap:.2rem}
-.tournamentHistoryDate{font-weight:850}
-.tournamentHistoryType{color:#444;font-size:.92rem}
-.specialTournamentBadge{display:inline-block;width:fit-content;font-size:.7rem;font-weight:850;color:#7a1f1f;background:#ffe6e6;border:1px solid #d9a7a7;border-radius:999px;padding:.15rem .45rem}
-.tournamentDelete{width:42px;height:42px;flex:none;border:2px solid #000;border-radius:9px;background:#f5e8e7;color:#b42318;font-size:21px}
-.tournamentTypeRow{background:#fff;border:1px solid #d9d9d9;border-radius:10px;padding:.75rem .85rem;display:flex;align-items:center;gap:.75rem;font-weight:800}
-.tournamentTypeRow span{flex:1}
-.checkRow{display:flex;align-items:center;gap:.65rem;font-weight:800}
-.checkRow input{width:22px;height:22px;min-height:0;margin:0}
-#tournamentDate:disabled{opacity:1;background:#f1f1f1;color:#0b0b0b}
+/* v100726.76 — revised Tournament History workflow */
+.adminMainMenu .big{min-height:58px!important;font-size:1.2rem!important}
+.tournamentHistoryButton,.tournamentManageButton{background:#0b0b0b!important;color:#fff!important}
+.tournamentAddButton,.tournamentSaveButton{background:#2e9b45!important;color:#fff!important}
+.tournamentTypeOpen,.tournamentUpcomingOpen{flex:1;min-width:0;border:0;background:transparent;text-align:left;font:inherit;font-weight:800;color:#0b0b0b;padding:.35rem 0;cursor:pointer}
+.tournamentUpcomingOpen{display:grid;gap:.2rem}
+select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;background:#fff;color:#0b0b0b;font:inherit;width:100%}
+#tournamentTypeName::placeholder{color:#888;opacity:1}
 
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100126.75";
+const APP_VERSION="100726.76";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -569,7 +536,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null;
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -692,10 +659,10 @@ function renderCssPokerTable(d,g){
  let seats=`<div class="cssSeat dealer" style="left:${pos.dealer[0]}%;top:${pos.dealer[1]}%"><span>DEALER</span></div>`;
  for(let n=1;n<=max;n++){
   const p=regular.find(x=>String(x.preferred_seat??"")===String(n)),xy=pos[n];
-  seats+=`<div class="cssSeat ${p?"occupied":""}" style="left:${xy[0]}%;top:${xy[1]}%"><span class="${p?(p.arrived===true||p.is_late===true?"playerArrived":"playerExpected"):""}">${p?esc(p.player_name):`SEAT ${n}`}</span></div>`;
+  seats+=`<div class="cssSeat ${p?"occupied":""}" style="left:${xy[0]}%;top:${xy[1]}%"><span>${p?esc(p.player_name):`SEAT ${n}`}</span></div>`;
  }
  const unseatedLines=[];
- for(let i=0;i<unseated.length;i+=3)unseatedLines.push(unseated.slice(i,i+3).map(p=>`<span class="${p.arrived===true||p.is_late===true?"playerArrived":"playerExpected"}">${esc(p.player_name)}</span>`).join(`<span class="nameSlash"> / </span>`));
+ for(let i=0;i<unseated.length;i+=3)unseatedLines.push(unseated.slice(i,i+3).map(p=>esc(p.player_name)).join(" / "));
  const unseatedNames=unseatedLines.length?`<div class="unseatedNames">${unseatedLines.map(line=>`<div class="unseatedLine">${line}</div>`).join("")}</div>`:"";
  const attendance=attendanceFor(d,g);
  return `<div class="cssPokerTable"><div class="felt"></div>${seats}${attendance.arrived+attendance.expected>0?`<div class="tableAttendance"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></div>`:""}<div class="tableTitle">${g.toUpperCase()}</div>${unseatedNames}<div class="cssCount">${gameCount(d,g)}</div></div>`;
@@ -711,7 +678,7 @@ function render(){
  }else if(archiveGame){
   adminHeader=renderArchiveHeader(archiveGame==="Special Game"?"Special Games":archiveGame);
  }else{
-  adminHeader=renderHeader(adminMode==="main"?"Admin":adminMode==="top10"?"Top 10 Players":adminMode==="tournamentHistory"?"Tournament History":adminMode==="tournamentAdd"?"Add Tournament":adminMode==="tournamentTypes"?"Tournament Types":"List Archives");
+  adminHeader=renderHeader(adminMode==="main"?"Admin":adminMode==="top10"?"Top 10 Players":adminMode==="tournamentHistory"?"Tournament History":adminMode==="tournamentAdd"?"Add Tournament":adminMode==="tournamentTypes"?"Manage Tournament Types":adminMode==="tournamentTypeHistory"?"Tournament History":"List Archives");
  }
  a.innerHTML=adminHeader+renderAdminPage();wireAdmin();return
 }
@@ -751,7 +718,7 @@ function renderPlayerPage(isSpecial=false){
  ${!specialEdit&&error?`<p class="error">${esc(error)}</p>`:""}
  <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}${lates.length?` / ${countLabel(lates.length,"Late Arrival","Late Arrivals")}`:""}</span><span class="attendanceSummary"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
  <div class="listactions">${current().length?`<button class="textlist" id="textlist">Send a Copy</button>`:""}${isSpecial?`<button class="clear" id="clear">${players.filter(p=>p.day==="Special Game"&&p.game==="Special Game").length===0?"Delete Game":"Archive List"}</button>`:""}</div></div>
- ${!isSpecial?`<div class="archiveNotice">${game==="Tournament"?"Tournament will archive at 10pm":`Game will archive at 3am ${day==="Monday"?"Tuesday":day==="Wednesday"?"Thursday":day==="Thursday"?"Friday":""}`}</div>`:""}
+ ${!isSpecial?`<div class="autoArchiveNotice">${game==="Tournament"?"tournament will be archived at 10pm":`game will archive automatically at 3am on ${day==="Monday"?"Tuesday":day==="Wednesday"?"Thursday":"Friday"}`}</div>`:""}
  <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row ${p.arrived||p.isLate?"arrivedRow":""}"><div class="num">${p.isLate?"L":p.alt?"A":p.num}</div><div class="info">
  <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.isLate?'<span class="red">LATE ARRIVAL</span>':p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
  ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>
@@ -822,77 +789,83 @@ async function loadTournamentHistory(){
  if(r.error)error="Could not load tournament history.";
 }
 async function loadTournamentData(){await Promise.all([loadTournamentTypes(),loadTournamentHistory()])}
-function tournamentDateLabel(value){
- const d=new Date(value+"T12:00:00");
- return d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",year:"numeric"});
-}
-function upcomingWednesdayDate(){
- const d=new Date();
- const add=(3-d.getDay()+7)%7;
- d.setDate(d.getDate()+add);
- const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
- return `${y}-${m}-${day}`;
-}
-function regularUpcomingTournament(){
- const target=upcomingWednesdayDate();
- return tournamentHistory.find(t=>t.tournament_date===target&&t.is_special!==true)||null;
-}
+function localDateISO(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function upcomingWednesdayDate(){const d=new Date();const add=(3-d.getDay()+7)%7;d.setDate(d.getDate()+add);return localDateISO(d)}
+function tournamentDateLabel(value){const d=new Date(value+"T12:00:00");return d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",year:"numeric"})}
+function scheduledTournaments(){return tournamentHistory.filter(t=>!t.archived_at).sort((a,b)=>a.tournament_date.localeCompare(b.tournament_date)||Number(a.id)-Number(b.id))}
+function archivedTournaments(){return tournamentHistory.filter(t=>!!t.archived_at)}
+function scheduledForDate(date,isSpecial){return scheduledTournaments().find(t=>t.tournament_date===date&&t.is_special===(isSpecial===true))||null}
+function selectedTournamentEdit(){return tournamentEditId?tournamentHistory.find(t=>String(t.id)===String(tournamentEditId)&&!t.archived_at)||null:null}
+
 function renderTournamentHistoryPage(){
  return `<section class="content">
   <div class="tournamentAdminTools">
-   <button class="big" id="addTournamentHistory">Add Tournament</button>
-   <button class="big" id="manageTournamentTypes">Manage Tournament Types</button>
+   <button class="big tournamentManageButton" id="manageTournamentTypes">Manage Tournament Types</button>
+   <button class="big tournamentAddButton" id="addTournamentHistory">Add Tournament</button>
   </div>
   ${error?`<p class="error">${esc(error)}</p>`:""}
-  <div class="tournamentHistoryList">
-   ${tournamentHistory.length?tournamentHistory.map(t=>`<div class="tournamentHistoryRow">
-    <div class="tournamentHistoryInfo">
-     <div class="tournamentHistoryDate">${esc(tournamentDateLabel(t.tournament_date))}</div>
-     <div class="tournamentHistoryType">${esc(t.tournament_type_name)}</div>
-     ${t.is_special?'<span class="specialTournamentBadge">SPECIAL TOURNAMENT</span>':""}
-    </div>
-    <button class="tournamentDelete" data-delete-tournament="${t.id}" aria-label="Delete tournament">×</button>
-   </div>`).join(""):'<div class="empty">No tournaments have been entered yet.</div>'}
-  </div>
  </section>`;
 }
+function renderUpcomingTournaments(){
+ const upcoming=scheduledTournaments();
+ return `<div class="head"><h2>Upcoming Tournaments</h2></div>
+ <div class="tournamentHistoryList">${upcoming.length?upcoming.map(t=>`<div class="tournamentHistoryRow">
+  <button type="button" class="tournamentUpcomingOpen" data-edit-tournament="${t.id}">
+   <div class="tournamentHistoryDate">${esc(tournamentDateLabel(t.tournament_date))}</div>
+   <div class="tournamentHistoryType">${esc(t.tournament_type_name)}</div>
+   ${t.is_special?'<span class="specialTournamentBadge">SPECIAL TOURNAMENT</span>':""}
+  </button>
+  <button class="tournamentDelete" data-delete-tournament="${t.id}" aria-label="Delete scheduled tournament">×</button>
+ </div>`).join(""):'<div class="empty">No upcoming tournaments scheduled.</div>'}</div>`;
+}
 function renderTournamentAddPage(){
- const hasTypes=tournamentTypes.length>0;
- const target=upcomingWednesdayDate();
- const existing=regularUpcomingTournament();
- const selectedId=existing?String(existing.tournament_type_id):"";
+ const editing=selectedTournamentEdit(),draft=tournamentDraft||{};
+ const isSpecial=editing?editing.is_special===true:draft.isSpecial===true;
+ const date=editing?editing.tournament_date:(draft.date||upcomingWednesdayDate());
+ const existing=scheduledForDate(date,isSpecial);
+ if(!tournamentEditId&&existing)tournamentEditId=existing.id;
+ const activeEdit=selectedTournamentEdit()||existing;
+ const selectedId=String(draft.typeId||activeEdit?.tournament_type_id||"");
  return `<section class="content">
   <form id="tournamentHistoryForm" autocomplete="off">
-   <div class="fieldwrap">
-    <div>Date</div>
-    <input id="tournamentDate" type="date" value="${target}" disabled>
-   </div>
-   <div class="fieldwrap">
-    <div>Tournament Type</div>
+   <div class="fieldwrap"><div>Date</div><input id="tournamentDate" type="date" value="${esc(date)}"></div>
+   <div class="fieldwrap"><div>Tournament Type</div>
     <select id="tournamentTypeSelect">
+     <option value="" ${selectedId?"":"selected"} disabled>Select Tournament Type</option>
      ${tournamentTypes.map(t=>`<option value="${t.id}" ${String(t.id)===selectedId?"selected":""}>${esc(t.name)}</option>`).join("")}
-     <option value="__new__">${hasTypes?"+ Add New Tournament Type":"Add Tournament Type"}</option>
+     <option value="__new__">Add New Tournament Type</option>
     </select>
    </div>
-   <div class="fieldwrap" id="newTournamentTypeWrap" ${hasTypes?"hidden":""}>
-    <div>New Tournament Type</div>
-    <input id="newTournamentTypeName" maxlength="100" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Example: Omaha / Crazy Pineapple / Tahoe">
-   </div>
-   <label class="checkRow"><input id="specialTournamentCheck" type="checkbox">Special Tournament</label>
+   <label class="checkRow"><input id="specialTournamentCheck" type="checkbox" ${isSpecial?"checked":""}>Special Tournament</label>
    ${error?`<p class="error">${esc(error)}</p>`:""}
-   <button class="save">${existing?"Save Changes":"Save Tournament"}</button>
+   <button class="save tournamentSaveButton">${activeEdit?"Save Changes":"Save Tournament"}</button>
   </form>
+  ${renderUpcomingTournaments()}
  </section>`;
 }
 function renderTournamentTypesPage(){
  return `<section class="content">
   <form id="tournamentTypeForm" autocomplete="off">
-   <div class="fieldwrap"><div>Add Tournament Type</div><input id="tournamentTypeName" maxlength="100" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+   <input id="tournamentTypeName" maxlength="100" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Add Tournament Type">
    ${error?`<p class="error">${esc(error)}</p>`:""}
-   <button class="add">Add Type</button>
+   <button class="add tournamentSaveButton">Save Tournament</button>
   </form>
   <div class="head"><h2>Tournament Types</h2></div>
-  <div class="list">${tournamentTypes.length?tournamentTypes.map(t=>`<div class="tournamentTypeRow"><span>${esc(t.name)}</span><button class="tournamentDelete" data-delete-type="${t.id}" data-type-name="${esc(t.name)}" aria-label="Delete tournament type">×</button></div>`).join(""):'<div class="empty">No tournament types saved yet.</div>'}</div>
+  <div class="list">${tournamentTypes.length?tournamentTypes.map(t=>`<div class="tournamentTypeRow">
+   <button type="button" class="tournamentTypeOpen" data-open-type="${t.id}">${esc(t.name)}</button>
+   <button class="tournamentDelete" data-delete-type="${t.id}" data-type-name="${esc(t.name)}" aria-label="Delete tournament type">×</button>
+  </div>`).join(""):'<div class="empty">No tournament types saved yet.</div>'}</div>
+ </section>`;
+}
+function renderTournamentTypeHistoryPage(){
+ const type=tournamentTypes.find(t=>String(t.id)===String(tournamentTypeViewId));
+ const rows=archivedTournaments().filter(t=>String(t.tournament_type_id)===String(tournamentTypeViewId)).sort((a,b)=>b.tournament_date.localeCompare(a.tournament_date)||Number(b.id)-Number(a.id));
+ return `<section class="content">
+  <div class="head"><h2>${type?esc(type.name):"Tournament History"}</h2></div>
+  <div class="list">${rows.length?rows.map(t=>`<div class="tournamentHistoryRow"><div class="tournamentHistoryInfo">
+   <div class="tournamentHistoryDate">${esc(tournamentDateLabel(t.tournament_date))}</div>
+   ${t.is_special?'<span class="specialTournamentBadge">SPECIAL TOURNAMENT</span>':""}
+  </div></div>`).join(""):'<div class="empty">This tournament type has not been archived yet.</div>'}</div>
  </section>`;
 }
 async function saveTournamentTypeName(name){
@@ -904,11 +877,12 @@ async function saveTournamentTypeName(name){
 }
 
 function renderAdminPage(){
- if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button><button class="big top10Button" id="adminTop10">Top 10 Players</button><button class="big top10Button" id="adminTournamentHistory">Tournament History</button></section>`;
+ if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button><button class="big top10Button" id="adminTop10">Top 10 Players</button><button class="big tournamentHistoryButton" id="adminTournamentHistory">Tournament History</button></section>`;
  if(adminMode==="top10")return renderTop10Players();
  if(adminMode==="tournamentHistory")return renderTournamentHistoryPage();
  if(adminMode==="tournamentAdd")return renderTournamentAddPage();
  if(adminMode==="tournamentTypes")return renderTournamentTypesPage();
+ if(adminMode==="tournamentTypeHistory")return renderTournamentTypeHistoryPage();
  if(adminMode==="archives"&&!archiveGame)return `<section class="menu archiveMenu"><button class="big game archiveGameBtn" data-agame="Hold Em">Hold Em</button><button class="big game archiveGameBtn" data-agame="Omaha">Omaha</button><button class="big game archiveGameBtn" data-agame="Tournament">Tournament</button><button class="big game archiveGameBtn" data-agame="Special Game">Special Games</button></section>`;
  if(archiveViewId){
   const a=archives.find(x=>String(x.id)===String(archiveViewId));
@@ -922,92 +896,100 @@ function wireAdmin(){
  if(back)back.onclick=()=>{
   if(archiveViewId){archiveViewId=null;archivePlayers=[];render();return}
   if(archiveGame){archiveGame=null;archives=[];render();return}
-  if(adminMode==="tournamentAdd"||adminMode==="tournamentTypes"){adminMode="tournamentHistory";error="";render();return}
-  if(adminMode==="archives"||adminMode==="top10"||adminMode==="tournamentHistory"){adminMode="main";top10Players=[];error="";render();return}
+  if(adminMode==="tournamentTypeHistory"){adminMode="tournamentTypes";tournamentTypeViewId=null;render();return}
+  if(adminMode==="tournamentAdd"||adminMode==="tournamentTypes"){adminMode="tournamentHistory";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
+  if(adminMode==="tournamentHistory"){adminMode="main";error="";render();return}
+  if(adminMode==="archives"||adminMode==="top10"){adminMode="main";top10Players=[];render();return}
   page="main";render();
  };
  const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
  const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
  const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";await loadTop10Players();render()};
-
  const th=document.querySelector("#adminTournamentHistory");if(th)th.onclick=async()=>{error="";adminMode="tournamentHistory";await loadTournamentData();render()};
- const addTournamentButton=document.querySelector("#addTournamentHistory");
- if(addTournamentButton)addTournamentButton.onclick=()=>{error="";adminMode="tournamentAdd";render()};
- const manageTypesButton=document.querySelector("#manageTournamentTypes");
- if(manageTypesButton)manageTypesButton.onclick=()=>{error="";adminMode="tournamentTypes";render()};
+ const addBtn=document.querySelector("#addTournamentHistory");if(addBtn)addBtn.onclick=()=>{error="";tournamentEditId=null;tournamentDraft={date:upcomingWednesdayDate(),isSpecial:false,typeId:""};adminMode="tournamentAdd";render()};
+ const manage=document.querySelector("#manageTournamentTypes");if(manage)manage.onclick=()=>{error="";tournamentReturnToAdd=false;adminMode="tournamentTypes";render()};
 
- const specialCheck=document.querySelector("#specialTournamentCheck");
- if(specialCheck)specialCheck.onchange=()=>{
-  const date=document.querySelector("#tournamentDate");
-  if(!date)return;
-  if(specialCheck.checked){date.disabled=false;date.value="";}
-  else{date.value=upcomingWednesdayDate();date.disabled=true}
+ document.querySelectorAll("[data-edit-tournament]").forEach(b=>b.onclick=()=>{tournamentEditId=Number(b.dataset.editTournament);tournamentDraft=null;error="";adminMode="tournamentAdd";render()});
+
+ const dateEl=document.querySelector("#tournamentDate");
+ if(dateEl)dateEl.onchange=()=>{
+  const isSpecial=document.querySelector("#specialTournamentCheck")?.checked===true;
+  const match=scheduledForDate(dateEl.value,isSpecial);
+  tournamentEditId=match?.id||null;
+  tournamentDraft={date:dateEl.value,isSpecial,typeId:match?.tournament_type_id||document.querySelector("#tournamentTypeSelect")?.value||""};
+  render();
  };
 
- const typeSelect=document.querySelector("#tournamentTypeSelect");
- if(typeSelect)typeSelect.onchange=()=>{
-  const wrap=document.querySelector("#newTournamentTypeWrap");
-  if(wrap)wrap.hidden=typeSelect.value!=="__new__";
+ const special=document.querySelector("#specialTournamentCheck");
+ if(special)special.onchange=()=>{
+  let date=document.querySelector("#tournamentDate")?.value||"";
+  if(special.checked&&date&&new Date(date+"T12:00:00").getDay()===3)date="";
+  if(!special.checked&&!date)date=upcomingWednesdayDate();
+  const match=date?scheduledForDate(date,special.checked):null;
+  tournamentEditId=match?.id||null;
+  tournamentDraft={date,isSpecial:special.checked,typeId:match?.tournament_type_id||document.querySelector("#tournamentTypeSelect")?.value||""};
+  render();
  };
 
- const tournamentForm=document.querySelector("#tournamentHistoryForm");
- if(tournamentForm)tournamentForm.onsubmit=async e=>{
+ const select=document.querySelector("#tournamentTypeSelect");
+ if(select)select.onchange=()=>{
+  if(select.value!=="__new__")return;
+  const date=document.querySelector("#tournamentDate")?.value||"",isSpecial=document.querySelector("#specialTournamentCheck")?.checked===true;
+  tournamentDraft={date,isSpecial,typeId:""};
+  tournamentReturnToAdd=true;adminMode="tournamentTypes";error="";render();
+ };
+
+ const form=document.querySelector("#tournamentHistoryForm");
+ if(form)form.onsubmit=async e=>{
   e.preventDefault();error="";
   const date=document.querySelector("#tournamentDate")?.value||"";
   const isSpecial=document.querySelector("#specialTournamentCheck")?.checked===true;
-  let typeId=document.querySelector("#tournamentTypeSelect")?.value||"";
-
+  const typeId=document.querySelector("#tournamentTypeSelect")?.value||"";
   if(!date){error="Choose a tournament date.";render();return}
-  const dateObj=new Date(date+"T12:00:00");
-  if(isSpecial&&dateObj.getDay()===3){error="A Special Tournament cannot be entered on a Wednesday.";render();return}
-  if(!isSpecial&&date!==upcomingWednesdayDate()){error="Regular tournaments can only use the next upcoming Wednesday.";render();return}
-
-  if(typeId==="__new__"){
-   const name=document.querySelector("#newTournamentTypeName")?.value||"";
-   const saved=await saveTournamentTypeName(name);
-   if(saved.saved!==true){error=saved.reason==="invalid_name"?"Enter a tournament type.":"Could not save that tournament type.";render();return}
-   typeId=String(saved.id);
-   await loadTournamentTypes();
-  }
-  if(!typeId){error="Choose a tournament type.";render();return}
-
-  const r=await sb.rpc("add_tournament_history",{p_tournament_date:date,p_tournament_type_id:Number(typeId),p_is_special:isSpecial});
+  const dow=new Date(date+"T12:00:00").getDay();
+  if(isSpecial&&dow===3){error="Wednesdays are reserved for normal tournaments.";render();return}
+  if(!isSpecial&&dow!==3){error="Regular tournaments can only be scheduled on Wednesdays.";render();return}
+  if(!typeId||typeId==="__new__"){error="Choose a tournament type.";render();return}
+  const r=await sb.rpc("save_scheduled_tournament",{p_id:tournamentEditId?Number(tournamentEditId):null,p_tournament_date:date,p_tournament_type_id:Number(typeId),p_is_special:isSpecial});
   const result=r.error?{saved:false,reason:"error"}:(unwrapRpcData(r.data)||{});
   if(result.saved!==true){
-   if(result.reason==="special_wednesday")error="A Special Tournament cannot be entered on a Wednesday.";
-   else if(result.reason==="not_wednesday")error="Regular tournaments must be entered on Wednesday.";
+   if(result.reason==="special_wednesday")error="Wednesdays are reserved for normal tournaments.";
+   else if(result.reason==="not_wednesday")error="Regular tournaments can only be scheduled on Wednesdays.";
+   else if(result.reason==="date_exists")error="A tournament is already scheduled for that date.";
    else error="Could not save that tournament.";
    render();return
   }
-  await loadTournamentData();adminMode="tournamentHistory";error="";render();
+  await loadTournamentData();tournamentEditId=null;tournamentDraft=null;adminMode="tournamentHistory";render();
  };
 
- const tournamentTypeForm=document.querySelector("#tournamentTypeForm");
- if(tournamentTypeForm)tournamentTypeForm.onsubmit=async e=>{
+ const typeForm=document.querySelector("#tournamentTypeForm");
+ if(typeForm)typeForm.onsubmit=async e=>{
   e.preventDefault();error="";
-  const name=document.querySelector("#tournamentTypeName")?.value||"";
-  const saved=await saveTournamentTypeName(name);
+  const saved=await saveTournamentTypeName(document.querySelector("#tournamentTypeName")?.value||"");
   if(saved.saved!==true){error=saved.reason==="invalid_name"?"Enter a tournament type.":"Could not save that tournament type.";render();return}
-  await loadTournamentTypes();render();
+  await loadTournamentTypes();
+  if(tournamentReturnToAdd){tournamentDraft={...(tournamentDraft||{}),typeId:String(saved.id)};tournamentReturnToAdd=false;adminMode="tournamentAdd";render();return}
+  render();
  };
+
+ document.querySelectorAll("[data-open-type]").forEach(b=>b.onclick=()=>{tournamentTypeViewId=Number(b.dataset.openType);adminMode="tournamentTypeHistory";render()});
 
  document.querySelectorAll("[data-delete-type]").forEach(b=>b.onclick=async()=>{
   const name=b.dataset.typeName||"this tournament type";
-  if(!confirm(`Delete ${name}?`))return;
+  if(!confirm(`Are you sure you want to delete ${name}?`))return;
   const r=await sb.rpc("delete_tournament_type",{p_id:Number(b.dataset.deleteType)});
-  const result=r.error?{deleted:false,reason:"error"}:(unwrapRpcData(r.data)||{});
+  const result=r.error?{deleted:false}:(unwrapRpcData(r.data)||{});
   if(result.deleted===true){await loadTournamentTypes();render();return}
-  if(result.reason==="in_use"){error=`${name} cannot be deleted because it is used in ${result.history_count||1} tournament history entr${Number(result.history_count)===1?"y":"ies"}.`;render();return}
   error="Could not delete that tournament type.";render();
  });
 
  document.querySelectorAll("[data-delete-tournament]").forEach(b=>b.onclick=async()=>{
   const item=tournamentHistory.find(x=>String(x.id)===String(b.dataset.deleteTournament));
   const label=item?`${tournamentDateLabel(item.tournament_date)} — ${item.tournament_type_name}`:"this tournament";
-  if(!confirm(`Delete ${label} from Tournament History?`))return;
+  if(!confirm(`Are you sure you want to delete ${label}?`))return;
   const r=await sb.rpc("delete_tournament_history",{p_id:Number(b.dataset.deleteTournament)});
-  const result=r.error?{deleted:false,reason:"error"}:(unwrapRpcData(r.data)||{});
-  if(result.deleted===true){await loadTournamentHistory();render();return}
+  const result=r.error?{deleted:false}:(unwrapRpcData(r.data)||{});
+  if(result.deleted===true){await loadTournamentHistory();if(String(tournamentEditId)===String(b.dataset.deleteTournament))tournamentEditId=null;render();return}
   error="Could not delete that tournament.";render();
  });
 
@@ -1340,8 +1322,7 @@ async function add(e){
   if(current().some(p=>String(p.preferred_seat??"")===String(+seat))){addPlayerDraft={name,seat,notes};error="That preferred seat is already taken. Choose another seat or leave the seat blank.";render();return}
  }
  const savedSeat=game==="Tournament"||alt||lateArrival?null:(seat?+seat:null);
- const linkedPlayer=findDirectory(name);
- const r=await sb.from("signup_players").insert({day,game,player_id:linkedPlayer?.player_id??null,player_name:name,preferred_seat:savedSeat,notes:notes||null,is_late:lateArrival,arrived:lateArrival}).select().single();
+ const r=await sb.from("signup_players").insert({day,game,player_name:name,preferred_seat:savedSeat,notes:notes||null,is_late:lateArrival,arrived:lateArrival}).select().single();
  if(r.error){error=r.code==="23505"?"That player name or preferred seat is already on this list.":r.message}
  else{
   players.push(r.data);
@@ -1416,11 +1397,7 @@ async function save(id){
  if(seatEl)changes.preferred_seat=seat?+seat:null;
  const r=await sb.from("signup_players").update(changes).eq("id",id).select().single();
  if(r.error){error=r.message;render();return}
- players=players.map(x=>String(x.id)===String(id)?r.data:x);
- if(seatEl&&(p.game==="Hold Em"||p.game==="Omaha")){
-  await updateDirectory(p.player_name,seat?+seat:null);
- }
- await touchList();edit=null;error="";render()
+ players=players.map(x=>String(x.id)===String(id)?r.data:x);await touchList();edit=null;error="";render()
 }
 async function addTodo(e){e.preventDefault();const note=document.querySelector("#unoEntryE").value.trim();if(!note)return;const r=await sb.from("todo_items").insert({note}).select().single();if(r.error)error="Could not add the To-Do item.";else todos.push(r.data);render()}
 async function saveTodoEdit(id){const note=document.querySelector("#unoEntryF").value.trim();if(!note){error="To-Do item cannot be blank.";render();return}const r=await sb.from("todo_items").update({note}).eq("id",id).is("completed_at",null).select().single();if(r.error)error="Could not save the To-Do item.";else{todos=todos.map(t=>String(t.id)===String(id)?r.data:t);todoEdit=null}render()}
