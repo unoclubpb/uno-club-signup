@@ -527,7 +527,7 @@ select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.84";
+const APP_VERSION="100726.85";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -847,11 +847,11 @@ function renderUpcomingTournaments(){
 function renderPastTournaments(){
  const past=archivedTournaments().sort((a,b)=>b.tournament_date.localeCompare(a.tournament_date)||Number(b.id)-Number(a.id));
  return `<section class="content"><div class="head"><h2>Past Tournaments</h2></div>
- <div class="tournamentHistoryList">${past.length?past.map(t=>`<div class="tournamentHistoryRow"><div class="tournamentHistoryInfo">
+ <div class="tournamentHistoryList">${past.length?past.map(t=>`<div class="tournamentHistoryRow"><button type="button" class="tournamentUpcomingOpen" data-past-tournament-date="${esc(t.tournament_date)}">
   <div class="tournamentHistoryDate">${esc(tournamentDateLabel(t.tournament_date))}</div>
   <div class="tournamentHistoryType">${esc(t.tournament_type_name)}</div>
   ${t.is_special?'<span class="specialTournamentBadge">SPECIAL TOURNAMENT</span>':""}
- </div></div>`).join(""):'<div class="empty">No past tournaments yet.</div>'}</div></section>`;
+ </button></div>`).join(""):'<div class="empty">No past tournaments yet.</div>'}</div></section>`;
 }
 function renderTournamentAddPage(){
  const editing=selectedTournamentEdit(),draft=tournamentDraft||{};
@@ -930,7 +930,7 @@ function wireAdmin(){
  wireHomeLogo();
  const back=document.querySelector("#back");
  if(back)back.onclick=()=>{
-  if(archiveViewId){archiveViewId=null;archivePlayers=[];render();return}
+  if(archiveViewId){archiveViewId=null;archivePlayers=[];if(adminMode==="tournamentPast"){archiveGame=null;archives=[]}render();return}
   if(archiveGame){archiveGame=null;archives=[];render();return}
   if(adminMode==="tournamentTypeHistory"){adminMode="tournamentTypes";tournamentTypeViewId=null;render();return}
   if(adminMode==="tournamentAdd"){adminMode="tournamentUpcoming";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
@@ -1032,6 +1032,15 @@ function wireAdmin(){
   error="Could not delete that tournament.";render();
  });
 
+ document.querySelectorAll("[data-past-tournament-date]").forEach(b=>b.onclick=async()=>{
+  const tournamentDate=b.dataset.pastTournamentDate;
+  const r=await sb.rpc("get_list_archives",{p_game:"Tournament"});
+  const rows=r.error?[]:(Array.isArray(r.data)?r.data:(r.data?[r.data]:[]));
+  const a=rows.find(x=>x.archive_date===tournamentDate);
+  if(!a){error="The archived player list for this tournament could not be found.";render();return}
+  archiveGame="Tournament";archives=rows;archiveViewId=a.id;
+  await openArchive(a.id);
+ });
  document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=async()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="edit";playerDbEditName=b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";playerLastPlayed=null;await loadPlayerLastPlayed(playerDbEditName);render()});
  document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
  document.querySelectorAll("[data-archive]").forEach(b=>b.onclick=()=>openArchive(b.dataset.archive));
