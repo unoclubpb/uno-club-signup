@@ -579,7 +579,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.90";
+const APP_VERSION="100726.91";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -799,7 +799,7 @@ function renderPlayerPage(isSpecial=false){
  ${!isSpecial?`<div class="autoArchiveNotice">${game==="Tournament"?"tournament will be archived at 10pm":`game will archive automatically at 3am on ${day==="Monday"?"Tuesday":day==="Wednesday"?"Thursday":"Friday"}`}</div>`:""}
  <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row ${p.arrived||p.isLate?"arrivedRow":""}"><div class="num">${p.isLate?"L":p.alt?"A":p.num}</div><div class="info">
  <button class="name" data-id="${p.id}">${esc(p.player_name)}</button>${p.isLate?'<span class="red">LATE ARRIVAL</span>':p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
- ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>
+ ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>${p.arrived&&p.arrived_at?`<span class="signupTime">Arrived ${formatSignup(p.arrived_at)}</span>`:""}
  ${edit==p.id?`<div class="editor">${game!=="Tournament"?`<div class="fieldwrap"><div>Preferred Seat</div><input id="unoEditSeat" inputmode="numeric" value="${p.preferred_seat??""}" autocomplete="off"></div>`:""}<div class="fieldwrap"><div>Notes</div><input id="unoEntryD" value="${esc(p.notes||"")}" autocomplete="new-password"></div><div><button class="save" data-save="${p.id}">Save Changes</button><button class="cancel" id="cancel">Cancel</button></div></div>`:""}
  </div><button class="arrivalCheck ${p.arrived||p.isLate?"checked":""}" data-arrived="${p.id}" aria-label="${p.arrived||p.isLate?"Mark expected":"Mark arrived"}">✓</button><button class="del" data-del="${p.id}">×</button></div>`).join("")}</div></section>
 `;
@@ -1449,7 +1449,7 @@ async function toggleArrived(id){
  const p=players.find(x=>String(x.id)===String(id));if(!p)return;
  if(p.is_late)return;
  const next=!(p.arrived===true);
- const r=await sb.from("signup_players").update({arrived:next}).eq("id",p.id).select().single();
+ const r=await sb.from("signup_players").update({arrived:next,arrived_at:next?new Date().toISOString():null}).eq("id",p.id).select().single();
  if(r.error){error=r.message;render();return}
  Object.assign(p,r.data);render();
 }
