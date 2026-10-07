@@ -525,14 +525,14 @@ select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;
 
 /* v100726.86 — To-Do active-item sort toggle */
 .todoTitleRow{display:flex;align-items:center;gap:8px}
-.todoSortToggle{width:34px;height:30px;padding:0;border:2px solid #000;border-radius:7px;background:#fff;color:#000;font-size:19px;font-weight:900;line-height:24px}
+.todoSortToggle{height:30px;padding:0 9px;border:2px solid #000;border-radius:7px;background:#fff;color:#000;font-size:13px;font-weight:900;line-height:24px;white-space:nowrap}
 
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.86";
+const APP_VERSION="100726.87";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -761,7 +761,7 @@ function renderTodoPage(){
  const active=todos.filter(t=>!t.completed_at).sort((a,b)=>todoNewestFirst?new Date(b.created_at)-new Date(a.created_at):new Date(a.created_at)-new Date(b.created_at));
  const completed=todos.filter(t=>t.completed_at).sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at)).slice(0,25);
  return `<section class="content"><form id="todoForm" autocomplete="off"><div class="fieldwrap"><div>To-Do Item</div><textarea id="unoEntryE" maxlength="500" autocomplete="new-password"></textarea></div><button class="add todoAddButton">Add To-Do</button></form>
- ${error?`<p class="error">${esc(error)}</p>`:""}<div class="todoSectionTitle"><div class="todoTitleRow"><h2>To-Do</h2><button type="button" class="todoSortToggle" id="todoSortToggle" aria-label="Reverse To-Do sort order" title="${todoNewestFirst?"Newest first":"Oldest first"}">${todoNewestFirst?"↓":"↑"}</button></div><span class="count">${countLabel(active.length,"Item","Items")}</span></div><div class="list">
+ ${error?`<p class="error">${esc(error)}</p>`:""}<div class="todoSectionTitle"><div class="todoTitleRow"><h2>To-Do</h2><button type="button" class="todoSortToggle" id="todoSortToggle" aria-label="Reverse To-Do sort order" title="${todoNewestFirst?"Newest first":"Oldest first"}">${todoNewestFirst?"↓ Sort: Newest First":"↑ Sort: Oldest First"}</button></div><span class="count">${countLabel(active.length,"Item","Items")}</span></div><div class="list">
  ${!active.length?'<div class="empty">Nothing currently needs to be done.</div>':active.map(t=>`<div class="todoRow"><div class="todoInfo">${String(todoEdit)===String(t.id)?`<div class="todoEditor"><textarea id="unoEntryF">${esc(t.note)}</textarea><div class="todoEditButtons"><button class="save" data-todo-save="${t.id}">Save</button><button class="cancel" id="todoEditCancel">Cancel</button></div></div>`:`<button class="todoEditable" data-todo-edit="${t.id}">${esc(t.note)}</button>`}<div class="todoTime">Entered: ${formatDateTime(t.created_at)}</div></div><button class="todoCompleteButton" data-complete="${t.id}" aria-label="Mark completed">✓</button><button class="del" data-delete-active="${t.id}" aria-label="Delete without completing">×</button></div>`).join("")}</div>
  <div class="todoSectionTitle"><h2>Completed</h2><span class="count">Most recent 25</span></div><div class="list">${!completed.length?'<div class="empty">No completed items yet.</div>':completed.map(t=>`<div class="todoRow completedRow"><div class="todoInfo"><span class="completedBadge">COMPLETED</span><div class="completedText">${esc(t.note)}</div><div class="todoTime">Entered: ${formatDateTime(t.created_at)}</div><div class="todoTime">Completed: ${formatDateTime(t.completed_at)}</div></div><button class="del" data-delete-completed="${t.id}">×</button></div>`).join("")}</div></section>`;
 }
