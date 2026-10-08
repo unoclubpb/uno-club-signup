@@ -574,12 +574,19 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 /* v100726.90 — Admin is a management action */
 #adminButton{background:var(--uno-black)!important;color:#fff!important;border:2px solid #000!important}
 
+
+/* v100726.92 — player table status colors */
+.cssPokerTable .cssSeat.occupied.expectedPlayer span{color:#ff8c00!important}
+.cssPokerTable .cssSeat.occupied.arrivedPlayer span{color:#4ee267!important}
+.cssPokerTable .unseatedNames .expectedPlayer{color:#ff8c00!important}
+.cssPokerTable .unseatedNames .arrivedPlayer{color:#4ee267!important}
+
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.91";
+const APP_VERSION="100726.92";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -737,10 +744,10 @@ function renderCssPokerTable(d,g){
  let seats=`<div class="cssSeat dealer" style="left:${pos.dealer[0]}%;top:${pos.dealer[1]}%"><span>DEALER</span></div>`;
  for(let n=1;n<=max;n++){
   const p=regular.find(x=>String(x.preferred_seat??"")===String(n)),xy=pos[n];
-  seats+=`<div class="cssSeat ${p?"occupied":""}" style="left:${xy[0]}%;top:${xy[1]}%"><span>${p?esc(p.player_name):`SEAT ${n}`}</span></div>`;
+  seats+=`<div class="cssSeat ${p?`occupied ${p.arrived===true?"arrivedPlayer":"expectedPlayer"}`:""}" style="left:${xy[0]}%;top:${xy[1]}%"><span>${p?esc(p.player_name):`SEAT ${n}`}</span></div>`;
  }
  const unseatedLines=[];
- for(let i=0;i<unseated.length;i+=3)unseatedLines.push(unseated.slice(i,i+3).map(p=>esc(p.player_name)).join(" / "));
+ for(let i=0;i<unseated.length;i+=3)unseatedLines.push(unseated.slice(i,i+3).map(p=>`<span class="${p.arrived===true?"arrivedPlayer":"expectedPlayer"}">${esc(p.player_name)}</span>`).join('<span> / </span>'));
  const unseatedNames=unseatedLines.length?`<div class="unseatedNames">${unseatedLines.map(line=>`<div class="unseatedLine">${line}</div>`).join("")}</div>`:"";
  const attendance=attendanceFor(d,g);
  return `<div class="cssPokerTable"><div class="felt"></div>${seats}${unseatedNames}<div class="tableTitle">${g.toUpperCase()}</div>${attendance.arrived+attendance.expected>0?`<div class="tableAttendance"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></div>`:""}<div class="cssCount">${gameCount(d,g)}</div></div>`;
