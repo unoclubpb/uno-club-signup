@@ -584,12 +584,15 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 
 /* v100726.93 — centered automatic archive notices */
 .autoArchiveNotice{text-align:center!important;width:100%;box-sizing:border-box}
+
+/* v100726.95 — clickable dates in tournament-type history */
+.tournamentTypeHistoryDate{padding:0;border:0;background:transparent;color:#1262c6;text-decoration:underline;cursor:pointer;text-align:left;font:inherit;font-weight:850}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.94";
+const APP_VERSION="100726.95";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -959,7 +962,7 @@ function renderTournamentTypeHistoryPage(){
  return `<section class="content">
   <div class="head"><h2>${type?esc(type.name):"Tournament History"}</h2></div>
   <div class="list">${rows.length?rows.map(t=>`<div class="tournamentHistoryRow"><div class="tournamentHistoryInfo">
-   <div class="tournamentHistoryDate">${esc(tournamentDateLabel(t.tournament_date))}</div>
+   <button type="button" class="tournamentHistoryDate tournamentTypeHistoryDate" data-past-tournament-date="${esc(t.tournament_date)}">${esc(tournamentDateLabel(t.tournament_date))}</button>
    ${t.is_special?'<span class="specialTournamentBadge">SPECIAL TOURNAMENT</span>':""}
   </div></div>`).join(""):'<div class="empty">This tournament type has not been archived yet.</div>'}</div>
  </section>`;
