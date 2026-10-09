@@ -592,7 +592,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.95";
+const APP_VERSION="100726.96";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -980,6 +980,10 @@ function renderAdminPage(){
  if(adminMode==="top10")return renderTop10Players();
  if(adminMode==="tournamentHistory")return renderTournamentHistoryPage();
  if(adminMode==="tournamentUpcoming")return renderUpcomingTournaments();
+ if(archiveViewId){
+  const a=archives.find(x=>String(x.id)===String(archiveViewId));
+  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${countLabel(archivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(archivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>`<div class="row"><div class="num">${p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+ }
  if(adminMode==="tournamentPast")return renderPastTournaments();
  if(adminMode==="tournamentAdd")return renderTournamentAddPage();
  if(adminMode==="tournamentTypes")return renderTournamentTypesPage();
@@ -1101,7 +1105,12 @@ function wireAdmin(){
   const tournamentDate=b.dataset.pastTournamentDate;
   const r=await sb.rpc("get_list_archives",{p_game:"Tournament"});
   const rows=r.error?[]:(Array.isArray(r.data)?r.data:(r.data?[r.data]:[]));
-  const a=rows.find(x=>x.archive_date===tournamentDate);
+  let a=rows.find(x=>x.archive_date===tournamentDate);
+  if(!a){
+   const target=new Date(tournamentDate+"T12:00:00").getTime();
+   a=rows.map(x=>({row:x,diff:Math.abs(new Date(x.archive_date+"T12:00:00").getTime()-target)}))
+    .filter(x=>x.diff<=86400000).sort((x,y)=>x.diff-y.diff)[0]?.row||null;
+  }
   if(!a){error="The archived player list for this tournament could not be found.";render();return}
   archiveGame="Tournament";archives=rows;archiveViewId=a.id;
   await openArchive(a.id);
