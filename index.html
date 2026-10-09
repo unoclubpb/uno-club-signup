@@ -592,7 +592,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.96";
+const APP_VERSION="100726.97";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1103,14 +1103,15 @@ function wireAdmin(){
 
  document.querySelectorAll("[data-past-tournament-date]").forEach(b=>b.onclick=async()=>{
   const tournamentDate=b.dataset.pastTournamentDate;
-  const r=await sb.rpc("get_list_archives",{p_game:"Tournament"});
-  const rows=r.error?[]:(Array.isArray(r.data)?r.data:(r.data?[r.data]:[]));
+  const r=await sb.from("list_archives").select("*").eq("game","Tournament").order("archive_date",{ascending:false}).order("archived_at",{ascending:false});
+  const rows=r.error?[]:(r.data||[]);
   let a=rows.find(x=>x.archive_date===tournamentDate);
   if(!a){
    const target=new Date(tournamentDate+"T12:00:00").getTime();
    a=rows.map(x=>({row:x,diff:Math.abs(new Date(x.archive_date+"T12:00:00").getTime()-target)}))
     .filter(x=>x.diff<=86400000).sort((x,y)=>x.diff-y.diff)[0]?.row||null;
   }
+  if(r.error){error="The Tournament archives could not be loaded.";render();return}
   if(!a){error="The archived player list for this tournament could not be found.";render();return}
   archiveGame="Tournament";archives=rows;archiveViewId=a.id;
   await openArchive(a.id);
