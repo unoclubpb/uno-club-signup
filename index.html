@@ -604,7 +604,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.98";
+const APP_VERSION="100726.99";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -626,7 +626,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[];
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -778,8 +778,14 @@ function upcomingDaysOff(){const today=localISODate();return [...staffDaysOff].f
 function dayOffAlerts(){const start=new Date();start.setHours(12,0,0,0);const end=new Date(start);end.setDate(end.getDate()+7);return upcomingDaysOff().filter(x=>{const d=new Date(x.off_date+"T12:00:00");return d>=start&&d<=end})}
 async function loadStaffData(){const [mr,dr]=await Promise.all([sb.from("staff_members").select("*").order("name"),sb.from("staff_days_off").select("*").order("off_date")]);if(mr.error||dr.error){error="Could not load staff days off.";return false}staffMembers=mr.data||[];staffDaysOff=dr.data||[];return true}
 function renderStaffMenu(){return `<section class="menu adminMainMenu"><button class="big staffUpcomingButton" id="staffUpcoming">Upcoming Days Off</button><button class="big staffAddButton" id="staffAddDayOff">Add Day Off</button><button class="big staffManageButton" id="staffManage">Manage Staff</button></section>`}
-function renderUpcomingDaysOff(){const rows=upcomingDaysOff();return `<section class="content">${error?`<p class="error">${esc(error)}</p>`:""}<div class="list">${rows.length?rows.map(x=>`<div class="staffOffRow"><div class="staffOffInfo"><strong>${esc(x.staff_name)}</strong><span>${esc(formatStaffDate(x.off_date))}</span></div><button class="staffDelete" data-delete-dayoff="${x.id}">×</button></div>`).join(""):'<div class="empty">No upcoming days off.</div>'}</div></section>`}
-function renderManageStaff(){const rows=[...staffMembers].sort((a,b)=>a.name.localeCompare(b.name));return `<section class="content"><form id="staffForm" autocomplete="off"><div class="fieldwrap"><input id="staffName" maxlength="80" placeholder="Add staff member" autocomplete="off" autocapitalize="words"></div><button class="add staffSaveButton">Save Staff Member</button></form>${error?`<p class="error">${esc(error)}</p>`:""}<div class="list">${rows.length?rows.map(x=>`<div class="staffOffRow"><div class="staffOffInfo"><strong>${esc(x.name)}</strong></div><button class="staffDelete" data-delete-staff="${x.id}">×</button></div>`).join(""):'<div class="empty">No staff members added yet.</div>'}</div></section>`}
+function renderUpcomingDaysOff(){const rows=upcomingDaysOff();return `<section class="content">${error?`<p class="error">${esc(error)}</p>`:""}<div class="list">${rows.length?rows.map(x=>`<div class="staffOffRow"><div class="staffOffInfo"><strong>${esc(x.staff_name)}</strong><span>${esc(formatStaffDate(x.off_date))}</span></div>${x.off_date>=localISODate()?`<button class="staffDelete" data-delete-dayoff="${x.id}">×</button>`:""}</div>`).join(""):'<div class="empty">No upcoming days off.</div>'}</div></section>`}
+function renderManageStaff(){const rows=[...staffMembers].sort((a,b)=>a.name.localeCompare(b.name));return `<section class="content"><form id="staffForm" autocomplete="off"><div class="fieldwrap"><input id="staffName" maxlength="80" placeholder="Add staff member" autocomplete="off" autocapitalize="words"></div><button class="add staffSaveButton">Save Staff Member</button></form>${error?`<p class="error">${esc(error)}</p>`:""}<div class="list">${rows.length?rows.map(x=>`<div class="staffOffRow"><button type="button" class="playerDbRow" style="border:0;padding:0;flex:1" data-staff-history="${x.id}"><span>${esc(x.name)}</span></button><button class="staffDelete" data-delete-staff="${x.id}">×</button></div>`).join(""):'<div class="empty">No staff members added yet.</div>'}</div></section>`}
+function renderStaffHistory(){
+ const p=staffMembers.find(x=>String(x.id)===String(staffHistoryId));
+ const today=localISODate();
+ const rows=staffDaysOff.filter(x=>String(x.staff_id)===String(staffHistoryId)&&x.off_date<today).sort((a,b)=>b.off_date.localeCompare(a.off_date));
+ return `<section class="content"><div class="head"><div><h2>${p?esc(p.name):"Staff Member"}</h2><span class="count">Past Days Off</span></div></div><div class="list">${rows.length?rows.map(x=>`<div class="staffOffRow"><div class="staffOffInfo"><span>${esc(formatStaffDate(x.off_date))}</span></div></div>`).join(""):'<div class="empty">No past days off.</div>'}</div></section>`;
+}
 function renderAddDayOff(){const now=new Date(),m=now.getMonth()+1,d=now.getDate(),y=now.getFullYear(),months=["January","February","March","April","May","June","July","August","September","October","November","December"],names=[...staffMembers].sort((a,b)=>a.name.localeCompare(b.name)),years=[y,y+1,y+2];return `<section class="content"><form id="dayOffForm" autocomplete="off"><div class="fieldwrap"><div>Staff Member</div><select class="staffSelect" id="dayOffStaff"><option value="">Select staff member</option>${names.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select></div><div class="fieldwrap"><div>Date Off</div><div class="staffDateFields"><select id="dayOffMonth">${months.map((x,i)=>`<option value="${i+1}" ${i+1===m?"selected":""}>${x}</option>`).join("")}</select><select id="dayOffDay">${Array.from({length:31},(_,i)=>`<option value="${i+1}" ${i+1===d?"selected":""}>${i+1}</option>`).join("")}</select><select id="dayOffYear">${years.map(x=>`<option value="${x}" ${x===y?"selected":""}>${x}</option>`).join("")}</select></div></div>${error?`<p class="error">${esc(error)}</p>`:""}<button class="add staffSaveButton">Save Day Off</button></form></section>`}
 
 function render(){
@@ -793,7 +799,7 @@ function render(){
  }else if(archiveGame){
   adminHeader=renderArchiveHeader(archiveGame==="Special Game"?"Special Games":archiveGame);
  }else{
-  adminHeader=renderHeader(adminMode==="main"?"Admin":adminMode==="top10"?"Top 10 Players":adminMode==="tournamentHistory"?"Tournament History":adminMode==="tournamentAdd"?"Add Tournament":adminMode==="tournamentTypes"?"Manage Tournament Types":adminMode==="tournamentTypeHistory"?"Tournament History":adminMode==="tournamentUpcoming"?"Upcoming Tournaments":adminMode==="tournamentPast"?"Past Tournaments":adminMode==="staff"?"Staff Schedule":adminMode==="staffUpcoming"?"Upcoming Days Off":adminMode==="staffAdd"?"Add Day Off":adminMode==="staffManage"?"Manage Staff":"List Archives");
+  adminHeader=renderHeader(adminMode==="main"?"Admin":adminMode==="top10"?"Top 10 Players":adminMode==="tournamentHistory"?"Tournament History":adminMode==="tournamentAdd"?"Add Tournament":adminMode==="tournamentTypes"?"Manage Tournament Types":adminMode==="tournamentTypeHistory"?"Tournament History":adminMode==="tournamentUpcoming"?"Upcoming Tournaments":adminMode==="tournamentPast"?"Past Tournaments":adminMode==="staff"?"Staff Schedule":adminMode==="staffUpcoming"?"Upcoming Days Off":adminMode==="staffAdd"?"Add Day Off":adminMode==="staffManage"?"Manage Staff":adminMode==="staffHistory"?"Days Off History":"List Archives");
  }
  a.innerHTML=adminHeader+renderAdminPage();wireAdmin();return
 }
@@ -1005,6 +1011,7 @@ function renderAdminPage(){
  if(adminMode==="staffUpcoming")return renderUpcomingDaysOff();
  if(adminMode==="staffAdd")return renderAddDayOff();
  if(adminMode==="staffManage")return renderManageStaff();
+ if(adminMode==="staffHistory")return renderStaffHistory();
  if(adminMode==="top10")return renderTop10Players();
  if(adminMode==="tournamentHistory")return renderTournamentHistoryPage();
  if(adminMode==="tournamentUpcoming")return renderUpcomingTournaments();
@@ -1032,7 +1039,8 @@ function wireAdmin(){
   if(adminMode==="tournamentTypeHistory"){adminMode="tournamentTypes";tournamentTypeViewId=null;render();return}
   if(adminMode==="tournamentAdd"){adminMode="tournamentUpcoming";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
   if(adminMode==="tournamentUpcoming"||adminMode==="tournamentPast"||adminMode==="tournamentTypes"){adminMode="tournamentHistory";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
-  if(adminMode==="staffUpcoming"||adminMode==="staffAdd"||adminMode==="staffManage"){adminMode="staff";error="";render();return}
+  if(adminMode==="staffHistory"){adminMode="staffManage";staffHistoryId=null;error="";render();return}
+   if(adminMode==="staffUpcoming"||adminMode==="staffAdd"||adminMode==="staffManage"){adminMode="staff";error="";render();return}
    if(adminMode==="staff"){adminMode="main";error="";render();return}
    if(adminMode==="tournamentHistory"){adminMode="main";error="";render();return}
   if(adminMode==="archives"||adminMode==="top10"){adminMode="main";top10Players=[];render();return}
@@ -1047,9 +1055,10 @@ function wireAdmin(){
   const sa=document.querySelector("#staffAddDayOff");if(sa)sa.onclick=()=>{error="";adminMode="staffAdd";render()};
   const sm=document.querySelector("#staffManage");if(sm)sm.onclick=()=>{error="";adminMode="staffManage";render()};
   const sf=document.querySelector("#staffForm");if(sf)sf.onsubmit=async e=>{e.preventDefault();error="";const name=formatPlayerName(document.querySelector("#staffName").value);if(!name){error="Enter a staff member name.";render();return}const r=await sb.from("staff_members").insert({name}).select().single();if(r.error){error=r.error.code==="23505"?"That staff member is already listed.":"Could not save the staff member.";render();return}await loadStaffData();adminMode="staffManage";render()};
+  document.querySelectorAll("[data-staff-history]").forEach(b=>b.onclick=()=>{staffHistoryId=Number(b.dataset.staffHistory);error="";adminMode="staffHistory";render()});
   document.querySelectorAll("[data-delete-staff]").forEach(b=>b.onclick=async()=>{const p=staffMembers.find(x=>String(x.id)===String(b.dataset.deleteStaff));if(!p||!confirm(`Delete ${p.name} from the staff list? Past days off will be kept.`))return;const r=await sb.from("staff_members").delete().eq("id",p.id);if(r.error){error="Could not delete the staff member.";render();return}await loadStaffData();render()});
   const df=document.querySelector("#dayOffForm");if(df)df.onsubmit=async e=>{e.preventDefault();error="";const staffId=Number(document.querySelector("#dayOffStaff").value),m=Number(document.querySelector("#dayOffMonth").value),d=Number(document.querySelector("#dayOffDay").value),y=Number(document.querySelector("#dayOffYear").value),p=staffMembers.find(x=>Number(x.id)===staffId);if(!p){error="Choose a staff member.";render();return}const dt=new Date(y,m-1,d,12);if(dt.getFullYear()!==y||dt.getMonth()!==m-1||dt.getDate()!==d){error="Choose a valid date.";render();return}const offDate=`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;const r=await sb.from("staff_days_off").insert({staff_id:p.id,staff_name:p.name,off_date:offDate}).select().single();if(r.error){error=r.error.code==="23505"?`${p.name} already has that day off.`:"Could not save the day off.";render();return}await loadStaffData();adminMode="staffUpcoming";render()};
-  document.querySelectorAll("[data-delete-dayoff]").forEach(b=>b.onclick=async()=>{const x=staffDaysOff.find(v=>String(v.id)===String(b.dataset.deleteDayoff));if(!x||!confirm(`Delete ${x.staff_name}'s day off on ${formatStaffDate(x.off_date)}?`))return;const r=await sb.from("staff_days_off").delete().eq("id",x.id);if(r.error){error="Could not delete the day off.";render();return}await loadStaffData();render()});
+  document.querySelectorAll("[data-delete-dayoff]").forEach(b=>b.onclick=async()=>{const x=staffDaysOff.find(v=>String(v.id)===String(b.dataset.deleteDayoff));if(!x)return;if(x.off_date<localISODate()){error="Past days off cannot be deleted.";render();return}if(!confirm(`Delete ${x.staff_name}'s day off on ${formatStaffDate(x.off_date)}?`))return;const r=await sb.from("staff_days_off").delete().eq("id",x.id);if(r.error){error="Could not delete the day off.";render();return}await loadStaffData();render()});
 
  const upcomingBtn=document.querySelector("#upcomingTournaments");if(upcomingBtn)upcomingBtn.onclick=()=>{error="";adminMode="tournamentUpcoming";render()};
  const pastBtn=document.querySelector("#pastTournaments");if(pastBtn)pastBtn.onclick=()=>{error="";adminMode="tournamentPast";render()};
