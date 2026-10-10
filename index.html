@@ -616,7 +616,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.105";
+const APP_VERSION="100726.106";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1046,7 +1046,7 @@ function wireAdmin(){
  wireHomeLogo();
  const back=document.querySelector("#back");
  if(back)back.onclick=()=>{
-  if(archiveViewId){archiveViewId=null;archivePlayers=[];if(adminMode==="tournamentPast"){archiveGame=null;archives=[]}render();return}
+  if(archiveViewId){archiveViewId=null;archivePlayers=[];if(adminMode==="tournamentPast"){archiveGame=null;archives=[]}else if(adminMode==="tournamentTypeHistory"){archiveGame=null;archives=[]}render();return}
   if(archiveGame){archiveGame=null;archives=[];render();return}
   if(adminMode==="tournamentTypeHistory"){adminMode="tournamentTypes";tournamentTypeViewId=null;render();return}
   if(adminMode==="tournamentAdd"){adminMode="tournamentUpcoming";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
