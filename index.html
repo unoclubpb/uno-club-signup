@@ -602,13 +602,15 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 
 /* v100726.100 — keep main menu within the phone viewport */
 @media(max-height:850px){body:not(.x) .menu{gap:.55rem}.menu>.big{min-height:52px}}
-<style>.success{text-align:center;font-weight:800;margin:.75rem 0;color:#187a24}</style>
+
+.dayOffSavedSlot{height:1.8rem;display:flex;align-items:center;justify-content:center;width:100%}
+.dayOffSavedMsg{margin:0;text-align:center;width:100%;font-weight:800;color:#c62828}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.102";
+const APP_VERSION="100726.103";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -790,7 +792,7 @@ function renderStaffHistory(){
  const rows=staffDaysOff.filter(x=>String(x.staff_id)===String(staffHistoryId)&&x.off_date<today).sort((a,b)=>b.off_date.localeCompare(a.off_date));
  return `<section class="content"><div class="head"><div><h2>${p?esc(p.name):"Staff Member"}</h2><span class="count">Past Days Off</span></div></div><div class="list">${rows.length?rows.map(x=>`<div class="staffOffRow"><div class="staffOffInfo"><span>${esc(formatStaffDate(x.off_date))}</span>${x.note?`<span class="note">${esc(x.note)}</span>`:""}</div></div>`).join(""):'<div class="empty">No past days off.</div>'}</div></section>`;
 }
-function renderAddDayOff(){const now=new Date(),m=now.getMonth()+1,d=now.getDate(),y=now.getFullYear(),months=["January","February","March","April","May","June","July","August","September","October","November","December"],names=[...staffMembers].sort((a,b)=>a.name.localeCompare(b.name)),years=[y,y+1,y+2];return `<section class="content"><form id="dayOffForm" autocomplete="off"><div class="fieldwrap"><div>Staff Member</div><select class="staffSelect" id="dayOffStaff"><option value="">Select staff member</option>${names.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select></div><div class="fieldwrap"><div>Date Off</div><div class="staffDateFields"><select id="dayOffMonth">${months.map((x,i)=>`<option value="${i+1}" ${i+1===m?"selected":""}>${x}</option>`).join("")}</select><select id="dayOffDay">${Array.from({length:31},(_,i)=>`<option value="${i+1}" ${i+1===d?"selected":""}>${i+1}</option>`).join("")}</select><select id="dayOffYear">${years.map(x=>`<option value="${x}" ${x===y?"selected":""}>${x}</option>`).join("")}</select></div></div><div class="fieldwrap"><div>Note</div><textarea id="dayOffNote" class="dbNotes" maxlength="250" placeholder="Reason" autocomplete="off"></textarea></div>${dayOffSaved?'<p class="success" id="dayOffSavedMsg">Day off saved</p>':""}${error?`<p class="error">${esc(error)}</p>`:""}<button class="add staffSaveButton">Save Day Off</button></form></section>`}
+function renderAddDayOff(){const now=new Date(),m=now.getMonth()+1,d=now.getDate(),y=now.getFullYear(),months=["January","February","March","April","May","June","July","August","September","October","November","December"],names=[...staffMembers].sort((a,b)=>a.name.localeCompare(b.name)),years=[y,y+1,y+2];return `<section class="content"><form id="dayOffForm" autocomplete="off"><div class="fieldwrap"><div>Staff Member</div><select class="staffSelect" id="dayOffStaff"><option value="">Select staff member</option>${names.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select></div><div class="fieldwrap"><div>Date Off</div><div class="staffDateFields"><select id="dayOffMonth">${months.map((x,i)=>`<option value="${i+1}" ${i+1===m?"selected":""}>${x}</option>`).join("")}</select><select id="dayOffDay">${Array.from({length:31},(_,i)=>`<option value="${i+1}" ${i+1===d?"selected":""}>${i+1}</option>`).join("")}</select><select id="dayOffYear">${years.map(x=>`<option value="${x}" ${x===y?"selected":""}>${x}</option>`).join("")}</select></div></div><div class="fieldwrap"><div>Note</div><textarea id="dayOffNote" class="dbNotes" maxlength="250" placeholder="Reason" autocomplete="off"></textarea></div>${error?`<p class="error">${esc(error)}</p>`:""}<button class="add staffSaveButton">Save Day Off</button><div class="dayOffSavedSlot">${dayOffSaved?'<p class="dayOffSavedMsg" id="dayOffSavedMsg">Day off saved</p>':""}</div></form></section>`}
 
 function render(){
  const a=document.querySelector("#app");let h="";
