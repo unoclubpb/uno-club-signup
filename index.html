@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.119";
+const APP_VERSION="100726.120";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1538,13 +1538,16 @@ async function add(e){
   if(current().some(p=>String(p.preferred_seat??"")===String(+seat))){addPlayerDraft={name,seat,notes};error="That preferred seat is already taken. Choose another seat or leave the seat blank.";render();return}
  }
  const savedSeat=game==="Tournament"||alt||lateArrival?null:(seat?+seat:null);
- const r=await sb.from("signup_players").insert({day,game,player_name:name,preferred_seat:savedSeat,notes:notes||null,is_late:lateArrival,arrived:lateArrival,arrived_at:lateArrival?new Date().toISOString():null}).select().single();
+ let linkedPlayer=directoryPlayer;
+  if(!linkedPlayer){
+   await updateDirectory(name,game==="Hold Em"||game==="Omaha"?seat:null);
+   linkedPlayer=findDirectory(name);
+  }
+  const r=await sb.from("signup_players").insert({day,game,player_id:linkedPlayer?.player_id||null,player_name:name,preferred_seat:savedSeat,notes:notes||null,is_late:lateArrival,arrived:lateArrival,arrived_at:lateArrival?new Date().toISOString():null}).select().single();
  if(r.error){error=r.code==="23505"?"That player name or preferred seat is already on this list.":r.message}
  else{
   players.push(r.data);
-  if((game==="Hold Em"||game==="Omaha")&&!lateArrival)await updateDirectory(name,seat);
-  else if((game==="Hold Em"||game==="Omaha")&&!findDirectory(name))await updateDirectory(name,null);
-  else if(!findDirectory(name))await updateDirectory(name,null);
+  if(linkedPlayer&&(game==="Hold Em"||game==="Omaha")&&!lateArrival)await updateDirectory(name,seat);
   await touchList();
   const addBtn=document.querySelector("#signupAddButton");
   if(addBtn){
