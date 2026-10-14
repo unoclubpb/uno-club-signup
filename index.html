@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.120";
+const APP_VERSION="100726.121";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1400,6 +1400,12 @@ function wireSpecial(){
  const c=document.querySelector("#cancelSpecialEdit");if(c)c.onclick=()=>{specialEdit=false;error="";render()};
  wirePlayerControls();
 }
+function playerNameMatches(name,query){
+ const q=String(query||"").trim().toLowerCase();if(!q)return true;
+ const n=String(name||"");
+ const starts=n.match(/(?:^|[\s(\[{"'\-\/])([A-Z][^\s)\]}"'\-\/]*)/g)||[];
+ return starts.some(part=>part.replace(/^[\s(\[{"'\-\/]+/,"").toLowerCase().startsWith(q));
+}
 function findDirectory(name){return directory.find(x=>x.player_name.toLowerCase()===name.trim().toLowerCase())}
 function rememberedSeatForGame(p){
  if(game==="Hold Em")return p.hold_em_preferred_seat??null;
@@ -1420,7 +1426,7 @@ function applyDirectoryPlayer(p){
 function showSuggestions(value){
  const box=document.querySelector("#nameSuggestions");if(!box)return;
  const q=value.trim().toLowerCase();if(!q){box.classList.remove("show");box.innerHTML="";return}
- const matches=directory.filter(p=>p.active!==false&&p.player_name.toLowerCase().startsWith(q)).slice(0,8);
+ const matches=directory.filter(p=>p.active!==false&&playerNameMatches(p.player_name,q)).slice(0,8);
  box.innerHTML=matches.map(p=>{
   const remembered=rememberedSeatForGame(p);
   const detail=(game==="Hold Em"||game==="Omaha")?(remembered?`${game} preferred seat ${remembered}`:`No ${game} preferred seat`):"Previous player";
