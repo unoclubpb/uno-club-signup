@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.121";
+const APP_VERSION="100726.122";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -845,7 +845,7 @@ function render(){
   const today=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
   h+=`<section class="menu">${Object.keys(games).map(x=>`<button class="big day ${x===today?"tonight":""}" data-v="${x}">${x}</button>`).join("")}
   <button class="big specialGameButton" id="specialGameButton">${esc(specialName)}${sc?`<span class="gamecount">${sc}</span>`:""}</button>
-  <button class="big todoMenuButton" id="todoMenuButton">To-Do</button>${(()=>{const a=dayOffAlerts();return a.length?`${(()=>{const needs=a.filter(x=>x.coverage_needed),allCovered=needs.length>0&&needs.every(x=>x.coverage_found&&x.covered_by),one=a.length===1?a[0]:null;return `<button class="big dayOffAlertButton ${allCovered?"covered":""}" id="dayOffAlertButton">${allCovered?"Day Off Covered":"Day Off Alert"}<small>${one?`${esc(one.staff_name)} — ${esc(formatStaffDate(one.off_date))}`:`${a.length} upcoming days off`}</small>${needs.length?(allCovered?`<small>${needs.length===1?`${esc(needs[0].covered_by)} is covering`:"All coverage found"}</small>`:`<small>Coverage Needed</small>`):""}</button>`})()}`:""})()}<button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
+  <button class="big todoMenuButton" id="todoMenuButton">To-Do</button>${(()=>{const a=dayOffAlerts();return a.length?`${(()=>{const needs=a.filter(x=>x.coverage_needed),allCovered=needs.length>0&&needs.every(x=>x.coverage_found&&x.covered_by),one=a.length===1?a[0]:null;return `<button class="big dayOffAlertButton ${allCovered?"covered":""}" id="dayOffAlertButton">${allCovered?"Day Off Covered":"Day Off Alert"}<small>${one?`${esc(one.staff_name)} — ${esc(formatStaffDate(one.off_date))}`:`${a.length} upcoming days off`}</small>${needs.length?(allCovered?`<small>${needs.length===1?`${esc(needs[0].covered_by)} is covering`:"All coverage found"}</small>`:`<small>Coverage Needed</small>`):""}</button>`})()}`:""})()}<button class="big playerDatabaseButton" id="adminButton">Admin</button><div style="text-align:center;color:#c62828;font-size:.72rem;font-weight:800;margin-top:-.35rem">update coming soon</div></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
   h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;if(x==="Tournament")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssTournamentTable(day)}</button>`;return `<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
