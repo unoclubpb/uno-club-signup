@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.130";
+const APP_VERSION="100726.131";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -647,7 +647,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_pending:false,chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[]},tournamentUndoConfirmed=false;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -888,15 +888,11 @@ function renderPlayerPage(isSpecial=false){
 }
 function ordinal(n){const v=n%100;return n+((v>=11&&v<=13)?"th":n%10===1?"st":n%10===2?"nd":n%10===3?"rd":"th")}
 function tournamentRemaining(){return current().filter(p=>p.tournament_active!==false&&!p.tournament_place).sort((a,b)=>currentPlayerName(a).localeCompare(currentPlayerName(b)))}
-function tournamentPoints(place,outright=false){if(place<1||place>9)return 1;const base=11-place;return place===1&&outright?base+2:base}\nfunction fmtPoints(n){return Number(n||0).toFixed(2)}
+function tournamentPoints(place,outright=false){if(place<1||place>9)return 1;const base=11-place;return place===1&&outright?base+2:base}
 function tournamentBustSequence(){return Array.isArray(tournamentState.bust_sequence)?tournamentState.bust_sequence:[]}
 function renderTournamentFinish(){
  const active=tournamentRemaining(),placed=current().filter(p=>p.tournament_place).sort((a,b)=>b.tournament_place-a.tournament_place),seq=tournamentBustSequence();
- if(tournamentState.chop_pending||tournamentState.chop_saved){
-  const ids=(tournamentState.chop_player_ids||[]).map(String),choppers=current().filter(p=>ids.includes(String(p.id))),each=Number(tournamentState.chop_points_each||0),total=each*choppers.length;
-  return '<section class="content"><h2 style="text-align:center">'+(tournamentState.chop_saved?'Tournament Finished — Point Chop':'Point Chop')+'</h2><div class="list">'+choppers.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+fmtPoints(each)+' Points</strong></div>').join('')+'</div><p style="text-align:center;font-weight:900">Total Points Available: '+fmtPoints(total)+'</p><p style="text-align:center;font-weight:900">Each Player Receives: '+fmtPoints(each)+' Points</p>'+(tournamentState.chop_saved?'<p style="text-align:center">Tournament complete. This tournament will archive automatically at 3am Thursday.</p>':'<div style="display:flex;gap:.6rem;justify-content:center"><button class="clear" id="undoChopButton">Undo</button><button class="add" id="saveChopButton">Save</button></div>')+'</section>'
- }
- return '<section class="content"><div style="display:flex;gap:.55rem;justify-content:center;margin-bottom:.8rem">'+(seq.length?'<button class="clear" id="undoBustButton">Undo Last Bust Out</button>':'')+(active.length<=9&&active.length>1?'<button class="add" id="chopButton">Point Chop</button>':'')+'</div>'+(active.length===9?'<p style="text-align:center;font-weight:900">Final Table — 9 Players</p>':'')+(error?'<p class="error">'+esc(error)+'</p>':'')+'<div class="list">'+(active.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><button class="del" style="width:auto;padding:.55rem .75rem" data-bust="'+p.id+'">Bust Out</button></div>').join('')||'<div class="empty">No players remaining.</div>')+placed.map(p=>{const outright=p.tournament_place===1&&tournamentRemaining().length===0,pts=tournamentPoints(p.tournament_place,outright);return '<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+ordinal(p.tournament_place)+' Place — '+fmtPoints(pts)+' Points</strong></div>'}).join('')+'</div></section>'
+ return '<section class="content"><div style="display:flex;gap:.55rem;justify-content:center;margin-bottom:.8rem">'+(seq.length?'<button class="clear" id="undoBustButton">Undo Last Bust Out</button>':'')+(active.length<=9?'<button class="add" id="chopButton">Chop</button>':'')+'</div>'+(active.length===9?'<p style="text-align:center;font-weight:900">Final Table — 9 Players</p>':'')+(error?'<p class="error">'+esc(error)+'</p>':'')+'<div class="list">'+(active.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><button class="del" style="width:auto;padding:.55rem .75rem" data-bust="'+p.id+'">Bust Out</button></div>').join('')||'<div class="empty">No players remaining.</div>')+placed.map(p=>{const outright=p.tournament_place===1&&tournamentRemaining().length===0,pts=tournamentPoints(p.tournament_place,outright);return '<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+ordinal(p.tournament_place)+' Place — '+pts+' '+(pts===1?'Point':'Points')+'</strong></div>'}).join('')+'</div></section>'
 }
 async function confirmRebuysOver(){
  if(!confirm("Are you sure rebuys are over?"))return;
@@ -904,7 +900,7 @@ async function confirmRebuysOver(){
  if(missing.length){error="All players need to be marked as arrived or removed if they did not show up.";render();return}
  const ids=current().map(p=>p.id);
  if(ids.length){const pr=await sb.from("signup_players").update({tournament_active:true,tournament_place:null}).in("id",ids);if(pr.error){error="Could not start tournament results.";render();return}players=players.map(p=>ids.includes(p.id)?{...p,tournament_active:true,tournament_place:null}:p)}
- const r=await sb.from("tournament_live_state").update({rebuys_over:true,in_money:false,bust_sequence:[],chop_pending:false,chop_saved:false,chop_player_ids:[],chop_points_each:null,updated_at:new Date().toISOString()}).eq("id",1).select().single();
+ const r=await sb.from("tournament_live_state").update({rebuys_over:true,in_money:false,bust_sequence:[],updated_at:new Date().toISOString()}).eq("id",1).select().single();
  if(r.error){error="Could not start tournament results.";render();return}tournamentState=r.data;tournamentUndoConfirmed=false;error="";render()
 }
 async function bustTournamentPlayer(id){
@@ -936,20 +932,8 @@ async function undoTournamentBust(){
  if(!next.length)tournamentUndoConfirmed=false;
  error="";render()
 }
-function chopPointTotal(count){let total=0;for(let place=1;place<=count;place++)total+=tournamentPoints(place,false);return total}
-async function showChop(){
- const choppers=tournamentRemaining();if(choppers.length<2)return;
- if(!confirm("Are you sure these players are chopping?\n\n"+choppers.map(p=>currentPlayerName(p)).join("\n")))return;
- const total=chopPointTotal(choppers.length),each=total/choppers.length,ids=choppers.map(p=>Number(p.id));
- const r=await sb.from("tournament_live_state").update({chop_pending:true,chop_saved:false,chop_player_ids:ids,chop_points_each:each,updated_at:new Date().toISOString()}).eq("id",1).select().single();
- if(r.error){error="Could not start the point chop.";render();return}tournamentState=r.data;render()
-}
-async function undoPointChop(){const r=await sb.from("tournament_live_state").update({chop_pending:false,chop_saved:false,chop_player_ids:[],chop_points_each:null,updated_at:new Date().toISOString()}).eq("id",1).select().single();if(!r.error)tournamentState=r.data;render()}
-async function savePointChop(){
- const ids=(tournamentState.chop_player_ids||[]).map(Number),each=Number(tournamentState.chop_points_each||0);
- if(ids.length){const r=await sb.from("signup_players").update({tournament_active:false,tournament_points:each}).in("id",ids);if(r.error){error="Could not save the point chop.";render();return}players=players.map(p=>ids.includes(Number(p.id))?{...p,tournament_active:false,tournament_points:each}:p)}
- const sr=await sb.from("tournament_live_state").update({chop_pending:false,chop_saved:true,updated_at:new Date().toISOString()}).eq("id",1).select().single();if(!sr.error)tournamentState=sr.data;render()
-}
+function showChop(){if(!confirm("Are you sure you want to chop?"))return;const a=document.querySelector("#app");a.innerHTML=renderHeader("Tournament Chop","Wednesday Night")+'<section class="content"><div class="menu"><button class="big add">Manual Chop</button><button class="big playerDatabaseButton">ICM Chop</button></div><p class="error" style="text-align:center">This function is still being worked on and is coming soon.</p></section>';wireHomeLogo();const b=document.querySelector("#back");if(b)b.onclick=render}
+
 function renderTodoPage(){
  const active=todos.filter(t=>!t.completed_at).sort((a,b)=>todoNewestFirst?new Date(b.created_at)-new Date(a.created_at):new Date(a.created_at)-new Date(b.created_at));
  const completed=todos.filter(t=>t.completed_at).sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at)).slice(0,25);
@@ -1459,7 +1443,7 @@ function wire(){
  wirePlayerControls();
  const rb=document.querySelector("#rebuysOverButton");if(rb)rb.onclick=confirmRebuysOver;
  const ch=document.querySelector("#chopButton");if(ch)ch.onclick=showChop;
- const ub=document.querySelector("#undoBustButton");if(ub)ub.onclick=undoTournamentBust;\n const uc=document.querySelector("#undoChopButton");if(uc)uc.onclick=undoPointChop;\n const sc=document.querySelector("#saveChopButton");if(sc)sc.onclick=savePointChop;
+ const ub=document.querySelector("#undoBustButton");if(ub)ub.onclick=undoTournamentBust;
  document.querySelectorAll("[data-bust]").forEach(x=>x.onclick=()=>bustTournamentPlayer(x.dataset.bust));
  const b=document.querySelector("#back");if(b)b.onclick=()=>{error="";if(game)game=null;else if(day)day=null;else page="main";render()};
 }
