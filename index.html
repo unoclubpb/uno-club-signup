@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.127";
+const APP_VERSION="100726.128";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1459,7 +1459,9 @@ function wire(){
  wirePlayerControls();
  const rb=document.querySelector("#rebuysOverButton");if(rb)rb.onclick=confirmRebuysOver;
  const ch=document.querySelector("#chopButton");if(ch)ch.onclick=showChop;
- const ub=document.querySelector("#undoBustButton");if(ub)ub.onclick=undoTournamentBust;\n const uc=document.querySelector("#undoChopButton");if(uc)uc.onclick=undoPointChop;\n const sc=document.querySelector("#saveChopButton");if(sc)sc.onclick=savePointChop;
+ const ub=document.querySelector("#undoBustButton");if(ub)ub.onclick=undoTournamentBust;
+ const uc=document.querySelector("#undoChopButton");if(uc)uc.onclick=undoPointChop;
+ const sc=document.querySelector("#saveChopButton");if(sc)sc.onclick=savePointChop;
  document.querySelectorAll("[data-bust]").forEach(x=>x.onclick=()=>bustTournamentPlayer(x.dataset.bust));
  const b=document.querySelector("#back");if(b)b.onclick=()=>{error="";if(game)game=null;else if(day)day=null;else page="main";render()};
 }
