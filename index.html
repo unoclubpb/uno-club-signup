@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.123";
+const APP_VERSION="100726.124";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -647,7 +647,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false,tournamentState={rebuys_over:false,in_money:false};
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[]},tournamentUndoConfirmed=false;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -888,10 +888,50 @@ function renderPlayerPage(isSpecial=false){
 }
 function ordinal(n){const v=n%100;return n+((v>=11&&v<=13)?"th":n%10===1?"st":n%10===2?"nd":n%10===3?"rd":"th")}
 function tournamentRemaining(){return current().filter(p=>p.tournament_active!==false&&!p.tournament_place).sort((a,b)=>currentPlayerName(a).localeCompare(currentPlayerName(b)))}
-function renderTournamentFinish(){const active=tournamentRemaining(),placed=current().filter(p=>p.tournament_place).sort((a,b)=>b.tournament_place-a.tournament_place);return '<section class="content"><div style="display:flex;gap:.55rem;justify-content:center;margin-bottom:.8rem">'+(!tournamentState.in_money?'<button class="add" id="inMoneyButton">In the Money?</button>':'<button class="add" id="chopButton">Chop</button>')+'</div>'+(error?'<p class="error">'+esc(error)+'</p>':'')+'<div class="list">'+(active.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><button class="del" style="width:auto;padding:.55rem .75rem" data-bust="'+p.id+'">Bust Out</button></div>').join('')||'<div class="empty">No players remaining.</div>')+placed.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+ordinal(p.tournament_place)+' Place</strong></div>').join('')+'</div></section>'}
-async function confirmRebuysOver(){if(!confirm("Are you sure rebuys are over?"))return;const missing=current().filter(p=>p.arrived!==true&&p.is_late!==true);if(missing.length){error="All players need to be marked as arrived or removed if they did not show up.";render();return}const r=await sb.from("tournament_live_state").update({rebuys_over:true,updated_at:new Date().toISOString()}).eq("id",1).select().single();if(r.error){error="Could not start tournament results.";render();return}tournamentState=r.data;error="";render()}
-async function setInMoney(){if(!confirm("Are you sure everyone remaining is in the money?"))return;const r=await sb.from("tournament_live_state").update({in_money:true,updated_at:new Date().toISOString()}).eq("id",1).select().single();if(!r.error){tournamentState=r.data;error="";render()}}
-async function bustTournamentPlayer(id){const p=players.find(x=>String(x.id)===String(id));if(!p)return;if(!tournamentState.in_money){if(!confirm("Bust out "+currentPlayerName(p)+"?"))return;const r=await sb.from("signup_players").update({tournament_active:false}).eq("id",id).select().single();if(!r.error)players=players.map(x=>String(x.id)===String(id)?r.data:x);render();return}const place=tournamentRemaining().length;if(!confirm("Is "+currentPlayerName(p)+" out in "+ordinal(place)+" place?"))return;const r=await sb.from("signup_players").update({tournament_active:false,tournament_place:place}).eq("id",id).select().single();if(r.error){error="Could not save finishing place.";render();return}players=players.map(x=>String(x.id)===String(id)?r.data:x);const left=tournamentRemaining();if(left.length===1){const w=left[0],wr=await sb.from("signup_players").update({tournament_active:false,tournament_place:1}).eq("id",w.id).select().single();if(!wr.error)players=players.map(x=>String(x.id)===String(w.id)?wr.data:x)}render()}
+function tournamentPoints(place){return place===1?10:(place>=2&&place<=9?10-place:0)}
+function tournamentBustSequence(){return Array.isArray(tournamentState.bust_sequence)?tournamentState.bust_sequence:[]}
+function renderTournamentFinish(){
+ const active=tournamentRemaining(),placed=current().filter(p=>p.tournament_place).sort((a,b)=>b.tournament_place-a.tournament_place),seq=tournamentBustSequence();
+ return '<section class="content"><div style="display:flex;gap:.55rem;justify-content:center;margin-bottom:.8rem">'+(seq.length?'<button class="clear" id="undoBustButton">Undo Last Bust Out</button>':'')+(active.length<=9?'<button class="add" id="chopButton">Chop</button>':'')+'</div>'+(active.length===9?'<p style="text-align:center;font-weight:900">Final Table — 9 Players</p>':'')+(error?'<p class="error">'+esc(error)+'</p>':'')+'<div class="list">'+(active.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><button class="del" style="width:auto;padding:.55rem .75rem" data-bust="'+p.id+'">Bust Out</button></div>').join('')||'<div class="empty">No players remaining.</div>')+placed.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+ordinal(p.tournament_place)+' Place — '+tournamentPoints(p.tournament_place)+' '+(tournamentPoints(p.tournament_place)===1?'Point':'Points')+'</strong></div>').join('')+'</div></section>'
+}
+async function confirmRebuysOver(){
+ if(!confirm("Are you sure rebuys are over?"))return;
+ const missing=current().filter(p=>p.arrived!==true&&p.is_late!==true);
+ if(missing.length){error="All players need to be marked as arrived or removed if they did not show up.";render();return}
+ const ids=current().map(p=>p.id);
+ if(ids.length){const pr=await sb.from("signup_players").update({tournament_active:true,tournament_place:null}).in("id",ids);if(pr.error){error="Could not start tournament results.";render();return}players=players.map(p=>ids.includes(p.id)?{...p,tournament_active:true,tournament_place:null}:p)}
+ const r=await sb.from("tournament_live_state").update({rebuys_over:true,in_money:false,bust_sequence:[],updated_at:new Date().toISOString()}).eq("id",1).select().single();
+ if(r.error){error="Could not start tournament results.";render();return}tournamentState=r.data;tournamentUndoConfirmed=false;error="";render()
+}
+async function bustTournamentPlayer(id){
+ const p=players.find(x=>String(x.id)===String(id));if(!p)return;
+ const remaining=tournamentRemaining(),place=remaining.length<=9?remaining.length:null;
+ const msg=place?"Are you sure "+currentPlayerName(p)+" finished in "+ordinal(place)+" place?":"Are you sure you want to bust out "+currentPlayerName(p)+"?";
+ if(!confirm(msg))return;
+ const r=await sb.from("signup_players").update({tournament_active:false,tournament_place:place}).eq("id",id).select().single();
+ if(r.error){error="Could not save the bust out.";render();return}
+ players=players.map(x=>String(x.id)===String(id)?r.data:x);
+ let seq=[...tournamentBustSequence(),Number(id)];
+ const sr=await sb.from("tournament_live_state").update({bust_sequence:seq,updated_at:new Date().toISOString()}).eq("id",1).select().single();
+ if(!sr.error)tournamentState=sr.data;
+ const left=tournamentRemaining();
+ if(left.length===1){const w=left[0],wr=await sb.from("signup_players").update({tournament_active:false,tournament_place:1}).eq("id",w.id).select().single();if(!wr.error)players=players.map(x=>String(x.id)===String(w.id)?wr.data:x)}
+ error="";render()
+}
+async function undoTournamentBust(){
+ const seq=tournamentBustSequence();if(!seq.length)return;
+ if(!tournamentUndoConfirmed){if(!confirm("Are you sure you want to undo the last bust out?"))return;tournamentUndoConfirmed=true}
+ const id=seq[seq.length-1],p=players.find(x=>String(x.id)===String(id));if(!p)return;
+ const remaining=tournamentRemaining();
+ if(remaining.length===0||remaining.every(x=>x.tournament_place)){const winner=current().find(x=>x.tournament_place===1);if(winner){const wr=await sb.from("signup_players").update({tournament_active:true,tournament_place:null}).eq("id",winner.id).select().single();if(!wr.error)players=players.map(x=>String(x.id)===String(winner.id)?wr.data:x)}}
+ const r=await sb.from("signup_players").update({tournament_active:true,tournament_place:null}).eq("id",id).select().single();
+ if(r.error){error="Could not undo that bust out.";render();return}
+ players=players.map(x=>String(x.id)===String(id)?r.data:x);
+ const next=seq.slice(0,-1),sr=await sb.from("tournament_live_state").update({bust_sequence:next,updated_at:new Date().toISOString()}).eq("id",1).select().single();
+ if(!sr.error)tournamentState=sr.data;
+ if(!next.length)tournamentUndoConfirmed=false;
+ error="";render()
+}
 function showChop(){if(!confirm("Are you sure you want to chop?"))return;const a=document.querySelector("#app");a.innerHTML=renderHeader("Tournament Chop","Wednesday Night")+'<section class="content"><div class="menu"><button class="big add">Manual Chop</button><button class="big playerDatabaseButton">ICM Chop</button></div><p class="error" style="text-align:center">This function is still being worked on and is coming soon.</p></section>';wireHomeLogo();const b=document.querySelector("#back");if(b)b.onclick=render}
 
 function renderTodoPage(){
@@ -1402,8 +1442,8 @@ function wire(){
  const doa=document.querySelector("#dayOffAlertButton");if(doa)doa.onclick=async()=>{error="";await loadStaffData();page="admin";adminMode="staffUpcoming";archiveGame=null;archiveViewId=null;render()};
  wirePlayerControls();
  const rb=document.querySelector("#rebuysOverButton");if(rb)rb.onclick=confirmRebuysOver;
- const im=document.querySelector("#inMoneyButton");if(im)im.onclick=setInMoney;
  const ch=document.querySelector("#chopButton");if(ch)ch.onclick=showChop;
+ const ub=document.querySelector("#undoBustButton");if(ub)ub.onclick=undoTournamentBust;
  document.querySelectorAll("[data-bust]").forEach(x=>x.onclick=()=>bustTournamentPlayer(x.dataset.bust));
  const b=document.querySelector("#back");if(b)b.onclick=()=>{error="";if(game)game=null;else if(day)day=null;else page="main";render()};
 }
