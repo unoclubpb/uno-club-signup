@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.124";
+const APP_VERSION="100726.125";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -888,11 +888,11 @@ function renderPlayerPage(isSpecial=false){
 }
 function ordinal(n){const v=n%100;return n+((v>=11&&v<=13)?"th":n%10===1?"st":n%10===2?"nd":n%10===3?"rd":"th")}
 function tournamentRemaining(){return current().filter(p=>p.tournament_active!==false&&!p.tournament_place).sort((a,b)=>currentPlayerName(a).localeCompare(currentPlayerName(b)))}
-function tournamentPoints(place){return place===1?10:(place>=2&&place<=9?10-place:0)}
+function tournamentPoints(place,outright=false){if(place<1||place>9)return 1;const base=11-place;return place===1&&outright?base+2:base}
 function tournamentBustSequence(){return Array.isArray(tournamentState.bust_sequence)?tournamentState.bust_sequence:[]}
 function renderTournamentFinish(){
  const active=tournamentRemaining(),placed=current().filter(p=>p.tournament_place).sort((a,b)=>b.tournament_place-a.tournament_place),seq=tournamentBustSequence();
- return '<section class="content"><div style="display:flex;gap:.55rem;justify-content:center;margin-bottom:.8rem">'+(seq.length?'<button class="clear" id="undoBustButton">Undo Last Bust Out</button>':'')+(active.length<=9?'<button class="add" id="chopButton">Chop</button>':'')+'</div>'+(active.length===9?'<p style="text-align:center;font-weight:900">Final Table — 9 Players</p>':'')+(error?'<p class="error">'+esc(error)+'</p>':'')+'<div class="list">'+(active.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><button class="del" style="width:auto;padding:.55rem .75rem" data-bust="'+p.id+'">Bust Out</button></div>').join('')||'<div class="empty">No players remaining.</div>')+placed.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+ordinal(p.tournament_place)+' Place — '+tournamentPoints(p.tournament_place)+' '+(tournamentPoints(p.tournament_place)===1?'Point':'Points')+'</strong></div>').join('')+'</div></section>'
+ return '<section class="content"><div style="display:flex;gap:.55rem;justify-content:center;margin-bottom:.8rem">'+(seq.length?'<button class="clear" id="undoBustButton">Undo Last Bust Out</button>':'')+(active.length<=9?'<button class="add" id="chopButton">Chop</button>':'')+'</div>'+(active.length===9?'<p style="text-align:center;font-weight:900">Final Table — 9 Players</p>':'')+(error?'<p class="error">'+esc(error)+'</p>':'')+'<div class="list">'+(active.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><button class="del" style="width:auto;padding:.55rem .75rem" data-bust="'+p.id+'">Bust Out</button></div>').join('')||'<div class="empty">No players remaining.</div>')+placed.map(p=>{const outright=p.tournament_place===1&&tournamentRemaining().length===0,pts=tournamentPoints(p.tournament_place,outright);return '<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+ordinal(p.tournament_place)+' Place — '+pts+' '+(pts===1?'Point':'Points')+'</strong></div>'}).join('')+'</div></section>'
 }
 async function confirmRebuysOver(){
  if(!confirm("Are you sure rebuys are over?"))return;
