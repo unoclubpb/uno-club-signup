@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.122";
+const APP_VERSION="100726.123";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -647,7 +647,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false;
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false,tournamentState={rebuys_over:false,in_money:false};
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -694,13 +694,14 @@ async function touchList(d=day,g=game){
  if(!r.error){listUpdates=listUpdates.filter(x=>!(x.day===d&&x.game===g));listUpdates.push(r.data)}
 }
 async function load(){
- const [pr,tr,sr,ur,dr,thr]=await Promise.all([
+ const [pr,tr,sr,ur,dr,thr,tsr]=await Promise.all([
   sb.from("signup_players").select("*").order("created_at").order("id"),
   sb.from("todo_items").select("*").order("created_at"),
   sb.from("special_game_settings").select("*").eq("id",1).maybeSingle(),
   sb.from("list_updates").select("*"),
   sb.from("player_directory").select("*").order("player_name"),
-  sb.rpc("get_tournament_history")
+  sb.rpc("get_tournament_history"),
+  sb.from("tournament_live_state").select("*").eq("id",1).maybeSingle()
  ]);
  if(pr.error)error="Could not load the player list.";else players=pr.data||[];
  if(tr.error)error="Could not load the To-Do list.";else todos=tr.data||[];
@@ -708,6 +709,7 @@ async function load(){
  listUpdates=ur.error?[]:(ur.data||[]);
  directory=dr.error?[]:(dr.data||[]);
  if(!thr.error)tournamentHistory=Array.isArray(thr.data)?thr.data:(thr.data?[thr.data]:[]);
+ if(!tsr.error&&tsr.data)tournamentState=tsr.data;
   await loadStaffData();
  render();
 }
@@ -845,7 +847,7 @@ function render(){
   const today=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
   h+=`<section class="menu">${Object.keys(games).map(x=>`<button class="big day ${x===today?"tonight":""}" data-v="${x}">${x}</button>`).join("")}
   <button class="big specialGameButton" id="specialGameButton">${esc(specialName)}${sc?`<span class="gamecount">${sc}</span>`:""}</button>
-  <button class="big todoMenuButton" id="todoMenuButton">To-Do</button>${(()=>{const a=dayOffAlerts();return a.length?`${(()=>{const needs=a.filter(x=>x.coverage_needed),allCovered=needs.length>0&&needs.every(x=>x.coverage_found&&x.covered_by),one=a.length===1?a[0]:null;return `<button class="big dayOffAlertButton ${allCovered?"covered":""}" id="dayOffAlertButton">${allCovered?"Day Off Covered":"Day Off Alert"}<small>${one?`${esc(one.staff_name)} — ${esc(formatStaffDate(one.off_date))}`:`${a.length} upcoming days off`}</small>${needs.length?(allCovered?`<small>${needs.length===1?`${esc(needs[0].covered_by)} is covering`:"All coverage found"}</small>`:`<small>Coverage Needed</small>`):""}</button>`})()}`:""})()}<button class="big playerDatabaseButton" id="adminButton">Admin</button><div style="text-align:center;color:#c62828;font-size:.72rem;font-weight:800;margin-top:-.35rem">update coming soon</div></section><div class="appVersion">Version ${APP_VERSION}</div>`;
+  <button class="big todoMenuButton" id="todoMenuButton">To-Do</button>${(()=>{const a=dayOffAlerts();return a.length?`${(()=>{const needs=a.filter(x=>x.coverage_needed),allCovered=needs.length>0&&needs.every(x=>x.coverage_found&&x.covered_by),one=a.length===1?a[0]:null;return `<button class="big dayOffAlertButton ${allCovered?"covered":""}" id="dayOffAlertButton">${allCovered?"Day Off Covered":"Day Off Alert"}<small>${one?`${esc(one.staff_name)} — ${esc(formatStaffDate(one.off_date))}`:`${a.length} upcoming days off`}</small>${needs.length?(allCovered?`<small>${needs.length===1?`${esc(needs[0].covered_by)} is covering`:"All coverage found"}</small>`:`<small>Coverage Needed</small>`):""}</button>`})()}`:""})()}<button class="big playerDatabaseButton" id="adminButton">Admin</button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
   h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;if(x==="Tournament")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssTournamentTable(day)}</button>`;return `<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
@@ -864,7 +866,9 @@ function renderSpecialPage(){
 }
 function renderPlayerPage(isSpecial=false){
  const sh=shown(),regular=sh.filter(p=>!p.alt&&!p.isLate),alts=sh.filter(p=>p.alt),lates=sh.filter(p=>p.isLate),rc=regular.length,seatLimit=maxPreferredSeat(game),lateMode=!isSpecial&&isLateArrivalTime(),attendance=attendanceFor(day,game);
- return `<section class="content">
+ if(game==="Tournament"&&tournamentState.rebuys_over)return renderTournamentFinish();
+ const now=new Date(),showRebuys=game==="Tournament"&&day==="Wednesday"&&now.toLocaleDateString("en-US",{weekday:"long"})==="Wednesday"&&(now.getHours()*60+now.getMinutes()>=1290);
+ return `<section class="content">${showRebuys?'<button class="big" style="width:100%;background:#c62828;color:#fff;margin-bottom:1rem" id="rebuysOverButton">Are rebuys over?</button>':""}
  ${isSpecial?(specialEdit?specialSettingsForm(true):`<div class="specialInfo"><button class="specialNameEdit" id="specialNameEdit">${esc(specialSettings.game_name)}</button> · ${specialSettings.total_seats} Seats</div>`):""}
  <form id="form" autocomplete="off">
  <div class="fieldwrap"><div>Player Name</div><input id="unoEntryA" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false"><div id="nameSuggestions" class="suggestions"></div></div>
@@ -874,7 +878,7 @@ function renderPlayerPage(isSpecial=false){
  ${!specialEdit&&error?`<p class="error">${esc(error)}</p>`:""}
  <div class="head"><div><h2>Player List</h2><span class="count">${countLabel(regular.length,"Player","Players")} / ${countLabel(alts.length,"Alternate","Alternates")}${lates.length?` / ${countLabel(lates.length,"Late Arrival","Late Arrivals")}`:""}</span><span class="attendanceSummary"><span class="arrivedCount">${attendance.arrived} Arrived</span><span class="attendanceSlash"> / </span><span class="expectedCount">${attendance.expected} Expected</span></span><span class="lastUpdated">${formatLastUpdated(lastUpdatedFor())}</span></div>
  <div class="listactions">${current().length?`<button class="textlist" id="textlist">Send a Copy</button>`:""}${isSpecial?`<button class="clear" id="clear">${players.filter(p=>p.day==="Special Game"&&p.game==="Special Game").length===0?"Delete Game":"Archive List"}</button>`:""}</div></div>
- ${!isSpecial?`<div class="autoArchiveNotice">${game==="Tournament"?"Tournament will be archived at 10pm":`Game will archive automatically at 3am on ${day==="Monday"?"Tuesday":day==="Wednesday"?"Thursday":"Friday"}`}</div>`:""}
+ ${!isSpecial?`<div class="autoArchiveNotice">${game==="Tournament"?"Tournament will archive automatically at 3am on Thursday":`Game will archive automatically at 3am on ${day==="Monday"?"Tuesday":day==="Wednesday"?"Thursday":"Friday"}`}</div>`:""}
  <div class="list">${!sh.length?'<div class="empty">No players added yet.</div>':sh.map(p=>`<div class="row ${p.arrived||p.isLate?"arrivedRow":""}"><div class="num">${p.isLate?"L":p.alt?"A":p.num}</div><div class="info">
  <button class="name" data-id="${p.id}">${esc(currentPlayerName(p))}</button>${p.isLate?'<span class="red">LATE ARRIVAL</span>':p.alt?'<span class="red">ALTERNATE</span>':game!=="Tournament"&&p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}
  ${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.is_late?`<span class="signupTime">Arrived ${formatSignup(p.arrived_at||p.created_at)}</span>`:`<span class="signupTime">Signed up ${formatSignup(p.created_at)}</span>${p.arrived&&p.arrived_at?`<span class="signupTime">Arrived ${formatSignup(p.arrived_at)}</span>`:""}`}
@@ -882,6 +886,14 @@ function renderPlayerPage(isSpecial=false){
  </div><button class="arrivalCheck ${p.arrived||p.isLate?"checked":""}" data-arrived="${p.id}" aria-label="${p.arrived||p.isLate?"Mark expected":"Mark arrived"}">✓</button><button class="del" data-del="${p.id}">×</button></div>`).join("")}</div></section>
 `;
 }
+function ordinal(n){const v=n%100;return n+((v>=11&&v<=13)?"th":n%10===1?"st":n%10===2?"nd":n%10===3?"rd":"th")}
+function tournamentRemaining(){return current().filter(p=>p.tournament_active!==false&&!p.tournament_place).sort((a,b)=>currentPlayerName(a).localeCompare(currentPlayerName(b)))}
+function renderTournamentFinish(){const active=tournamentRemaining(),placed=current().filter(p=>p.tournament_place).sort((a,b)=>b.tournament_place-a.tournament_place);return '<section class="content"><div style="display:flex;gap:.55rem;justify-content:center;margin-bottom:.8rem">'+(!tournamentState.in_money?'<button class="add" id="inMoneyButton">In the Money?</button>':'<button class="add" id="chopButton">Chop</button>')+'</div>'+(error?'<p class="error">'+esc(error)+'</p>':'')+'<div class="list">'+(active.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><button class="del" style="width:auto;padding:.55rem .75rem" data-bust="'+p.id+'">Bust Out</button></div>').join('')||'<div class="empty">No players remaining.</div>')+placed.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+ordinal(p.tournament_place)+' Place</strong></div>').join('')+'</div></section>'}
+async function confirmRebuysOver(){if(!confirm("Are you sure rebuys are over?"))return;const missing=current().filter(p=>p.arrived!==true&&p.is_late!==true);if(missing.length){error="All players need to be marked as arrived or removed if they did not show up.";render();return}const r=await sb.from("tournament_live_state").update({rebuys_over:true,updated_at:new Date().toISOString()}).eq("id",1).select().single();if(r.error){error="Could not start tournament results.";render();return}tournamentState=r.data;error="";render()}
+async function setInMoney(){if(!confirm("Are you sure everyone remaining is in the money?"))return;const r=await sb.from("tournament_live_state").update({in_money:true,updated_at:new Date().toISOString()}).eq("id",1).select().single();if(!r.error){tournamentState=r.data;error="";render()}}
+async function bustTournamentPlayer(id){const p=players.find(x=>String(x.id)===String(id));if(!p)return;if(!tournamentState.in_money){if(!confirm("Bust out "+currentPlayerName(p)+"?"))return;const r=await sb.from("signup_players").update({tournament_active:false}).eq("id",id).select().single();if(!r.error)players=players.map(x=>String(x.id)===String(id)?r.data:x);render();return}const place=tournamentRemaining().length;if(!confirm("Is "+currentPlayerName(p)+" out in "+ordinal(place)+" place?"))return;const r=await sb.from("signup_players").update({tournament_active:false,tournament_place:place}).eq("id",id).select().single();if(r.error){error="Could not save finishing place.";render();return}players=players.map(x=>String(x.id)===String(id)?r.data:x);const left=tournamentRemaining();if(left.length===1){const w=left[0],wr=await sb.from("signup_players").update({tournament_active:false,tournament_place:1}).eq("id",w.id).select().single();if(!wr.error)players=players.map(x=>String(x.id)===String(w.id)?wr.data:x)}render()}
+function showChop(){if(!confirm("Are you sure you want to chop?"))return;const a=document.querySelector("#app");a.innerHTML=renderHeader("Tournament Chop","Wednesday Night")+'<section class="content"><div class="menu"><button class="big add">Manual Chop</button><button class="big playerDatabaseButton">ICM Chop</button></div><p class="error" style="text-align:center">This function is still being worked on and is coming soon.</p></section>';wireHomeLogo();const b=document.querySelector("#back");if(b)b.onclick=render}
+
 function renderTodoPage(){
  const active=todos.filter(t=>!t.completed_at).sort((a,b)=>todoNewestFirst?new Date(b.created_at)-new Date(a.created_at):new Date(a.created_at)-new Date(b.created_at));
  const completed=todos.filter(t=>t.completed_at).sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at)).slice(0,25);
@@ -903,8 +915,8 @@ async function loadArchives(g){
  archives=q.error?[]:(q.data||[]);
 }
 async function openArchive(id){
- const q=await sb.from("list_archive_players").select("*").eq("archive_id",id).order("archive_order");
- archivePlayers=q.error?[]:(q.data||[]);archiveViewId=id;render();
+ const q=await sb.from("list_archive_players").select("*").eq("archive_id",id);
+ archivePlayers=q.error?[]:(q.data||[]);const a=archives.find(x=>String(x.id)===String(id));if(a&&a.game==="Tournament")archivePlayers.sort((x,y)=>(x.tournament_place?0:1)-(y.tournament_place?0:1)||(x.tournament_place&&y.tournament_place?x.tournament_place-y.tournament_place:String(x.player_name||"").localeCompare(String(y.player_name||""))));else archivePlayers.sort((x,y)=>(x.archive_order||0)-(y.archive_order||0));archiveViewId=id;render();
 }
 function renderArchiveHeader(secondLine){
  return `<header class="top"><button class="back" id="back" aria-label="Back">‹</button><div class="title" style="position:absolute;left:0;right:78px;text-align:center;line-height:1.15;pointer-events:none"><div>List Archives</div><div>${esc(secondLine)}</div></div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
@@ -1052,7 +1064,7 @@ function renderAdminPage(){
  if(adminMode==="tournamentUpcoming")return renderUpcomingTournaments();
  if(archiveViewId){
   const a=archives.find(x=>String(x.id)===String(archiveViewId));
-  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${countLabel(archivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(archivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>`<div class="row"><div class="num">${p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${countLabel(archivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(archivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>`<div class="row"><div class="num">${p.tournament_place?ordinal(p.tournament_place):p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.tournament_place?`<span class="red">${ordinal(p.tournament_place)} Place</span>`:""}${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
  if(adminMode==="tournamentPast")return renderPastTournaments();
  if(adminMode==="tournamentAdd")return renderTournamentAddPage();
@@ -1061,7 +1073,7 @@ function renderAdminPage(){
  if(adminMode==="archives"&&!archiveGame)return `<section class="menu archiveMenu"><button class="big game archiveGameBtn" data-agame="Hold Em">Hold Em</button><button class="big game archiveGameBtn" data-agame="Omaha">Omaha</button><button class="big game archiveGameBtn" data-agame="Tournament">Tournament</button><button class="big game archiveGameBtn" data-agame="Special Game">Special Games</button></section>`;
  if(archiveViewId){
   const a=archives.find(x=>String(x.id)===String(archiveViewId));
-  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${countLabel(archivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(archivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>`<div class="row"><div class="num">${p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${countLabel(archivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(archivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>`<div class="row"><div class="num">${p.tournament_place?ordinal(p.tournament_place):p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.tournament_place?`<span class="red">${ordinal(p.tournament_place)} Place</span>`:""}${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
  return `<section class="content"><div class="list">${archives.length?archives.map(a=>`<button class="playerDbRow" data-archive="${a.id}"><span>${esc(archiveLabel(a))}</span></button>`).join(""):'<div class="empty">No archived lists yet.</div>'}</div></section>`;
 }
@@ -1251,7 +1263,7 @@ function lastPlayedText(){
 function renderPlayerDatabase(){
  if(playerHistoryArchiveId){
   const a=playerHistory.find(x=>String(x.id)===String(playerHistoryArchiveId));
-  return `<section class="content"><div class="head"><div><h2>${a?esc(playerHistoryLabel(a)):"Archived List"}</h2><span class="count">${countLabel(playerHistoryArchivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(playerHistoryArchivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${playerHistoryArchivePlayers.length?playerHistoryArchivePlayers.map(p=>`<div class="row"><div class="num">${p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+  return `<section class="content"><div class="head"><div><h2>${a?esc(playerHistoryLabel(a)):"Archived List"}</h2><span class="count">${countLabel(playerHistoryArchivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(playerHistoryArchivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${playerHistoryArchivePlayers.length?playerHistoryArchivePlayers.map(p=>`<div class="row"><div class="num">${p.tournament_place?ordinal(p.tournament_place):p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.tournament_place?`<span class="red">${ordinal(p.tournament_place)} Place</span>`:""}${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
  if(playerHistoryMode){
   if(playerHistoryView==="menu"){
@@ -1389,6 +1401,10 @@ function wire(){
  const adm=document.querySelector("#adminButton");if(adm)adm.onclick=()=>{page="admin";adminMode="main";archiveGame=null;archiveViewId=null;error="";render()};
  const doa=document.querySelector("#dayOffAlertButton");if(doa)doa.onclick=async()=>{error="";await loadStaffData();page="admin";adminMode="staffUpcoming";archiveGame=null;archiveViewId=null;render()};
  wirePlayerControls();
+ const rb=document.querySelector("#rebuysOverButton");if(rb)rb.onclick=confirmRebuysOver;
+ const im=document.querySelector("#inMoneyButton");if(im)im.onclick=setInMoney;
+ const ch=document.querySelector("#chopButton");if(ch)ch.onclick=showChop;
+ document.querySelectorAll("[data-bust]").forEach(x=>x.onclick=()=>bustTournamentPlayer(x.dataset.bust));
  const b=document.querySelector("#back");if(b)b.onclick=()=>{error="";if(game)game=null;else if(day)day=null;else page="main";render()};
 }
 function wireSpecial(){
