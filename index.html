@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.132";
+const APP_VERSION="100726.133";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -937,7 +937,14 @@ function showChop(){
  if(choppers.length<2)return;
  const names=choppers.map(p=>currentPlayerName(p)).join("\n");
  if(!confirm("Are you sure these players are chopping?\n\n"+names))return;
- alert("Point Chop confirmed. Calculation and Save/Undo screen will be added in the next step.");
+ const count=choppers.length;
+ let total=0;
+ for(let place=1;place<=count;place++)total+=11-place;
+ const each=total/count;
+ const a=document.querySelector("#app");
+ a.innerHTML=renderHeader("Point Chop","Wednesday Tournament")+'<section class="content"><div class="list">'+choppers.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+each.toFixed(2)+' Points</strong></div>').join('')+'</div><p style="text-align:center;font-weight:900;margin-top:1.25rem">Total Points Available: '+total.toFixed(2)+'</p><p style="text-align:center;font-weight:900">Each Player Receives: '+each.toFixed(2)+' Points</p><p class="error" style="text-align:center">TEST ONLY — Nothing has been saved yet.</p></section>';
+ wireHomeLogo();
+ const b=document.querySelector("#back");if(b)b.onclick=render;
 }
 function renderTodoPage(){
  const active=todos.filter(t=>!t.completed_at).sort((a,b)=>todoNewestFirst?new Date(b.created_at)-new Date(a.created_at):new Date(a.created_at)-new Date(b.created_at));
