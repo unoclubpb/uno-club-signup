@@ -998,7 +998,7 @@ async function loadTop10Players(){
   const a=gamesById.get(String(p.archive_id));if(!a||!a.archive_date)return;
   const g=a.game;
   if(!["Tournament","Hold Em","Omaha","Special Game"].includes(g))return;
-  const normalizedName=String(p.player_name||"").trim().toLowerCase().replace(/\\s+/g," ");
+  const normalizedName=String(p.player_name||"").trim().toLowerCase().replace(/\s+/g," ");
   const key=p.player_id!=null?`id:${p.player_id}`:`name:${normalizedName}`;
   if(!totals.has(key))totals.set(key,{name:p.player_name||"",cash:0,tournaments:0,total:0,days:new Set()});
   const t=totals.get(key);
