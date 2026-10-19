@@ -989,25 +989,28 @@ function renderArchiveHeader(secondLine){
 async function loadTop10Players(){
  const [ap,ar]=await Promise.all([
   sb.from("list_archive_players").select("archive_id,player_id,player_name,was_alternate,was_late"),
-  sb.from("list_archives").select("id,game")
+  sb.from("list_archives").select("id,archive_date,game")
  ]);
  if(ap.error||ar.error){top10Players=[];error="Could not load Top 10 Players.";return}
- const gamesById=new Map((ar.data||[]).map(a=>[String(a.id),a.game]));
+ const gamesById=new Map((ar.data||[]).map(a=>[String(a.id),a]));
  const totals=new Map();
  (ap.data||[]).forEach(p=>{
-  const g=gamesById.get(String(p.archive_id));if(!g)return;
-  const key=p.player_id?`id:${p.player_id}`:`name:${String(p.player_name||"").toLowerCase()}`;
-  if(!totals.has(key))totals.set(key,{name:p.player_name||"",cash:0,tournaments:0,total:0});
+  const a=gamesById.get(String(p.archive_id));if(!a||!a.archive_date)return;
+  const g=a.game;
+  if(!["Tournament","Hold Em","Omaha","Special Game"].includes(g))return;
+  const normalizedName=String(p.player_name||"").trim().toLowerCase().replace(/\\s+/g," ");
+  const key=p.player_id!=null?`id:${p.player_id}`:`name:${normalizedName}`;
+  if(!totals.has(key))totals.set(key,{name:p.player_name||"",cash:0,tournaments:0,total:0,days:new Set()});
   const t=totals.get(key);
   if(g==="Tournament")t.tournaments++;
-  else if(g==="Hold Em"||g==="Omaha"||g==="Special Game")t.cash++;
-  else return;
-  t.total++;
+  else t.cash++;
+  t.days.add(a.archive_date);
  });
- top10Players=[...totals.values()].sort((a,b)=>b.total-a.total||b.cash-a.cash||b.tournaments-a.tournaments||a.name.localeCompare(b.name)).slice(0,10);
+ top10Players=[...totals.values()].map(t=>({...t,total:t.days.size,days:undefined}))
+  .sort((a,b)=>b.total-a.total||b.cash-a.cash||b.tournaments-a.tournaments||a.name.localeCompare(b.name)).slice(0,10);
 }
 function renderTop10Players(){
- return `<section class="content top10Wrap">${top10Players.length?`<table class="top10Table"><thead><tr><th>Name</th><th>Cash Games</th><th>Tournaments</th></tr></thead><tbody>${top10Players.map(p=>`<tr><td><button class="top10PlayerName" data-top10-player="${esc(p.name)}">${esc(p.name)}</button></td><td>${p.cash}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No archived game data yet.</div>'}</section>`;
+ return `<section class="content top10Wrap">${top10Players.length?`<table class="top10Table"><thead><tr><th>Name</th><th>Attendance</th><th>Cash Games</th><th>Tournaments</th></tr></thead><tbody>${top10Players.map(p=>`<tr><td><button class="top10PlayerName" data-top10-player="${esc(p.name)}">${esc(p.name)}</button></td><td>${p.total}</td><td>${p.cash}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No archived game data yet.</div>'}</section>`;
 }
 
 function unwrapRpcData(data){return Array.isArray(data)&&data.length===1&&typeof data[0]==="object"&&!Array.isArray(data[0])?data[0]:data}
