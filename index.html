@@ -352,7 +352,7 @@ body:has(.tableGameMenu){
 header h1,header .headertext h1,header small,header .headertext small{color:#1262c6!important}
 /* v092926.37 Top 10 Players */
 .top10Button{background:#1262c6!important;color:#fff!important}
-.top10Wrap{padding:18px}
+.top10Wrap{padding:8px 5px}.top10Table{table-layout:fixed;font-size:clamp(9px,2.7vw,12px)}.top10Table th,.top10Table td{padding:8px 2px!important;overflow-wrap:anywhere}.top10Table th:first-child,.top10Table td:first-child{width:30%}.top10Table th:not(:first-child),.top10Table td:not(:first-child){width:17.5%}.top10PlayerName{font-size:inherit!important}
 .top10Table{width:100%;border-collapse:collapse;background:#fff;border:2px solid #000}
 .top10Table th,.top10Table td{padding:12px 8px;border-bottom:1px solid #bbb;text-align:center}
 .top10Table th{font-weight:900;background:#eee}
@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.139";
+const APP_VERSION="100726.140";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -988,7 +988,7 @@ function renderArchiveHeader(secondLine){
 }
 async function loadTop10Players(){
  const [ap,ar]=await Promise.all([
-  sb.from("list_archive_players").select("archive_id,player_id,player_name,was_alternate,was_late"),
+  sb.from("list_archive_players").select("archive_id,player_id,player_name"),
   sb.from("list_archives").select("id,archive_date,game")
  ]);
  if(ap.error||ar.error){top10Players=[];error="Could not load Top 10 Players.";return}
@@ -1000,17 +1000,19 @@ async function loadTop10Players(){
   if(!["Tournament","Hold Em","Omaha","Special Game"].includes(g))return;
   const normalizedName=String(p.player_name||"").trim().toLowerCase().replace(/\s+/g," ");
   const key=p.player_id!=null?`id:${p.player_id}`:`name:${normalizedName}`;
-  if(!totals.has(key))totals.set(key,{name:p.player_name||"",cash:0,tournaments:0,total:0,days:new Set()});
+  if(!totals.has(key))totals.set(key,{name:p.player_name||"",holdem:0,omaha:0,tournaments:0,special:0,total:0,days:new Set()});
   const t=totals.get(key);
   if(g==="Tournament")t.tournaments++;
-  else t.cash++;
+  else if(g==="Hold Em")t.holdem++;
+  else if(g==="Omaha")t.omaha++;
+  else t.special++;
   t.days.add(a.archive_date);
  });
  top10Players=[...totals.values()].map(t=>({...t,total:t.days.size,days:undefined}))
-  .sort((a,b)=>b.total-a.total||b.cash-a.cash||b.tournaments-a.tournaments||a.name.localeCompare(b.name)).slice(0,10);
+  .sort((a,b)=>b.total-a.total||(b.holdem+b.omaha+b.tournaments+b.special)-(a.holdem+a.omaha+a.tournaments+a.special)||a.name.localeCompare(b.name)).slice(0,10);
 }
 function renderTop10Players(){
- return `<section class="content top10Wrap">${top10Players.length?`<table class="top10Table"><thead><tr><th>Name</th><th>Attendance</th><th>Cash Games</th><th>Tournaments</th></tr></thead><tbody>${top10Players.map(p=>`<tr><td><button class="top10PlayerName" data-top10-player="${esc(p.name)}">${esc(p.name)}</button></td><td>${p.total}</td><td>${p.cash}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No archived game data yet.</div>'}</section>`;
+ return `<section class="content top10Wrap">${top10Players.length?`<table class="top10Table"><thead><tr><th>Name</th><th>Attendance</th><th>Hold'em</th><th>Omaha</th><th>Tournament</th></tr></thead><tbody>${top10Players.map(p=>`<tr><td><button class="top10PlayerName" data-top10-player="${esc(p.name)}">${esc(p.name)}</button></td><td>${p.total}</td><td>${p.holdem}</td><td>${p.omaha}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No archived game data yet.</div>'}</section>`;
 }
 
 function unwrapRpcData(data){return Array.isArray(data)&&data.length===1&&typeof data[0]==="object"&&!Array.isArray(data[0])?data[0]:data}
