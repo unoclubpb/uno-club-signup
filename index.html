@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.140";
+const APP_VERSION="100726.141";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -647,7 +647,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -1000,7 +1000,7 @@ async function loadTop10Players(){
   if(!["Tournament","Hold Em","Omaha","Special Game"].includes(g))return;
   const normalizedName=String(p.player_name||"").trim().toLowerCase().replace(/\s+/g," ");
   const key=p.player_id!=null?`id:${p.player_id}`:`name:${normalizedName}`;
-  if(!totals.has(key))totals.set(key,{name:p.player_name||"",holdem:0,omaha:0,tournaments:0,special:0,total:0,days:new Set()});
+  if(!totals.has(key))totals.set(key,{name:p.player_name||"",player_id:p.player_id,holdem:0,omaha:0,tournaments:0,special:0,total:0,days:new Set()});
   const t=totals.get(key);
   if(g==="Tournament")t.tournaments++;
   else if(g==="Hold Em")t.holdem++;
@@ -1008,7 +1008,7 @@ async function loadTop10Players(){
   else t.special++;
   t.days.add(a.archive_date);
  });
- top10Players=[...totals.values()].map(t=>({...t,total:t.days.size,days:undefined}))
+ top10Players=[...totals.values()].map(t=>{const current=directory.find(d=>t.player_id!=null&&String(d.player_id)===String(t.player_id))||directory.find(d=>String(d.player_name).trim().toLowerCase()===String(t.name).trim().toLowerCase());return {...t,name:current?.player_name||t.name,total:t.days.size,days:undefined}})
   .sort((a,b)=>b.total-a.total||(b.holdem+b.omaha+b.tournaments+b.special)-(a.holdem+a.omaha+a.tournaments+a.special)||a.name.localeCompare(b.name)).slice(0,10);
 }
 function renderTop10Players(){
@@ -1164,7 +1164,7 @@ function wireAdmin(){
   if(adminMode==="archives"||adminMode==="top10"){adminMode="main";top10Players=[];render();return}
   page="main";render();
  };
- const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
+ const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbFromTop10=false;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
  const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
  const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";await loadTop10Players();render()};
  const th=document.querySelector("#adminTournamentHistory");if(th)th.onclick=async()=>{error="";adminMode="tournamentHistory";await loadTournamentData();render()};
@@ -1285,7 +1285,7 @@ function wireAdmin(){
   archiveGame="Tournament";archives=rows;archiveViewId=a.id;
   await openArchive(a.id);
  });
- document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=async()=>{page="playerdb";playerDbFromAdmin=true;playerDbMode="edit";playerDbEditName=b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";playerLastPlayed=null;await loadPlayerLastPlayed(playerDbEditName);render()});
+ document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=async()=>{page="playerdb";playerDbFromAdmin=true;playerDbFromTop10=true;playerDbMode="edit";playerDbEditName=b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";playerLastPlayed=null;await loadPlayerLastPlayed(playerDbEditName);render()});
  document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
  document.querySelectorAll("[data-archive]").forEach(b=>b.onclick=()=>openArchive(b.dataset.archive));
 }
@@ -1395,7 +1395,7 @@ function wirePlayerDatabase(){
   if(playerHistoryArchiveId){playerHistoryArchiveId=null;playerHistoryArchivePlayers=[];playerHistoryView="dates";render();return}
   if(playerHistoryMode&&playerHistoryView!=="menu"){playerHistoryView="menu";render();return}
   if(playerHistoryMode){playerHistoryMode=false;playerHistoryView="menu";render();return}
-  if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;playerDbDraftName="";render();return}
+  if(playerDbFromTop10){page="admin";adminMode="top10";playerDbFromTop10=false;playerDbMode="list";playerDbEditName=null;render();return}\n  if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;playerDbDraftName="";render();return}
   if(playerDbFromAdmin){page="admin";adminMode="main";playerDbFromAdmin=false;render()}else{page="main";render()}
  };
  const add=document.querySelector("#dbAddPlayer");if(add)add.onclick=()=>{playerDbMode="add";playerDbEditName=null;playerDbDraftName=formatPlayerName(playerDbSearch);error="";render()};
