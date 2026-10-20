@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.145";
+const APP_VERSION="100726.146";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -867,7 +867,7 @@ function renderSpecialPage(){
 function renderPlayerPage(isSpecial=false){
  const sh=shown(),regular=sh.filter(p=>!p.alt&&!p.isLate),alts=sh.filter(p=>p.alt),lates=sh.filter(p=>p.isLate),rc=regular.length,seatLimit=maxPreferredSeat(game),lateMode=!isSpecial&&isLateArrivalTime(),attendance=attendanceFor(day,game);
  if(game==="Tournament"&&tournamentState.rebuys_over)return renderTournamentFinish();
- const now=new Date(),TOURNAMENT_TEST_MODE=true,showRebuys=game==="Tournament"&&day==="Wednesday"&&(TOURNAMENT_TEST_MODE||(now.toLocaleDateString("en-US",{weekday:"long"})==="Wednesday"&&(now.getHours()*60+now.getMinutes()>=1290)));
+ const now=new Date(),atlantaTime=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"long",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(now),timePart=k=>atlantaTime.find(p=>p.type===k)?.value,showRebuys=game==="Tournament"&&day==="Wednesday"&&timePart("weekday")==="Wednesday"&&(Number(timePart("hour"))*60+Number(timePart("minute"))>=21*60+30);
  return `<section class="content">${showRebuys?'<button class="big" style="width:100%;background:#c62828;color:#fff;margin-bottom:1rem" id="rebuysOverButton">Are rebuys over?</button>':""}
  ${isSpecial?(specialEdit?specialSettingsForm(true):`<div class="specialInfo"><button class="specialNameEdit" id="specialNameEdit">${esc(specialSettings.game_name)}</button> · ${specialSettings.total_seats} Seats</div>`):""}
  <form id="form" autocomplete="off">
