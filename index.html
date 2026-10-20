@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.144";
+const APP_VERSION="100726.145";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -894,7 +894,7 @@ function renderTournamentFinish(){
  const active=tournamentRemaining(),placed=current().filter(p=>p.tournament_place).sort((a,b)=>a.tournament_place-b.tournament_place),seq=tournamentBustSequence();
  if(tournamentState.chop_saved){
   const ids=(tournamentState.chop_player_ids||[]).map(String),choppers=current().filter(p=>ids.includes(String(p.id))),each=Number(tournamentState.chop_points_each||0),total=each*choppers.length;
-  return '<section class="content"><h2 style="text-align:center">Tournament Finished — Point Chop</h2><div class="list">'+choppers.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+each.toFixed(2)+' Points</strong></div>').join('')+'</div><p style="text-align:center;font-weight:900;margin-top:1.25rem">Total Points Available: '+total.toFixed(2)+'</p><p style="text-align:center;font-weight:900">Each Player Receives: '+each.toFixed(2)+' Points</p><p style="text-align:center">Tournament complete. This screen will remain until the tournament is archived.</p><button class="clear" style="display:block;margin:1rem auto" id="testArchiveTournamentButton">TEST ARCHIVE NOW</button></section>';
+  return '<section class="content"><h2 style="text-align:center">Tournament Finished — Point Chop</h2><div class="list">'+choppers.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+each.toFixed(2)+' Points</strong></div>').join('')+'</div><p style="text-align:center;font-weight:900;margin-top:1.25rem">Total Points Available: '+total.toFixed(2)+'</p><p style="text-align:center;font-weight:900">Each Player Receives: '+each.toFixed(2)+' Points</p><p style="text-align:center">Tournament complete. Results will remain available until the scheduled archive.</p></section>';
  }
  return '<section class="content"><div style="display:flex;gap:.55rem;justify-content:center;margin-bottom:.8rem">'+(seq.length?'<button class="clear" id="undoBustButton">Undo Last Bust Out</button>':'')+(active.length<=9?'<button class="add" id="chopButton">Point Chop</button>':'')+'</div>'+(active.length===9?'<p style="text-align:center;font-weight:900">Final Table — 9 Players</p>':'')+(error?'<p class="error">'+esc(error)+'</p>':'')+'<div class="list">'+(active.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><button class="del" style="width:auto;padding:.55rem .75rem" data-bust="'+p.id+'">Bust Out</button></div>').join('')||'<div class="empty">No players remaining.</div>')+placed.map(p=>{const outright=p.tournament_place===1&&tournamentRemaining().length===0,pts=tournamentPoints(p.tournament_place,outright);return '<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+ordinal(p.tournament_place)+' Place — '+pts+' '+(pts===1?'Point':'Points')+'</strong></div>'}).join('')+'</div></section>'
 }
@@ -1480,16 +1480,6 @@ function wire(){
  const rb=document.querySelector("#rebuysOverButton");if(rb)rb.onclick=confirmRebuysOver;
  const ch=document.querySelector("#chopButton");if(ch)ch.onclick=showChop;
  const ub=document.querySelector("#undoBustButton");if(ub)ub.onclick=undoTournamentBust;
- const ta=document.querySelector("#testArchiveTournamentButton");if(ta)ta.onclick=async()=>{
-  if(!confirm("Run the tournament archive now? This will archive and clear the current TEST tournament."))return;
-  const now=new Date(),dateStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-  const r=await sb.rpc("archive_signup_list",{p_day:"Wednesday",p_game:"Tournament",p_archive_date:dateStr,p_special_name:null});
-  if(r.error){alert("Test archive failed: "+r.error.message);return}
-  players=players.filter(p=>!(p.day==="Wednesday"&&p.game==="Tournament"));
-  await loadTournamentHistory();
-  alert("Test tournament archived successfully.");
-  page="main";day=null;game=null;render();
- };
  document.querySelectorAll("[data-bust]").forEach(x=>x.onclick=()=>bustTournamentPlayer(x.dataset.bust));
  const b=document.querySelector("#back");if(b)b.onclick=()=>{error="";if(game)game=null;else if(day)day=null;else page="main";render()};
 }
