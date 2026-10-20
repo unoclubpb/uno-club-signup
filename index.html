@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.142";
+const APP_VERSION="100726.143";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1346,6 +1346,7 @@ function renderPlayerDatabase(){
   const played=playerHistory.filter(a=>playedIds.has(String(a.id)));
   const totals={"Hold Em":0,"Omaha":0,"Tournament":0,"Special Game":0};
   played.forEach(a=>{if(Object.prototype.hasOwnProperty.call(totals,a.game))totals[a.game]++});
+  const attendance=new Set(played.map(a=>a.archive_date).filter(Boolean)).size;
   let since="—";
   if(played.length){
    const earliest=[...played].sort((a,b)=>a.archive_date.localeCompare(b.archive_date))[0];
@@ -1353,6 +1354,7 @@ function renderPlayerDatabase(){
    since=d.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"2-digit"});
   }
   return `<section class="content"><div class="fieldwrap" style="text-align:center;margin-bottom:1.4rem"><div style="font-weight:800;font-size:1.05rem">Since ${esc(since)}</div></div><div class="list">
+   <div class="playerDbRow" style="cursor:default;font-weight:900"><span>Attendance (Days)</span><strong>${attendance}</strong></div>
    ${["Hold Em","Omaha","Tournament","Special Game"].map(g=>`<div class="playerDbRow" style="cursor:default"><span>${g}</span><strong>${totals[g]}</strong></div>`).join("")}
   </div><div style="margin-top:2.2rem;font-size:.88rem;line-height:1.4;color:#555">* Game totals include players on the list when the game is archived, including alternates and recorded late arrivals.</div></section>`;
  }
