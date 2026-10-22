@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"><div style="padding:32px;text-align:center;font-family:Arial,sans-serif">Loading Uno Club Lists…</div></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.152";
+const APP_VERSION="100726.153";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -647,7 +647,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],attendanceTop10Only=false,tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealRepeatId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
+let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],top10Players=[],attendanceTop10Only=false,tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,meals=[],mealViewEntree=null,mealEditId=null,mealRepeatId=null,mealIdeas=[],mealIdeaPlanId=null,mealHistoryMode="date",mealHistoryAsc=false,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -983,7 +983,7 @@ async function loadArchives(g){
 }
 async function openArchive(id){
  const q=await sb.from("list_archive_players").select("*").eq("archive_id",id);
- archivePlayers=q.error?[]:(q.data||[]);const a=archives.find(x=>String(x.id)===String(id));if(a&&a.game==="Tournament")archivePlayers.sort((x,y)=>String(x.player_name||"").localeCompare(String(y.player_name||"")));else archivePlayers.sort((x,y)=>(x.archive_order||0)-(y.archive_order||0));archiveViewId=id;render();
+ archivePlayers=q.error?[]:(q.data||[]);const a=archives.find(x=>String(x.id)===String(id));archivePlayers.sort((x,y)=>String(x.player_name||"").localeCompare(String(y.player_name||"")));archiveViewId=id;render();
 }
 function renderArchiveHeader(secondLine){
  return `<header class="top"><button class="back" id="back" aria-label="Back">‹</button><div class="title" style="position:absolute;left:0;right:78px;text-align:center;line-height:1.15;pointer-events:none"><div>List Archives</div><div>${esc(secondLine)}</div></div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
@@ -1137,8 +1137,8 @@ function renderAdminPage(){
  if(adminMode==="tournamentHistory")return renderTournamentHistoryPage();
  if(adminMode==="tournamentUpcoming")return renderUpcomingTournaments();
  if(archiveViewId){
-  const a=archives.find(x=>String(x.id)===String(archiveViewId)),isTournament=a?.game==="Tournament";
-  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${isTournament?countLabel(archivePlayers.length,"Player","Players"):countLabel(archivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")+" / "+countLabel(archivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>isTournament?`<div class="row"><div class="info"><strong>${esc(p.player_name)}</strong></div></div>`:`<div class="row"><div class="num">${p.was_late?"L":p.was_alternate?"A":p.position}</div><div class="info"><strong>${esc(p.player_name)}</strong>${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+  const a=archives.find(x=>String(x.id)===String(archiveViewId));
+  return `<section class="content"><div class="head"><div><h2>${a?esc(archiveLabel(a)):"Archived List"}</h2><span class="count">${countLabel(archivePlayers.length,"Player","Players")}</span></div></div><div class="list">${archivePlayers.length?archivePlayers.map(p=>`<button class="playerDbRow" data-archive-player="${esc(p.player_name)}"><span>${esc(p.player_name)}</span></button>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
  if(adminMode==="tournamentPast")return renderPastTournaments();
  if(adminMode==="tournamentAdd")return renderTournamentAddPage();
@@ -1298,6 +1298,15 @@ function wireAdmin(){
  document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=async()=>{page="playerdb";playerDbFromAdmin=true;playerDbFromTop10=true;playerDbMode="edit";playerDbEditName=b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";playerLastPlayed=null;await loadPlayerLastPlayed(playerDbEditName);render()});
  document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
  document.querySelectorAll("[data-archive]").forEach(b=>b.onclick=()=>openArchive(b.dataset.archive));
+ document.querySelectorAll("[data-archive-player]").forEach(b=>b.onclick=()=>openArchivedPlayerDetail(b.dataset.archivePlayer));
+}
+async function openArchivedPlayerDetail(name){
+ const record=findDirectory(name);
+ page="playerdb";playerDbFromArchive=true;playerDbFromAdmin=true;playerDbFromTop10=false;
+ playerDbMode=record?"edit":"add";playerDbEditName=record?record.player_name:null;playerDbDraftName=record?"":name;
+ playerHistoryMode=false;playerHistoryView="menu";playerHistoryArchiveId=null;playerLastPlayed=null;error="";
+ if(record)await loadPlayerLastPlayed(record.player_name);
+ render();
 }
 function playerHistoryLabel(a){
  const d=new Date(a.archive_date+"T12:00:00");
@@ -1319,7 +1328,7 @@ async function loadPlayerHistory(name){
  playerHistory=ar.error?[]:(ar.data||[]);
 }
 async function openPlayerHistoryArchive(id){
- const q=await sb.from("list_archive_players").select("*").eq("archive_id",id).order("archive_order");
+ const q=await sb.from("list_archive_players").select("*").eq("archive_id",id).order("player_name");
  playerHistoryArchivePlayers=q.error?[]:(q.data||[]);if(playerHistory.find(a=>String(a.id)===String(id))?.game==="Tournament")playerHistoryArchivePlayers.sort((a,b)=>String(a.player_name||"").localeCompare(String(b.player_name||"")));playerHistoryArchiveId=id;render();
 }
 async function loadPlayerLastPlayed(name){
@@ -1343,7 +1352,7 @@ function lastPlayedText(){
 function renderPlayerDatabase(){
  if(playerHistoryArchiveId){
   const a=playerHistory.find(x=>String(x.id)===String(playerHistoryArchiveId));
-  return `<section class="content"><div class="head"><div><h2>${a?esc(playerHistoryLabel(a)):"Archived List"}</h2><span class="count">${countLabel(playerHistoryArchivePlayers.filter(x=>!x.was_alternate).length,"Player","Players")} / ${countLabel(playerHistoryArchivePlayers.filter(x=>x.was_alternate).length,"Alternate","Alternates")}</span></div></div><div class="list">${playerHistoryArchivePlayers.length?playerHistoryArchivePlayers.map(p=>`<div class="row">${a?.game==="Tournament"?"":`<div class="num">${p.was_late?"L":p.was_alternate?"A":p.position}</div>`}<div class="info"><strong>${esc(p.player_name)}</strong>${p.tournament_place?`<span class="red">${ordinal(p.tournament_place)} Place</span>`:""}${p.was_late?'<span class="red">LATE ARRIVAL</span>':p.was_alternate?'<span class="red">ALTERNATE</span>':p.preferred_seat?`<span>Preferred seat: ${p.preferred_seat}</span>`:""}${p.notes?`<span class="note">Note: ${esc(p.notes)}</span>`:""}${p.signup_at?`<span class="signupTime">Signed up ${formatSignup(p.signup_at)}</span>`:""}</div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+  return `<section class="content"><div class="head"><div><h2>${a?esc(playerHistoryLabel(a)):"Archived List"}</h2><span class="count">${countLabel(playerHistoryArchivePlayers.length,"Player","Players")}</span></div></div><div class="list">${playerHistoryArchivePlayers.map(p=>`<button class="playerDbRow" data-history-archive-player="${esc(p.player_name)}"><span>${esc(p.player_name)}</span></button>`).join("")}</div></section>`;
  }
  if(playerHistoryMode){
   if(playerHistoryView==="menu"){
@@ -1407,6 +1416,7 @@ function wirePlayerDatabase(){
   if(playerHistoryArchiveId){playerHistoryArchiveId=null;playerHistoryArchivePlayers=[];playerHistoryView="dates";render();return}
   if(playerHistoryMode&&playerHistoryView!=="menu"){playerHistoryView="menu";render();return}
   if(playerHistoryMode){playerHistoryMode=false;playerHistoryView="menu";render();return}
+  if(playerDbFromArchive){playerDbFromArchive=false;playerDbMode="list";playerDbEditName=null;page="admin";render();return}
   if(playerDbFromTop10){playerDbFromTop10=false;playerDbMode="list";playerDbEditName=null;page="admin";adminMode="top10";render();return}
   if(playerDbMode!=="list"){playerDbMode="list";playerDbEditName=null;playerDbDraftName="";render();return}
   if(playerDbFromAdmin){page="admin";adminMode="main";playerDbFromAdmin=false;render()}else{page="main";render()}
@@ -1414,6 +1424,7 @@ function wirePlayerDatabase(){
  const add=document.querySelector("#dbAddPlayer");if(add)add.onclick=()=>{playerDbMode="add";playerDbEditName=null;playerDbDraftName=formatPlayerName(playerDbSearch);error="";render()};
  const search=document.querySelector("#dbSearch");if(search)search.oninput=()=>{playerDbSearch=search.value;const results=document.querySelector("#playerDbResults");if(results){results.innerHTML=playerDbResultsHtml();wirePlayerDbRows()}};
  wirePlayerDbRows();
+ document.querySelectorAll("[data-history-archive-player]").forEach(b=>b.onclick=()=>openArchivedPlayerDetail(b.dataset.historyArchivePlayer));
  const gd=document.querySelector("#dbGameDetail");if(gd)gd.onclick=async()=>{await loadPlayerHistory(playerDbEditName);playerHistoryMode=true;playerHistoryView="menu";playerHistoryArchiveId=null;render()};
  const phd=document.querySelector("#phDates");if(phd)phd.onclick=()=>{playerHistoryView="dates";render()};
  const pht=document.querySelector("#phTotals");if(pht)pht.onclick=()=>{playerHistoryView="totals";render()};
