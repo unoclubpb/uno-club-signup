@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"><div style="padding:32px;text-align:center;font-family:Arial,sans-serif">Loading Uno Club Lists…</div></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.153";
+const APP_VERSION="100726.154";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -830,7 +830,7 @@ function renderAddDayOff(){
 function render(){
  const a=document.querySelector("#app");let h="";
  if(page==="todo"){a.innerHTML=renderHeader("To-Do")+renderTodoPage();wireTodo();return}
- if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?(playerHistoryView==="totals"?"Total Games Played":playerHistoryView==="dates"?"Dates Played":"Game Detail"):playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details")+renderPlayerDatabase();wirePlayerDatabase();return}
+ if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?(playerHistoryView==="totals"?"Total Games Played":playerHistoryView==="dates"?"Dates Played":"Game Detail"):playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details",playerHistoryMode&&!playerHistoryArchiveId?(findDirectory(playerDbEditName||"")?.player_name||playerDbEditName||""):"")+renderPlayerDatabase();wirePlayerDatabase();return}
  if(page==="admin"){
  let adminHeader;
  if(archiveViewId){
