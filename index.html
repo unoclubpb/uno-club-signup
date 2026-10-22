@@ -622,10 +622,10 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 
 .mealsButton{background:#9a5b2f!important;color:#fff!important;border:2px solid #000!important}.mealRow{width:100%;text-align:left;background:#fff;border:1px solid #ddd;border-radius:10px;padding:.8rem;margin:.35rem 0}.mealRow strong{display:block}.mealSides{display:block;font-style:italic;margin-top:.2rem}.mealMeta{display:block;font-size:.82rem;color:#555;margin-top:.2rem}</style>
 </head>
-<body><div id="app"></div>
+<body><div id="app"><div style="padding:32px;text-align:center;font-family:Arial,sans-serif">Loading Uno Club Lists…</div></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.151";
+const APP_VERSION="100726.152";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1731,7 +1731,7 @@ async function deleteActiveTodo(id){const item=todos.find(t=>String(t.id)===Stri
 async function deleteCompletedTodo(id){const item=todos.find(t=>String(t.id)===String(id));if(!item||!confirm(`Permanently delete this completed item?\n\n${item.note}`))return;const r=await sb.from("todo_items").delete().eq("id",id).not("completed_at","is",null);if(r.error)error="Could not delete that completed item.";else todos=todos.filter(t=>String(t.id)!==String(id));render()}
 async function trimCompletedTodos(){const c=todos.filter(t=>t.completed_at).sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at));if(c.length<=25)return;const ids=c.slice(25).map(t=>t.id),r=await sb.from("todo_items").delete().in("id",ids);if(!r.error)todos=todos.filter(t=>!ids.includes(t.id))}
 async function checkForUpdate(){try{const r=await fetch(window.location.pathname+"?updatecheck="+Date.now(),{cache:"no-store"}),h=await r.text(),m=h.match(/const APP_VERSION="([^"]+)"/);if(m&&m[1]!==APP_VERSION)window.location.replace(window.location.pathname+"?v="+encodeURIComponent(m[1]))}catch(e){}}
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkForUpdate()});window.addEventListener("pageshow",checkForUpdate);load();
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkForUpdate()});window.addEventListener("pageshow",checkForUpdate);load().catch(e=>{console.error("Uno Club startup error",e);document.querySelector("#app").innerHTML='<div style="padding:24px;font-family:Arial,sans-serif"><h2>Unable to load Uno Club Lists</h2><p>Please try refreshing the page.</p><small>'+String(e?.message||e).replace(/[<>&]/g,"")+"</small></div>"});
 </script>
 </body>
 </html>
