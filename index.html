@@ -625,7 +625,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.156";
+const APP_VERSION="100726.157";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -1464,8 +1464,8 @@ async function savePlayerDatabase(e){
     sb.from("signup_players").update({player_name:name}).eq("player_id",oldPlayer.player_id).select(),
     sb.from("list_archive_players").update({player_name:name}).eq("player_id",oldPlayer.player_id).select()
    ]);
-   if(sr.error||ar.error){error="Player name was changed, but one or more linked records could not be updated. "+(sr.error?.message||ar.error?.message||"")}
-   else players=players.map(p=>String(p.player_id)===String(oldPlayer.player_id)?{...p,player_name:name}:p);
+   if(sr.error||ar.error){error="Player name was changed, but linked records could not all be updated. "+(sr.error?.message||ar.error?.message||"");render();return}
+   players=players.map(p=>String(p.player_id)===String(oldPlayer.player_id)?{...p,player_name:name}:p);
   }
  }else{
   r=await sb.from("player_directory").insert(payload).select().single();
