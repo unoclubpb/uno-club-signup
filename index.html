@@ -627,7 +627,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 .listsMainMenu > button.big .menuIcon{display:grid;place-items:center;flex:none;width:52px;height:52px;background:#e8f2ff;color:#1760be;border-radius:10px;font-size:25px}
 .listsMainMenu > button.big .menuArrow{font-size:29px;font-weight:300;color:#fff;line-height:1}
 .listsMainMenu > button.big small{color:#e3edff}
-.listsMainMenu .tonight{box-shadow:0 0 0 4px #ffef00,0 4px 12px rgba(0,0,0,.18)}
+.listsMainMenu .tonight{box-shadow:none!important;transform:none!important}
 .listsMainMenu .tonight::after{display:none!important}
 .listsMainMenu .tonight .menuIcon{outline:3px solid #ffef00;outline-offset:0}
 .listsMainMenu .calendarEmoji{position:relative;display:inline-grid;place-items:center;width:34px;height:36px;line-height:1;font-size:31px}
@@ -635,9 +635,11 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 
 .hubEmbedded #app{padding-top:110px!important}
 .listsMainMenu{padding-top:18px;gap:12px}
-.listsMainMenu > button.big{width:100%!important;max-width:none!important;height:88px!important;min-height:88px!important;padding:14px;gap:15px;box-sizing:border-box;font-size:17px!important;font-family:inherit}
+.listsMainMenu > button.big{width:100%!important;max-width:none!important;height:88px!important;min-height:88px!important;padding:14px;gap:15px;box-sizing:border-box;font-size:17px!important;font-family:inherit;flex-shrink:0}
 @media(max-width:390px){.listsMainMenu{padding-top:14px}.listsMainMenu > button.big{height:78px!important;min-height:78px!important}}
 .listsMainMenu .playerDatabaseButton{margin-top:38px!important}
+.listsMainMenu{padding-bottom:60px}
+.listsMainMenu + .appVersion{position:relative;left:auto;bottom:auto;transform:none;width:100%;max-width:none;margin:-43px auto 16px;text-align:center;color:#263f69;pointer-events:none}
 .listsBanner .back{width:58px;height:44px;flex:0 0 58px;padding:0;border:0;border-radius:12px;background:transparent;color:#fff;font-size:32px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .listsBanner .back:active{background:rgba(255,255,255,.12)}
 .listsBanner .hubLogoButton{width:68px;height:68px;flex:0 0 68px;padding:0;border:0;border-radius:12px;background:transparent;cursor:pointer}
@@ -654,7 +656,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102826.171";
+const APP_VERSION="102826.172";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
