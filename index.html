@@ -656,7 +656,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102826.177";
+const APP_VERSION="102826.178";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -720,7 +720,14 @@ function shown(){
   if(!alt&&!isLate)n++;
   return {...p,alt,isLate,forcedLate:forced,num:(alt||isLate)?null:n};
  });
- return [...a.filter(p=>!p.alt&&!p.isLate),...a.filter(p=>p.alt),...a.filter(p=>p.isLate)];
+ // Preserve the original signup order for seat/alternate numbering above,
+ // but display expected players first, then arrived players, alphabetically within each group.
+ return a.sort((x,y)=>{
+  const arrivedX=x.arrived===true||x.isLate,arrivedY=y.arrived===true||y.isLate;
+  if(arrivedX!==arrivedY)return arrivedX?1:-1;
+  return currentPlayerName(x).localeCompare(currentPlayerName(y),undefined,{sensitivity:"base",numeric:true})||
+   new Date(x.created_at)-new Date(y.created_at)||(Number(x.id)||0)-(Number(y.id)||0);
+ });
 }
 function currentPlayerName(p){if(p?.player_id){const d=directory.find(x=>String(x.player_id)===String(p.player_id));if(d?.player_name)return d.player_name}return p?.player_name||""}
 function formatSignup(v){return new Date(v).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});}
