@@ -624,7 +624,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 /* Uno Club Hub-compatible Lists main-menu styling. Existing spacing remains untouched. */
 .listsMainMenu > button.big{display:flex;align-items:center;gap:14px;text-align:left;padding:8px 14px;background:#1e5acb!important;color:#fff!important;border:2px solid #103c8b!important;border-radius:12px}
 .listsMainMenu > button.big .menuText{flex:1;min-width:0}
-.listsMainMenu > button.big .menuIcon{display:grid;place-items:center;flex:none;width:48px;height:48px;background:#e8f2ff;color:#1760be;border-radius:10px;font-size:25px}
+.listsMainMenu > button.big .menuIcon{display:grid;place-items:center;flex:none;width:52px;height:52px;background:#e8f2ff;color:#1760be;border-radius:10px;font-size:25px}
 .listsMainMenu > button.big .menuArrow{font-size:29px;font-weight:300;color:#fff;line-height:1}
 .listsMainMenu > button.big small{color:#e3edff}
 .listsMainMenu .tonight{box-shadow:0 0 0 4px #ffef00,0 4px 12px rgba(0,0,0,.18)}
@@ -635,8 +635,8 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 
 .hubEmbedded #app{padding-top:110px!important}
 .listsMainMenu{padding-top:18px;gap:12px}
-.listsMainMenu > button.big{height:88px;min-height:88px;padding:14px;gap:15px;box-sizing:border-box}
-@media(max-width:390px){.listsMainMenu{padding-top:14px}.listsMainMenu > button.big{height:78px;min-height:78px}}
+.listsMainMenu > button.big{width:100%!important;max-width:none!important;height:88px!important;min-height:88px!important;padding:14px;gap:15px;box-sizing:border-box;font-size:17px!important;font-family:inherit}
+@media(max-width:390px){.listsMainMenu{padding-top:14px}.listsMainMenu > button.big{height:78px!important;min-height:78px!important}}
 .listsMainMenu .playerDatabaseButton{margin-top:38px!important}
 .listsBanner .back{width:58px;height:44px;flex:0 0 58px;padding:0;border:0;border-radius:12px;background:transparent;color:#fff;font-size:32px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .listsBanner .back:active{background:rgba(255,255,255,.12)}
@@ -654,7 +654,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102826.170";
+const APP_VERSION="102826.171";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
