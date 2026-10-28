@@ -642,7 +642,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.163";
+const APP_VERSION="100726.164";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
@@ -867,7 +867,7 @@ function render(){
  }
  a.innerHTML=adminHeader+renderAdminPage();wireAdmin();return
 }
- if(page==="special"){a.innerHTML=renderHeader(specialSettings?specialSettings.game_name:"Special Game")+renderSpecialPage();wireSpecial();return}
+ if(page==="special"){const scheduled=specialSettings?.game_date?new Date(specialSettings.game_date+"T12:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}):"";a.innerHTML=renderHeader(specialSettings?specialSettings.game_name:"Special Game",scheduled)+renderSpecialPage();wireSpecial();return}
  h+=renderHeader(game||day||"Uno Club Lists",game?`${day} Night`:"");
  if(!day){
   const specialName=specialSettings?specialSettings.game_name:"Special Game",sc=specialSettings?specialCount():0;
