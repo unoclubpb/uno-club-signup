@@ -642,7 +642,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.162";
+const APP_VERSION="100726.163";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
@@ -873,7 +873,7 @@ function render(){
   const specialName=specialSettings?specialSettings.game_name:"Special Game",sc=specialSettings?specialCount():0;
   const today=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
   h+=`<section class="menu listsMainMenu">${Object.keys(games).map(x=>`<button class="big day ${x===today?"tonight":""}" data-v="${x}"><span class="menuIcon" aria-hidden="true"><span class="calendarEmoji">📅<span class="calendarDate">${nextGameDate(x)}</span></span></span><span class="menuText">${x}</span><span class="menuArrow" aria-hidden="true">›</span></button>`).join("")}
-  <button class="big specialGameButton" id="specialGameButton"><span class="menuIcon" aria-hidden="true">★</span><span class="menuText">${esc(specialName)}</span><span class="menuArrow" aria-hidden="true">›</span>${sc?`<span class="gamecount">${sc}</span>`:""}</button>
+  <button class="big specialGameButton ${specialSettings?.game_date===`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}-${String(new Date().getDate()).padStart(2,"0")}`?"tonight":""}" id="specialGameButton"><span class="menuIcon" aria-hidden="true">${specialSettings?.game_date?`<span class="calendarEmoji">📅<span class="calendarDate">${Number(specialSettings.game_date.slice(8,10))}</span></span>`:"★"}</span><span class="menuText">${esc(specialName)}</span><span class="menuArrow" aria-hidden="true">›</span>${sc?`<span class="gamecount">${sc}</span>`:""}</button>
   <button class="big todoMenuButton" id="todoMenuButton"><span class="menuIcon" aria-hidden="true">☑</span><span class="menuText">To-Do</span><span class="menuArrow" aria-hidden="true">›</span></button>${(()=>{const a=dayOffAlerts();return a.length?`${(()=>{const needs=a.filter(x=>x.coverage_needed),allCovered=needs.length>0&&needs.every(x=>x.coverage_found&&x.covered_by),one=a.length===1?a[0]:null;return `<button class="big dayOffAlertButton ${allCovered?"covered":""}" id="dayOffAlertButton"><span class="menuIcon" aria-hidden="true">◷</span><span class="menuText">${allCovered?"Day Off Covered":"Day Off Alert"}</span><small>${one?`${esc(one.staff_name)} — ${esc(formatStaffDate(one.off_date))}`:`${a.length} upcoming days off`}</small>${needs.length?(allCovered?`<small>${needs.length===1?`${esc(needs[0].covered_by)} is covering`:"All coverage found"}</small>`:`<small>Coverage Needed</small>`):""}</button>`})()}`:""})()}<button class="big playerDatabaseButton" id="adminButton"><span class="menuIcon" aria-hidden="true">⚙</span><span class="menuText">Admin</span><span class="menuArrow" aria-hidden="true">›</span></button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
  }else if(!game){
   h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;if(x==="Tournament")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssTournamentTable(day)}</button>`;return `<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
@@ -883,7 +883,7 @@ function render(){
 function specialSettingsForm(editing=false){
  return `<form id="${editing?"specialEditForm":"specialSetupForm"}" autocomplete="off">
  <div class="fieldwrap"><div>Game Name</div><input id="specialGameName" maxlength="80" value="${editing?esc(specialSettings.game_name):""}" autocomplete="new-password"></div>
- <div class="fieldwrap"><div>Total Seats</div><div class="fieldhint">Enter 6, 7, 8, 9 or 10.</div><input id="specialSeats" inputmode="numeric" value="${editing?specialSettings.total_seats:""}" autocomplete="new-password"></div>
+ <div class="fieldwrap"><div>Game Date</div><input id="specialGameDate" type="date" required value="${editing?esc(specialSettings.game_date||""):""}"></div><div class="fieldwrap"><div>Total Seats</div><div class="fieldhint">Enter 6, 7, 8, 9 or 10.</div><input id="specialSeats" inputmode="numeric" value="${editing?specialSettings.total_seats:""}" autocomplete="new-password"></div>
  ${error?`<p class="error">${esc(error)}</p>`:""}
  ${editing?`<div class="specialEditButtons"><button class="save">Save Changes</button><button type="button" class="cancel" id="cancelSpecialEdit">Cancel</button></div>`:`<button class="add">Set Up Game</button>`}</form>`;
 }
@@ -1605,15 +1605,16 @@ function wireTodo(){
  document.querySelectorAll("[data-delete-completed]").forEach(b=>b.onclick=()=>deleteCompletedTodo(b.dataset.deleteCompleted));
 }
 function specialValues(){
- const name=document.querySelector("#specialGameName").value.trim(),v=document.querySelector("#specialSeats").value.trim();
+ const name=document.querySelector("#specialGameName").value.trim(),v=document.querySelector("#specialSeats").value.trim(),date=document.querySelector("#specialGameDate").value;
  if(!name){error="Please enter a game name.";render();return null}
  if(!/^\d+$/.test(v)||![6,7,8,9,10].includes(+v)){error="Total Seats must be 6, 7, 8, 9 or 10.";render();return null}
- return {name,seats:+v};
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||Number.isNaN(new Date(date+"T12:00:00").getTime())){error="Please select a valid game date.";render();return null}
+ return {name,seats:+v,date};
 }
-async function saveSpecialSetup(e){e.preventDefault();const v=specialValues();if(!v)return;const r=await sb.from("special_game_settings").upsert({id:1,game_name:v.name,total_seats:v.seats,updated_at:new Date().toISOString()}).select().single();if(r.error){error="Could not save the Special Game setup.";render();return}specialSettings=r.data;day=game="Special Game";specialEdit=false;await touchList();render()}
+async function saveSpecialSetup(e){e.preventDefault();const v=specialValues();if(!v)return;const r=await sb.from("special_game_settings").upsert({id:1,game_name:v.name,total_seats:v.seats,game_date:v.date,updated_at:new Date().toISOString()}).select().single();if(r.error){error="Could not save the Special Game setup.";render();return}specialSettings=r.data;day=game="Special Game";specialEdit=false;await touchList();render()}
 async function saveSpecialEdit(e){
  e.preventDefault();const v=specialValues();if(!v)return;
- const r=await sb.from("special_game_settings").update({game_name:v.name,total_seats:v.seats,updated_at:new Date().toISOString()}).eq("id",1).select().single();
+ const r=await sb.from("special_game_settings").update({game_name:v.name,total_seats:v.seats,game_date:v.date,updated_at:new Date().toISOString()}).eq("id",1).select().single();
  if(r.error){error="Could not save the Special Game changes.";render();return}
  const ids=players.filter(p=>p.day==="Special Game"&&p.game==="Special Game"&&p.preferred_seat&&+p.preferred_seat>v.seats).map(p=>p.id);
  if(ids.length){await sb.from("signup_players").update({preferred_seat:null}).in("id",ids);players=players.map(p=>ids.includes(p.id)?{...p,preferred_seat:null}:p)}
