@@ -15,7 +15,7 @@ a.tile,button.tile{font-family:inherit;display:flex;width:100%;min-height:88px;a
 button.tile:disabled{background:#e7e9ed;color:#6c7480;cursor:not-allowed;border-color:#dadde1;box-shadow:none}
 button.tile:disabled .glyph{background:#d9dde4;color:#8994a5}button.tile:disabled small{color:#87909b}
 footer{text-align:center;color:#243c66;font-size:13px;font-weight:800;margin-top:8px;padding:12px 0 calc(16px + env(safe-area-inset-bottom))}
-@media(max-width:390px){header{height:98px}.brand{height:66px;width:66px}main{padding-top:14px}.tile{min-height:78px!important}}
+@media(max-width:390px){header{height:110px}.brand{height:66px;width:66px}main{padding-top:14px}.tile{min-height:78px!important}}
 #embeddedLists{position:fixed;inset:0;background:#f5f6f8;z-index:500;display:none;flex-direction:column}#embeddedLists.active{display:flex}#hubReturn,#shoppingReturn{width:100%;height:44px;flex:none;background:#0b0b0b;color:white;border:0;font-size:16px;font-weight:700;text-align:left;padding:0 18px}#listsFrame,#shoppingFrame{display:block;width:100%;flex:1;min-height:0;border:0;background:#f5f6f8}#embeddedShopping{position:fixed;inset:0;background:#f5f6f8;z-index:500;display:none;flex-direction:column}#embeddedShopping.active{display:flex}
 </style></head>
 <body><header><h1>Uno Club Hub</h1></header>
@@ -24,7 +24,7 @@ footer{text-align:center;color:#243c66;font-size:13px;font-weight:800;margin-top
 <button class="tile" type="button" onclick="openShopping()" aria-label="Open Shopping"><span class="glyph" aria-hidden="true">🛒</span><span class="info"><strong>Shopping</strong><small>Shopping lists and stores</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" type="button" onclick="alert('Meal Planning is already in the Lists App. The direct link will be connected when Hub navigation is added to the Lists App test build. No existing app is being changed.')" aria-label="Meal Planning pending direct link"><span class="glyph" aria-hidden="true">♨</span><span class="info"><strong>Meal Planning</strong><small>Direct shortcut is next to connect</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" disabled><span class="glyph" aria-hidden="true">▣</span><span class="info"><strong>Tournament Remote</strong><small>Coming Soon</small></span><span aria-hidden="true">🔒</span></button>
-<footer>UNO CLUB HUB · TEST VERSION 0.9</footer>
+<footer>UNO CLUB HUB · TEST VERSION 1.0</footer>
 </main><div id="embeddedLists"><iframe id="listsFrame" title="Uno Club Lists" loading="eager" src="about:blank"></iframe></div><div id="embeddedShopping"><button id="shoppingReturn" type="button" onclick="closeShopping()">‹ Back to Hub</button><iframe id="shoppingFrame" title="Uno Club Shopping" loading="eager" src="about:blank"></iframe></div><script>
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.source!==document.getElementById('listsFrame').contentWindow)return;if(event.data&&event.data.type==='UNO_HUB_CLOSE_LISTS')closeLists();});
 function openLists(){const frame=document.getElementById('listsFrame');if(frame.getAttribute('src')==='about:blank')frame.setAttribute('src','./index.html?hub=1&v=102826168');document.getElementById('embeddedLists').classList.add('active');}
