@@ -642,7 +642,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.164";
+const APP_VERSION="100726.165";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
@@ -733,7 +733,7 @@ async function load(){
  render();
 }
 function renderHeader(title,subtitle=""){
- return `<header>${page!=="main"||day||game?'<button class="back" id="back">←</button>':""}<div class="headertext"><h1>${esc(title)}</h1>${subtitle?`<small>${esc(subtitle)}</small>`:""}${HUB_EMBEDDED&&title==="Uno Club Lists"?`<button type="button" class="hubBack" id="backToHub">‹ Back to Hub</button>`:""}</div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
+ return `<header>${page!=="main"||day||game?'<button class="back" id="back">←</button>':""}<div class="headertext"><h1>${esc(title)}</h1>${subtitle?`<small>${esc(subtitle)}</small>`:""}${HUB_EMBEDDED?`<button type="button" class="hubBack" id="backToHub">‹ Back to Hub</button>`:""}</div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
 }
 
 const TABLE_SEAT_POSITIONS={
