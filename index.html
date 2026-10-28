@@ -656,7 +656,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102826.178";
+const APP_VERSION="102826.179";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -725,6 +725,8 @@ function shown(){
  return a.sort((x,y)=>{
   const arrivedX=x.arrived===true||x.isLate,arrivedY=y.arrived===true||y.isLate;
   if(arrivedX!==arrivedY)return arrivedX?1:-1;
+  // Expected regular players precede expected alternates; arrivals share one alphabetical group.
+  if(!arrivedX&&x.alt!==y.alt)return x.alt?1:-1;
   return currentPlayerName(x).localeCompare(currentPlayerName(y),undefined,{sensitivity:"base",numeric:true})||
    new Date(x.created_at)-new Date(y.created_at)||(Number(x.id)||0)-(Number(y.id)||0);
  });
