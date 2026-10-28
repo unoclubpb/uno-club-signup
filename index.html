@@ -633,6 +633,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 .listsMainMenu .calendarEmoji{position:relative;display:inline-grid;place-items:center;width:34px;height:36px;line-height:1;font-size:31px}
 .listsMainMenu .calendarDate{position:absolute;left:8px;right:5px;top:17px;height:15px;background:#fff;color:#172841;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;font-weight:900;line-height:15px;text-align:center;border-radius:1px;font-variant-numeric:tabular-nums}
 
+.listsMainMenu .playerDatabaseButton{margin-top:38px!important}
 .hubEmbedded header{height:110px;min-height:110px;padding-top:10px;padding-bottom:10px}
 .hubEmbedded .headertext h1{font-size:clamp(1.65rem,7vw,2.3rem);margin:0}
 .hubEmbedded .hubBack{display:block;width:max-content;max-width:100%;margin:4px auto 0;padding:0;background:transparent;border:0;color:#9ec9ff;font-size:12px;line-height:16px;font-weight:600;text-decoration:none}
@@ -642,9 +643,15 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="100726.165";
+const APP_VERSION="102826.166";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
+document.addEventListener("click",e=>{
+ const link=e.target.closest("#backToHub");
+ if(!link)return;
+ e.preventDefault();
+ window.parent.postMessage({type:"UNO_HUB_CLOSE_LISTS"},location.origin);
+});
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const games={Monday:["Hold Em","Omaha"],Wednesday:["Tournament","Omaha"],Thursday:["Hold Em","Omaha"]};
 
@@ -874,7 +881,7 @@ function render(){
   const today=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
   h+=`<section class="menu listsMainMenu">${Object.keys(games).map(x=>`<button class="big day ${x===today?"tonight":""}" data-v="${x}"><span class="menuIcon" aria-hidden="true"><span class="calendarEmoji">📅<span class="calendarDate">${nextGameDate(x)}</span></span></span><span class="menuText">${x}</span><span class="menuArrow" aria-hidden="true">›</span></button>`).join("")}
   <button class="big specialGameButton ${specialSettings?.game_date===`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}-${String(new Date().getDate()).padStart(2,"0")}`?"tonight":""}" id="specialGameButton"><span class="menuIcon" aria-hidden="true">${specialSettings?.game_date?`<span class="calendarEmoji">📅<span class="calendarDate">${Number(specialSettings.game_date.slice(8,10))}</span></span>`:"★"}</span><span class="menuText">${esc(specialName)}</span><span class="menuArrow" aria-hidden="true">›</span>${sc?`<span class="gamecount">${sc}</span>`:""}</button>
-  <button class="big todoMenuButton" id="todoMenuButton"><span class="menuIcon" aria-hidden="true">☑</span><span class="menuText">To-Do</span><span class="menuArrow" aria-hidden="true">›</span></button>${(()=>{const a=dayOffAlerts();return a.length?`${(()=>{const needs=a.filter(x=>x.coverage_needed),allCovered=needs.length>0&&needs.every(x=>x.coverage_found&&x.covered_by),one=a.length===1?a[0]:null;return `<button class="big dayOffAlertButton ${allCovered?"covered":""}" id="dayOffAlertButton"><span class="menuIcon" aria-hidden="true">◷</span><span class="menuText">${allCovered?"Day Off Covered":"Day Off Alert"}</span><small>${one?`${esc(one.staff_name)} — ${esc(formatStaffDate(one.off_date))}`:`${a.length} upcoming days off`}</small>${needs.length?(allCovered?`<small>${needs.length===1?`${esc(needs[0].covered_by)} is covering`:"All coverage found"}</small>`:`<small>Coverage Needed</small>`):""}</button>`})()}`:""})()}<button class="big playerDatabaseButton" id="adminButton"><span class="menuIcon" aria-hidden="true">⚙</span><span class="menuText">Admin</span><span class="menuArrow" aria-hidden="true">›</span></button></section><div class="appVersion">Version ${APP_VERSION}</div>`;
+  <button class="big todoMenuButton" id="todoMenuButton"><span class="menuIcon" aria-hidden="true">☑</span><span class="menuText">To-Do</span><span class="menuArrow" aria-hidden="true">›</span></button>${(()=>{const a=dayOffAlerts();return a.length?`${(()=>{const needs=a.filter(x=>x.coverage_needed),allCovered=needs.length>0&&needs.every(x=>x.coverage_found&&x.covered_by),one=a.length===1?a[0]:null;return `<button class="big dayOffAlertButton ${allCovered?"covered":""}" id="dayOffAlertButton"><span class="menuIcon" aria-hidden="true">◷</span><span class="menuText">${allCovered?"Day Off Covered":"Day Off Alert"}</span><small>${one?`${esc(one.staff_name)} — ${esc(formatStaffDate(one.off_date))}`:`${a.length} upcoming days off`}</small>${needs.length?(allCovered?`<small>${needs.length===1?`${esc(needs[0].covered_by)} is covering`:"All coverage found"}</small>`:`<small>Coverage Needed</small>`):""}</button>`})()}`:""})()}<button class="big playerDatabaseButton" id="adminButton"><span class="menuIcon" aria-hidden="true">⚙</span><span class="menuText">Admin</span><span class="menuArrow" aria-hidden="true">›</span></button></section><div class="appVersion">uno club lists v.${APP_VERSION}</div>`;
  }else if(!game){
   h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;if(x==="Tournament")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssTournamentTable(day)}</button>`;return `<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
@@ -1515,7 +1522,7 @@ function wireHomeLogo(){
 }
 function wire(){
  wireHomeLogo();
- const hubBack=document.getElementById("backToHub");if(hubBack)hubBack.onclick=()=>window.parent.postMessage({type:"UNO_HUB_CLOSE_LISTS"},location.origin);
+
  document.querySelectorAll(".day").forEach(b=>b.onclick=()=>{day=b.dataset.v;render()});
  document.querySelectorAll(".game").forEach(b=>b.onclick=()=>{game=b.dataset.v;render()});
  const s=document.querySelector("#specialGameButton");if(s)s.onclick=()=>{page="special";day=null;game=null;specialEdit=false;error="";render()};
