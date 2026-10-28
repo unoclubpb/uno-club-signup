@@ -4,7 +4,7 @@
 <style>
 *{box-sizing:border-box}html{background:#f5f6f8}body{margin:0;min-height:100dvh;color:#111;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 header{height:110px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:#0b0b0b;color:#fff;padding:13px max(16px,calc((100vw - 620px)/2 + 16px))}
-header h1{margin:0;font-size:clamp(26px,7vw,38px);font-weight:750;line-height:1.05;letter-spacing:-.8px}
+header h1{margin:0;flex:1;text-align:center;padding-left:76px;font-size:clamp(26px,7vw,38px);font-weight:750;line-height:1.05;letter-spacing:-.8px}
 .brand{flex:none;width:76px;height:76px;border:3px solid #2588f7;border-radius:14px;background:radial-gradient(circle at 50% 25%,#244a78,#050a13 70%);box-shadow:inset 0 0 12px #2076de,0 0 7px #2278e8;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-shadow:0 1px 3px #000;line-height:.85}
 .brand .club{font-size:20px;color:#dceafa}.brand .uno{font-size:26px;font-weight:1000;letter-spacing:-1px}.brand .clubword{font-size:11px;font-weight:900;letter-spacing:2px;margin-top:3px}.brand .hubword{margin-top:5px;background:linear-gradient(#2484e7,#0c3877);border:1px solid #439cff;border-radius:3px;padding:3px 10px;font-size:10px;font-weight:900;letter-spacing:2px}
 main{width:min(100%,620px);margin:0 auto;padding:18px 16px 36px;display:grid;gap:12px}
@@ -24,10 +24,10 @@ footer{text-align:center;color:#243c66;font-size:13px;font-weight:800;margin-top
 <button class="tile" type="button" onclick="openShopping()" aria-label="Open Shopping"><span class="glyph" aria-hidden="true">🛒</span><span class="info"><strong>Shopping</strong><small>Shopping lists and stores</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" type="button" onclick="alert('Meal Planning is already in the Lists App. The direct link will be connected when Hub navigation is added to the Lists App test build. No existing app is being changed.')" aria-label="Meal Planning pending direct link"><span class="glyph" aria-hidden="true">♨</span><span class="info"><strong>Meal Planning</strong><small>Direct shortcut is next to connect</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" disabled><span class="glyph" aria-hidden="true">▣</span><span class="info"><strong>Tournament Remote</strong><small>Coming Soon</small></span><span aria-hidden="true">🔒</span></button>
-<footer>UNO CLUB HUB · TEST VERSION 0.7</footer>
+<footer>UNO CLUB HUB · TEST VERSION 0.8</footer>
 </main><div id="embeddedLists"><iframe id="listsFrame" title="Uno Club Lists" loading="eager" src="about:blank"></iframe></div><div id="embeddedShopping"><button id="shoppingReturn" type="button" onclick="closeShopping()">‹ Back to Hub</button><iframe id="shoppingFrame" title="Uno Club Shopping" loading="eager" src="about:blank"></iframe></div><script>
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.source!==document.getElementById('listsFrame').contentWindow)return;if(event.data&&event.data.type==='UNO_HUB_CLOSE_LISTS')closeLists();});
-function openLists(){const frame=document.getElementById('listsFrame');if(frame.getAttribute('src')==='about:blank')frame.setAttribute('src','./index.html?hub=1&v=102826166');document.getElementById('embeddedLists').classList.add('active');}
+function openLists(){const frame=document.getElementById('listsFrame');if(frame.getAttribute('src')==='about:blank')frame.setAttribute('src','./index.html?hub=1&v=102826168');document.getElementById('embeddedLists').classList.add('active');}
 function closeLists(){document.getElementById('embeddedLists').classList.remove('active');}
 function openShopping(){const frame=document.getElementById('shoppingFrame');if(frame.getAttribute('src')==='about:blank')frame.setAttribute('src','https://unoclubpb.github.io/uno-club-shopping/');document.getElementById('embeddedShopping').classList.add('active');}
 function closeShopping(){document.getElementById('embeddedShopping').classList.remove('active');}
