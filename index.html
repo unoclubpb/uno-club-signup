@@ -667,12 +667,19 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 #mealForm input,#mealForm select{min-height:46px}
 #mealForm .staffDateFields select{min-height:46px;padding:.5rem}
 #mealForm .staffSaveButton{min-height:50px}
+
+/* Lists Admin menu matches the standard Uno Club icon buttons. */
+.adminMainMenu .adminIconButton{width:100%;min-height:88px!important;height:88px;box-sizing:border-box;display:flex;align-items:center;gap:15px;padding:14px!important;margin:0;text-align:left;background:#1e5acb!important;color:#fff!important;border:2px solid #103c8b!important;border-radius:12px;font-size:17px!important;font-weight:750!important}
+.adminMainMenu .adminIconBox{width:52px;height:52px;flex:0 0 52px;background:#e8f2ff;border-radius:10px;display:grid;place-items:center}
+.adminMainMenu .adminIconText{flex:1;min-width:0;color:#fff}
+.adminMainMenu .adminIconArrow{font-size:29px;font-weight:300;color:#fff;line-height:1}
+@media(max-width:390px){.adminMainMenu .adminIconButton{height:84px!important;min-height:84px!important}}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.192";
+const APP_VERSION="102926.193";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const HUB_MEALS=new URLSearchParams(location.search).get("meals")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
@@ -1201,7 +1208,7 @@ async function saveTournamentTypeName(name){
 }
 
 function renderAdminPage(){
- if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button><button class="big top10Button" id="adminTop10">Players by Attendance</button><button class="big tournamentHistoryButton" id="adminTournamentHistory">Tournament Info</button><button class="big staffScheduleButton" id="adminStaffSchedule">Staff Schedule</button><button class="big mealsButton" id="adminMeals">Meals</button><button class="big" id="thermostatPassword" type="button">Thermostat Password</button></section>`;
+ if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminIconButton adminPlayersButton" id="adminPlayers" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'/></svg></span><span class="adminIconText">Player Database</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton adminArchivesButton" id="adminArchives" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x='3' y='4' width='18' height='4' rx='1'/><path d='M5 8v12h14V8M10 12h4'/></svg></span><span class="adminIconText">List Archives</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton top10Button" id="adminTop10" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d='M3 3v18h18M8 17v-6M13 17V7M18 17V4'/></svg></span><span class="adminIconText">Players by Attendance</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton tournamentHistoryButton" id="adminTournamentHistory" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d='M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4ZM7 6H4v3a4 4 0 0 0 4 4M17 6h3v3a4 4 0 0 1-4 4'/></svg></span><span class="adminIconText">Tournament Info</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton staffScheduleButton" id="adminStaffSchedule" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x='3' y='4' width='18' height='18' rx='2'/><path d='M8 2v4M16 2v4M3 10h18M8 14h3M8 18h3M15 14h2'/></svg></span><span class="adminIconText">Staff Schedule</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton " id="thermostatPassword" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x='5' y='10' width='14' height='11' rx='2'/><path d='M8 10V7a4 4 0 0 1 8 0v3M12 15v2'/></svg></span><span class="adminIconText">Thermostat Password</span><span class="adminIconArrow" aria-hidden="true">›</span></button></section>`;
  if(adminMode==="staff")return renderStaffMenu();
  if(adminMode==="staffUpcoming")return renderUpcomingDaysOff();
  if(adminMode==="staffAdd")return renderAddDayOff();
