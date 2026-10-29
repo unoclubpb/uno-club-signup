@@ -656,7 +656,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102826.179";
+const APP_VERSION="102826.180";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -1183,7 +1183,7 @@ async function saveTournamentTypeName(name){
 }
 
 function renderAdminPage(){
- if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button><button class="big top10Button" id="adminTop10">Players by Attendance</button><button class="big tournamentHistoryButton" id="adminTournamentHistory">Tournament Info</button><button class="big staffScheduleButton" id="adminStaffSchedule">Staff Schedule</button><button class="big mealsButton" id="adminMeals">Meals</button></section>`;
+ if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminPlayersButton" id="adminPlayers">Player Database</button><button class="big adminArchivesButton" id="adminArchives">List Archives</button><button class="big top10Button" id="adminTop10">Players by Attendance</button><button class="big tournamentHistoryButton" id="adminTournamentHistory">Tournament Info</button><button class="big staffScheduleButton" id="adminStaffSchedule">Staff Schedule</button><button class="big mealsButton" id="adminMeals">Meals</button><button class="big" id="thermostatPassword" type="button">Thermostat Password</button></section>`;
  if(adminMode==="staff")return renderStaffMenu();
  if(adminMode==="staffUpcoming")return renderUpcomingDaysOff();
  if(adminMode==="staffAdd")return renderAddDayOff();
@@ -1225,6 +1225,7 @@ function wireAdmin(){
   page="main";render();
  };
  const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbFromTop10=false;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
+ const tp=document.querySelector("#thermostatPassword");if(tp)tp.onclick=()=>{if(tp.dataset.revealed)return;tp.dataset.revealed="1";tp.textContent="2673";setTimeout(()=>{tp.textContent="Thermostat Password";delete tp.dataset.revealed},10000)};
  const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
  const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";attendanceTop10Only=false;await loadTop10Players();render()};
  const th=document.querySelector("#adminTournamentHistory");if(th)th.onclick=async()=>{error="";adminMode="tournamentHistory";await loadTournamentData();render()};
