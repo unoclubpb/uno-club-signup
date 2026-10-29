@@ -24,11 +24,11 @@ footer{text-align:center;color:#243c66;font-size:13px;font-weight:800;margin-top
 <button class="tile" type="button" onclick="openShopping()" aria-label="Open Shopping"><span class="glyph" aria-hidden="true">🛒</span><span class="info"><strong>Shopping</strong><small>Shopping lists and stores</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" type="button" onclick="openMeals()" aria-label="Open Meal Planning"><span class="glyph" aria-hidden="true">♨</span><span class="info"><strong>Meal Planning</strong><small>Plan meals, history, and ideas</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" disabled><span class="glyph" aria-hidden="true">▣</span><span class="info"><strong>Tournament Remote</strong><small>Coming Soon</small></span><span aria-hidden="true">🔒</span></button>
-<footer>uno club hub v.102926.031</footer>
-</main><div id="embeddedLists"><iframe id="listsFrame" title="Uno Club Lists" loading="eager" src="about:blank"></iframe></div><div id="embeddedMeals"><button id="mealsReturn" type="button" onclick="closeMeals()">‹ Back to Hub</button><iframe id="mealsFrame" title="Uno Club Meal Planning" loading="eager" src="about:blank"></iframe></div><div id="embeddedShopping"><iframe id="shoppingFrame" title="Uno Club Shopping" loading="eager" src="about:blank"></iframe></div><script>
+<footer>uno club hub v.102926.032</footer>
+</main><div id="embeddedLists"><iframe id="listsFrame" title="Uno Club Lists" loading="eager" src="about:blank"></iframe></div><div id="embeddedMeals"><iframe id="mealsFrame" title="Uno Club Meal Planning" loading="eager" src="about:blank"></iframe></div><div id="embeddedShopping"><iframe id="shoppingFrame" title="Uno Club Shopping" loading="eager" src="about:blank"></iframe></div><script>
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.source!==document.getElementById('listsFrame').contentWindow)return;if(event.data&&event.data.type==='UNO_HUB_CLOSE_LISTS')closeLists();});
 
-const HUB_TEST_VERSION="102926.031";
+const HUB_TEST_VERSION="102926.032";
 let hubLastCheck=0,hubChecking=false;
 function hubIsOnMain(){return !document.getElementById('embeddedLists').classList.contains('active')&&!document.getElementById('embeddedShopping').classList.contains('active')&&!document.getElementById('embeddedMeals').classList.contains('active');}
 async function checkHubUpdates(force=false){
