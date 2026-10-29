@@ -669,7 +669,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.206";
+const APP_VERSION="102926.207";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -1054,7 +1054,7 @@ async function openArchive(id){
  archivePlayers=q.error?[]:(q.data||[]);const a=archives.find(x=>String(x.id)===String(id));archivePlayers.sort((x,y)=>currentPlayerName(x).localeCompare(currentPlayerName(y)));archiveViewId=id;render();
 }
 function renderArchiveHeader(secondLine){
- return `<header class="top"><button class="back" id="back" aria-label="Back">‹</button><div class="title" style="position:absolute;left:0;right:78px;text-align:center;line-height:1.15;pointer-events:none"><div>List Archives</div><div>${esc(secondLine)}</div></div><img class="headerlogo" id="homeLogo" src="uno-logo.PNG" alt="Uno Club Lists"></header>`;
+ return renderHeader("List Archives",secondLine);
 }
 async function loadTop10Players(){
  const [ap,ar]=await Promise.all([
