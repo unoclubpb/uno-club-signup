@@ -637,7 +637,8 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 .listsMainMenu{padding-top:18px;gap:12px}
 .listsMainMenu > button.big{width:100%!important;max-width:none!important;height:88px!important;min-height:88px!important;padding:14px;gap:15px;box-sizing:border-box;font-size:17px!important;font-family:inherit;flex-shrink:0}
 @media(max-width:390px){.listsMainMenu{padding-top:18px}.listsMainMenu > button.big{height:84px!important;min-height:84px!important}}
-.listsMainMenu .todoMenuButton{margin-top:22px!important}
+.listsMainMenu .todoMenuButton{margin-top:0!important;background:#FFEF00!important;color:#111!important;border-color:#c7a900!important}
+.listsMainMenu .todoMenuButton .menuText,.listsMainMenu .todoMenuButton .menuArrow{color:#111!important}
 .listsMainMenu .playerDatabaseButton{margin-top:0!important}
 .listsMainMenu{padding-bottom:60px}
 .listsBanner .back{width:58px;height:44px;flex:0 0 58px;padding:0;border:0;border-radius:12px;background:transparent;color:#fff;font-size:32px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -656,7 +657,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102826.181";
+const APP_VERSION="102826.182";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
