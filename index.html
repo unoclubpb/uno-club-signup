@@ -661,8 +661,9 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.185";
+const APP_VERSION="102926.186";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
+const HUB_MEALS=new URLSearchParams(location.search).get("meals")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
  const link=e.target.closest("#backToHub");
@@ -764,6 +765,7 @@ async function load(){
  if(!thr.error)tournamentHistory=Array.isArray(thr.data)?thr.data:(thr.data?[thr.data]:[]);
  if(!tsr.error&&tsr.data)tournamentState=tsr.data;
   await loadStaffData();
+ if(HUB_MEALS){page="admin";adminMode="meals";await loadMeals();await loadMealIdeas();}
  render();
 }
 function renderHeader(title,subtitle=""){
@@ -1224,7 +1226,7 @@ function wireAdmin(){
   if(adminMode==="staffHistory"){adminMode="staffManage";staffHistoryId=null;error="";render();return}
    if(adminMode==="staffAdd"&&dayOffEditId){dayOffEditId=null;adminMode="staffUpcoming";error="";render();return}
    if(adminMode==="staffUpcoming"||adminMode==="staffAdd"||adminMode==="staffManage"){dayOffEditId=null;adminMode="staff";error="";render();return}
-   if(adminMode==="mealHistory"&&mealViewEntree){mealViewEntree=null;render();return}if(adminMode==="mealAdd"&&mealIdeaPlanId){mealIdeaPlanId=null;adminMode="mealIdeas";render();return}if(adminMode==="mealAdd"||adminMode==="mealPlanned"||adminMode==="mealHistory"||adminMode==="mealIdeas"){mealViewEntree=null;adminMode="meals";error="";render();return}if(adminMode==="meals"){adminMode="main";error="";render();return}if(adminMode==="staff"){adminMode="main";error="";render();return}
+   if(adminMode==="mealHistory"&&mealViewEntree){mealViewEntree=null;render();return}if(adminMode==="mealAdd"&&mealIdeaPlanId){mealIdeaPlanId=null;adminMode="mealIdeas";render();return}if(adminMode==="mealAdd"||adminMode==="mealPlanned"||adminMode==="mealHistory"||adminMode==="mealIdeas"){mealViewEntree=null;adminMode="meals";error="";render();return}if(adminMode==="meals"){if(HUB_MEALS&&window.parent!==window){window.parent.postMessage({type:"UNO_HUB_CLOSE_MEALS"},location.origin);return}adminMode="main";error="";render();return}if(adminMode==="staff"){adminMode="main";error="";render();return}
    if(adminMode==="tournamentHistory"){adminMode="main";error="";render();return}
   if(adminMode==="archives"||adminMode==="top10"){adminMode="main";top10Players=[];render();return}
   page="main";render();
