@@ -669,7 +669,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.196";
+const APP_VERSION="102926.197";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -1461,7 +1461,7 @@ function playerDbResultsHtml(){
  return rows.length?rows.map(p=>`<button class="playerDbRow ${p.active===false?"inactivePlayer":""}" data-db-player="${esc(p.player_name)}"><span>${esc(p.player_name)}</span><small class="${p.active===false?"inactiveBadge":"activeBadge"}">${p.active===false?"Inactive":"Active"}</small></button>`).join(""):'<div class="empty">No players found.</div>';
 }
 function wirePlayerDbRows(){
- document.querySelectorAll("[data-db-player]").forEach(b=>b.onclick=async()=>{playerDbMode="edit";playerDbEditName=b.dataset.dbPlayer;playerLastPlayed=null;error="";await loadPlayerLastPlayed(playerDbEditName);render()});
+ document.querySelectorAll("[data-db-player]").forEach(b=>b.onclick=async()=>{playerDbMode="edit";playerDbEditName=b.dataset.dbPlayer;playerLastPlayed=null;playerHistory=[];playerHistoryRows=[];error="";await Promise.all([loadPlayerLastPlayed(playerDbEditName),loadPlayerHistory(playerDbEditName)]);render()});
 }
 function wirePlayerDatabase(){
  wireHomeLogo();
