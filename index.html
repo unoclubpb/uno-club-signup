@@ -659,20 +659,20 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 
 /* Compact only the Plan Meal screen to reduce mobile scrolling. */
 .content:has(> #mealForm){padding-top:.5rem;padding-bottom:.75rem}
-#mealForm{gap:.4rem;padding:.65rem}
-#mealForm .fieldwrap{gap:.18rem}
-#mealForm .mealSidesGroup{gap:.18rem}
+#mealForm{gap:.7rem;padding:.85rem}
+#mealForm .fieldwrap{gap:.32rem}
+#mealForm .mealSidesGroup{gap:.34rem}
 #mealForm .mealSideField{margin-top:0!important}
-#mealForm .mealSideField label{margin-bottom:1px!important;line-height:1.1}
-#mealForm input,#mealForm select{min-height:40px}
-#mealForm .staffDateFields select{min-height:40px;padding:.35rem}
-#mealForm .staffSaveButton{min-height:44px}
+#mealForm .mealSideField label{margin-bottom:3px!important;line-height:1.25}
+#mealForm input,#mealForm select{min-height:46px}
+#mealForm .staffDateFields select{min-height:46px;padding:.5rem}
+#mealForm .staffSaveButton{min-height:50px}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.191";
+const APP_VERSION="102926.192";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const HUB_MEALS=new URLSearchParams(location.search).get("meals")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
