@@ -669,7 +669,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.212";
+const APP_VERSION="102926.213";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -1128,15 +1128,7 @@ function renderUpcomingTournaments(){
   <button type="button" class="tournamentDelete" data-delete-tournament="${t.id}" aria-label="Delete scheduled tournament"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></svg></button>
  </div>`).join(""):'<div class="empty">No upcoming tournaments scheduled.</div>'}</div></section>`;
 }
-function renderPastTournaments(){
- const past=archivedTournaments().sort((a,b)=>b.tournament_date.localeCompare(a.tournament_date)||Number(b.id)-Number(a.id));
- return `<section class="content"><div class="head"><h2>Past Tournaments</h2></div>
- <div class="tournamentHistoryList">${past.length?past.map(t=>`<div class="tournamentHistoryRow"><button type="button" class="tournamentUpcomingOpen" data-past-tournament-date="${esc(t.tournament_date)}">
-  <div class="tournamentHistoryDate">${esc(tournamentDateLabel(t.tournament_date))}</div>
-  <div class="tournamentHistoryType">${esc(t.tournament_type_name)}</div>
-  ${t.is_special?'<span class="specialTournamentBadge">SPECIAL TOURNAMENT</span>':""}
- </button></div>`).join(""):'<div class="empty">No past tournaments yet.</div>'}</div></section>`;
-}
+function renderPastTournaments(){return renderArchiveListing();}
 function renderTournamentAddPage(){
  const editing=selectedTournamentEdit(),draft=tournamentDraft||{};
  const isSpecial=editing?editing.is_special===true:draft.isSpecial===true;
@@ -1194,6 +1186,12 @@ async function saveTournamentTypeName(name){
  return unwrapRpcData(r.data)||{};
 }
 
+function archiveDisplayName(a){if(a.game==="Special Game")return a.special_game_name||"";if(a.game==="Tournament"){const match=tournamentHistory.find(t=>t.tournament_date===a.archive_date);return match?.tournament_type_name||a.special_game_name||"";}return "";}
+function renderArchiveListing(){
+ const years=[...new Set(archives.map(a=>String(a.archive_date||"").slice(0,4)).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+ const visible=archives.filter(a=>archiveYear==="all"||String(a.archive_date).startsWith(archiveYear)).sort((a,b)=>archiveSort==="newest"?b.archive_date.localeCompare(a.archive_date)||String(b.archived_at||"").localeCompare(String(a.archived_at||"")):a.archive_date.localeCompare(b.archive_date)||String(a.archived_at||"").localeCompare(String(b.archived_at||"")));
+ return `<section class="content"><div class="archiveFilters"><label>Year<select id="archiveYear"><option value="all" ${archiveYear==="all"?"selected":""}>All Years</option>${years.map(y=>`<option value="${y}" ${archiveYear===y?"selected":""}>${y}</option>`).join("")}</select></label><label>Sort<select id="archiveSort"><option value="newest" ${archiveSort==="newest"?"selected":""}>Newest First</option><option value="oldest" ${archiveSort==="oldest"?"selected":""}>Oldest First</option></select></label></div><div class="list">${visible.length?visible.map(a=>`<button class="playerDbRow archiveDateRow" data-archive="${a.id}"><span><strong>${esc(new Date(a.archive_date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}))}</strong>${archiveDisplayName(a)?`<span class="archiveSpecialName">${esc(archiveDisplayName(a))}</span>`:""}<small>${archiveCounts[String(a.id)]??"—"} Total Players</small></span><span class="archiveRowArrow" aria-hidden="true">›</span></button>`).join(""):'<div class="empty">No archived lists for this selection.</div>'}</div></section>`;
+}
 function renderAdminPage(){
  if(adminMode==="main")return `<section class="menu adminMainMenu"><button class="big adminIconButton adminPlayersButton" id="adminPlayers" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'/></svg></span><span class="adminIconText">Player Database</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton adminArchivesButton" id="adminArchives" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x='3' y='4' width='18' height='4' rx='1'/><path d='M5 8v12h14V8M10 12h4'/></svg></span><span class="adminIconText">List Archives</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton top10Button" id="adminTop10" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d='M3 3v18h18M8 17v-6M13 17V7M18 17V4'/></svg></span><span class="adminIconText">Players by Attendance</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton tournamentHistoryButton" id="adminTournamentHistory" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d='M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4ZM7 6H4v3a4 4 0 0 0 4 4M17 6h3v3a4 4 0 0 1-4 4'/></svg></span><span class="adminIconText">Tournament Info</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton staffScheduleButton" id="adminStaffSchedule" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x='3' y='4' width='18' height='18' rx='2'/><path d='M8 2v4M16 2v4M3 10h18M8 14h3M8 18h3M15 14h2'/></svg></span><span class="adminIconText">Staff Schedule</span><span class="adminIconArrow" aria-hidden="true">›</span></button><button class="big adminIconButton " id="thermostatPassword" type="button"><span class="adminIconBox" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1760be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x='5' y='10' width='14' height='11' rx='2'/><path d='M8 10V7a4 4 0 0 1 8 0v3M12 15v2'/></svg></span><span class="adminIconText">Thermostat Password</span><span class="adminIconArrow" aria-hidden="true">›</span></button></section>`;
  if(adminMode==="staff")return renderStaffMenu();
@@ -1204,7 +1202,7 @@ function renderAdminPage(){
  if(adminMode==="top10")return renderTop10Players();
  if(adminMode==="tournamentHistory")return renderTournamentHistoryPage();
  if(adminMode==="tournamentUpcoming")return renderUpcomingTournaments();
- if(adminMode==="tournamentPast")return renderPastTournaments();
+ if(adminMode==="tournamentPast"&&!archiveViewId)return renderPastTournaments();
  if(adminMode==="tournamentAdd")return renderTournamentAddPage();
  if(adminMode==="tournamentTypes")return renderTournamentTypesPage();
  if(adminMode==="tournamentTypeHistory")return renderTournamentTypeHistoryPage();
@@ -1214,16 +1212,14 @@ function renderAdminPage(){
   const clock=t=>t?new Date(t).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",timeZone:"America/New_York"}):"—";
   return `<section class="content archiveDetail"><div class="archiveDetailHeading">${a?esc(new Date(a.archive_date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})):"Archived List"}</div><div class="archiveDetailGame">${a?esc(a.game==="Special Game"?(a.special_game_name||"Special Game"):a.game):""}</div><div class="archiveDetailTotal"><strong>${archivePlayers.length}</strong><span>Total Players</span></div><div class="archiveDetailPlayers">${archivePlayers.length?archivePlayers.map(p=>`<div class="archiveDetailPlayer"><button type="button" class="archivePlayerLink" data-archive-player="${esc(p.player_name)}" data-archive-player-id="${p.player_id??""}">${esc(currentPlayerName(p))}<span aria-hidden="true">›</span></button><div class="archiveDetailTimes"><span><small>Signed Up</small>${esc(clock(p.signup_at))}</span><span><small>Arrived</small>${esc(clock(p.arrived_at))}</span></div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
- const years=[...new Set(archives.map(a=>String(a.archive_date||"").slice(0,4)).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
- const visible=archives.filter(a=>archiveYear==="all"||String(a.archive_date).startsWith(archiveYear)).sort((a,b)=>archiveSort==="newest"?b.archive_date.localeCompare(a.archive_date)||String(b.archived_at||"").localeCompare(String(a.archived_at||"")):a.archive_date.localeCompare(b.archive_date)||String(a.archived_at||"").localeCompare(String(b.archived_at||"")));
- return `<section class="content"><div class="archiveFilters"><label>Year<select id="archiveYear"><option value="all" ${archiveYear==="all"?"selected":""}>All Years</option>${years.map(y=>`<option value="${y}" ${archiveYear===y?"selected":""}>${y}</option>`).join("")}</select></label><label>Sort<select id="archiveSort"><option value="newest" ${archiveSort==="newest"?"selected":""}>Newest First</option><option value="oldest" ${archiveSort==="oldest"?"selected":""}>Oldest First</option></select></label></div><div class="list">${visible.length?visible.map(a=>`<button class="playerDbRow archiveDateRow" data-archive="${a.id}"><span><strong>${esc(new Date(a.archive_date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}))}</strong>${a.game==="Special Game"&&a.special_game_name?`<span class="archiveSpecialName">${esc(a.special_game_name)}</span>`:""}<small>${archiveCounts[String(a.id)]??"—"} Total Players</small></span><span class="archiveRowArrow" aria-hidden="true">›</span></button>`).join(""):'<div class="empty">No archived lists for this selection.</div>'}</div></section>`;
+ return renderArchiveListing();
 }
 function wireAdmin(){
  wireHomeLogo();
  const back=document.querySelector("#back");
  if(back)back.onclick=()=>{
-  if(archiveViewId){archiveViewId=null;archivePlayers=[];if(adminMode==="tournamentPast"){archiveGame=null;archives=[]}else if(adminMode==="tournamentTypeHistory"){archiveGame=null;archives=[]}render();return}
-  if(archiveGame){archiveGame=null;archives=[];render();return}
+  if(archiveViewId){archiveViewId=null;archivePlayers=[];if(adminMode==="tournamentPast"){archiveGame="Tournament"}else if(adminMode==="tournamentTypeHistory"){archiveGame=null;archives=[]}render();return}
+  if(archiveGame&&adminMode!=="tournamentPast"){archiveGame=null;archives=[];render();return}
   if(adminMode==="tournamentTypeHistory"){adminMode="tournamentTypes";tournamentTypeViewId=null;render();return}
   if(adminMode==="tournamentAdd"){adminMode="tournamentUpcoming";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
   if(adminMode==="tournamentUpcoming"||adminMode==="tournamentPast"||adminMode==="tournamentTypes"){adminMode="tournamentHistory";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
@@ -1253,7 +1249,7 @@ function wireAdmin(){
   document.querySelectorAll("[data-delete-dayoff]").forEach(b=>b.onclick=async()=>{const x=staffDaysOff.find(v=>String(v.id)===String(b.dataset.deleteDayoff));if(!x)return;if(x.off_date<localISODate()){error="Past days off cannot be deleted.";render();return}if(!confirm(`Delete ${x.staff_name}'s day off on ${formatStaffDate(x.off_date)}?`))return;const r=await sb.from("staff_days_off").delete().eq("id",x.id);if(r.error){error="Could not delete the day off.";render();return}await loadStaffData();render()});
 
  const upcomingBtn=document.querySelector("#upcomingTournaments");if(upcomingBtn)upcomingBtn.onclick=()=>{error="";adminMode="tournamentUpcoming";render()};
- const pastBtn=document.querySelector("#pastTournaments");if(pastBtn)pastBtn.onclick=()=>{error="";adminMode="tournamentPast";render()};
+ const pastBtn=document.querySelector("#pastTournaments");if(pastBtn)pastBtn.onclick=async()=>{error="";adminMode="tournamentPast";archiveGame="Tournament";archiveViewId=null;await loadArchives("Tournament");render()};
  const addBtn=document.querySelector("#addTournamentHistory");if(addBtn)addBtn.onclick=()=>{error="";tournamentEditId=null;tournamentDraft={date:upcomingWednesdayDate(),isSpecial:false,typeId:""};adminMode="tournamentAdd";render()};
  const manage=document.querySelector("#manageTournamentTypes");if(manage)manage.onclick=()=>{error="";tournamentReturnToAdd=false;adminMode="tournamentTypes";render()};
 
