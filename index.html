@@ -551,8 +551,7 @@ select{min-height:44px;border:1px solid #d9d9d9;border-radius:8px;padding:.6rem;
 .add,.save,.todoAddButton,.todoCompleteButton,.playerDbAdd,
 .tournamentAddButton,.tournamentSaveButton{background:var(--uno-green)!important;color:#fff!important;border:2px solid #000!important}
 
-.tournamentManageButton,
-#manageTournamentTypes{background:var(--uno-black)!important;color:#fff!important;border:2px solid #000!important}
+.tournamentManageButton:not(.tournamentIconButton){background:var(--uno-black)!important;color:#fff!important;border:2px solid #000!important}
 
 .cancel,.statusToggle .statusUnselected{background:var(--uno-gray)!important;color:#fff!important;border:2px solid #000!important}
 
@@ -669,7 +668,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.215";
+const APP_VERSION="102926.216";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
