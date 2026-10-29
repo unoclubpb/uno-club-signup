@@ -669,7 +669,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.203";
+const APP_VERSION="102926.204";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -1209,6 +1209,8 @@ function renderAdminPage(){
   const clock=t=>t?new Date(t).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",timeZone:"America/New_York"}):"—";
   return `<section class="content archiveDetail"><div class="archiveDetailHeading">${a?esc(new Date(a.archive_date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})):"Archived List"}</div><div class="archiveDetailGame">${a?esc(a.game==="Special Game"?(a.special_game_name||"Special Game"):a.game):""}</div><div class="archiveDetailTotal"><strong>${archivePlayers.length}</strong><span>Total Players</span></div><div class="archiveDetailPlayers">${archivePlayers.length?archivePlayers.map(p=>`<div class="archiveDetailPlayer"><strong>${esc(currentPlayerName(p))}</strong><div class="archiveDetailTimes"><span><small>Signed Up</small>${esc(clock(p.signup_at))}</span><span><small>Arrived</small>${esc(clock(p.arrived_at))}</span></div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
+ const years=[...new Set(archives.map(a=>String(a.archive_date||"").slice(0,4)).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+ const visible=archives.filter(a=>archiveYear==="all"||String(a.archive_date).startsWith(archiveYear)).sort((a,b)=>archiveSort==="newest"?b.archive_date.localeCompare(a.archive_date)||String(b.archived_at||"").localeCompare(String(a.archived_at||"")):a.archive_date.localeCompare(b.archive_date)||String(a.archived_at||"").localeCompare(String(b.archived_at||"")));
  return `<section class="content"><div class="archiveFilters"><label>Year<select id="archiveYear"><option value="all" ${archiveYear==="all"?"selected":""}>All Years</option>${years.map(y=>`<option value="${y}" ${archiveYear===y?"selected":""}>${y}</option>`).join("")}</select></label><label>Sort<select id="archiveSort"><option value="newest" ${archiveSort==="newest"?"selected":""}>Newest First</option><option value="oldest" ${archiveSort==="oldest"?"selected":""}>Oldest First</option></select></label></div><div class="list">${visible.length?visible.map(a=>`<button class="playerDbRow archiveDateRow" data-archive="${a.id}"><span><strong>${esc(new Date(a.archive_date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}))}</strong>${a.game==="Special Game"&&a.special_game_name?`<span class="archiveSpecialName">${esc(a.special_game_name)}</span>`:""}<small>${archiveCounts[String(a.id)]??"—"} Total Players</small></span><span class="archiveRowArrow" aria-hidden="true">›</span></button>`).join(""):'<div class="empty">No archived lists for this selection.</div>'}</div></section>`;
 }
 function wireAdmin(){
