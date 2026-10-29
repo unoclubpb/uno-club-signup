@@ -669,7 +669,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.204";
+const APP_VERSION="102926.205";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -1204,6 +1204,11 @@ function renderAdminPage(){
  if(adminMode==="top10")return renderTop10Players();
  if(adminMode==="tournamentHistory")return renderTournamentHistoryPage();
  if(adminMode==="tournamentUpcoming")return renderUpcomingTournaments();
+ if(adminMode==="tournamentPast")return renderPastTournaments();
+ if(adminMode==="tournamentAdd")return renderTournamentAddPage();
+ if(adminMode==="tournamentTypes")return renderTournamentTypesPage();
+ if(adminMode==="tournamentTypeHistory")return renderTournamentTypeHistoryPage();
+ if(adminMode==="archives"&&!archiveGame)return `<section class="menu archiveMenu"><button type="button" class="big game archiveGameBtn archiveSuitButton" data-agame="Hold Em"><span class="archiveSuitIcon" aria-hidden="true" style="color:#d62828">♥</span><span class="archiveSuitText">Hold Em</span><span class="archiveSuitArrow" aria-hidden="true">›</span></button><button type="button" class="big game archiveGameBtn archiveSuitButton" data-agame="Omaha"><span class="archiveSuitIcon" aria-hidden="true" style="color:#111111">♣</span><span class="archiveSuitText">Omaha</span><span class="archiveSuitArrow" aria-hidden="true">›</span></button><button type="button" class="big game archiveGameBtn archiveSuitButton" data-agame="Tournament"><span class="archiveSuitIcon" aria-hidden="true" style="color:#d62828">♦</span><span class="archiveSuitText">Tournaments</span><span class="archiveSuitArrow" aria-hidden="true">›</span></button><button type="button" class="big game archiveGameBtn archiveSuitButton" data-agame="Special Game"><span class="archiveSuitIcon" aria-hidden="true" style="color:#111111">♠</span><span class="archiveSuitText">Special Games</span><span class="archiveSuitArrow" aria-hidden="true">›</span></button></section>`;
  if(archiveViewId){
   const a=archives.find(x=>String(x.id)===String(archiveViewId));
   const clock=t=>t?new Date(t).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",timeZone:"America/New_York"}):"—";
@@ -1232,7 +1237,7 @@ function wireAdmin(){
  };
  const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbFromTop10=false;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
  const tp=document.querySelector("#thermostatPassword");if(tp)tp.onclick=()=>{if(tp.dataset.revealed)return;tp.dataset.revealed="1";tp.textContent="2673";setTimeout(()=>{tp.textContent="Thermostat Password";delete tp.dataset.revealed},10000)};
- const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;render()};
+ const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;archiveViewId=null;archives=[];archivePlayers=[];render()};
  const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";attendanceTop10Only=false;await loadTop10Players();render()};
  const th=document.querySelector("#adminTournamentHistory");if(th)th.onclick=async()=>{error="";adminMode="tournamentHistory";await loadTournamentData();render()};
   const ss=document.querySelector("#adminStaffSchedule");if(ss)ss.onclick=async()=>{error="";await loadStaffData();adminMode="staff";render()};const su=document.querySelector("#staffUpcoming");if(su)su.onclick=()=>{error="";adminMode="staffUpcoming";render()};
