@@ -655,13 +655,13 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 .listsMainMenu .todoMenuButton .menuText,.listsMainMenu .todoMenuButton .menuArrow{color:#fff!important}
 .todoAddButton{background:#FFEF00!important;color:#111!important;border-color:#c7a900!important}
 .listsMainMenu > button.big.todoMenuButton{background:#FFEF00!important;color:#fff!important;border-color:#c7a900!important}
-.listsMainMenu > button.big.todoMenuButton .menuText,.listsMainMenu > button.big.todoMenuButton .menuArrow{color:#fff!important}
+.listsMainMenu > button.big.todoMenuButton .menuText,.listsMainMenu > button.big.todoMenuButton .menuArrow{color:#111!important}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.184";
+const APP_VERSION="102926.185";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
