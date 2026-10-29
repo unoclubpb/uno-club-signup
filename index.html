@@ -664,12 +664,12 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 .adminMainMenu .adminIconText{flex:1;min-width:0;color:#fff}
 .adminMainMenu .adminIconArrow{font-size:29px;font-weight:300;color:#fff;line-height:1}
 @media(max-width:390px){.adminMainMenu .adminIconButton{height:84px!important;min-height:84px!important}}
-.content:has(> .playerDbForm){padding-top:.45rem!important;padding-bottom:.65rem!important}.playerDbForm{gap:.45rem!important;padding:.7rem!important}.playerDbForm .fieldwrap{gap:.2rem!important}.playerDbForm input{min-height:40px!important;padding:.42rem .55rem!important}.playerDbForm .lastPlayedInfo{margin-top:0!important}.playerDbForm .preferredSeatsLabel{font-weight:700;font-size:.95rem}.playerDbForm .preferredSeatsGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.65rem}.playerDbForm .preferredSeatsGrid .fieldwrap{min-width:0}.playerDbForm #dbNotes{height:58px!important;min-height:58px!important;max-height:58px!important;resize:none;padding:.4rem .55rem!important;line-height:1.3}.playerDbForm .playerDbActionGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.5rem}.playerDbForm .playerDbActionGrid button{width:100%;height:46px!important;min-height:46px!important;margin:0!important;padding:.35rem!important;border-radius:8px;font-weight:800;font-size:.95rem}.playerDbForm .playerDbActionGrid .save{background:var(--uno-green)!important;color:#fff!important}</style>
+.content:has(> .playerDbForm){padding-top:.45rem!important;padding-bottom:.65rem!important}.playerDbForm{gap:.45rem!important;padding:.7rem!important}.playerDbForm .fieldwrap{gap:.2rem!important}.playerDbForm input{min-height:40px!important;padding:.42rem .55rem!important}.playerDbForm .lastPlayedInfo{margin-top:0!important}.playerDbForm .preferredSeatsLabel{font-weight:700;font-size:.95rem}.playerDbForm .preferredSeatsGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.65rem}.playerDbForm .preferredSeatsGrid .fieldwrap{min-width:0}.playerDbForm #dbNotes{height:58px!important;min-height:58px!important;max-height:58px!important;resize:none;padding:.4rem .55rem!important;line-height:1.3}.playerDbForm .playerDbActionGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.5rem}.playerDbForm .playerDbActionGrid button{width:100%;height:46px!important;min-height:46px!important;margin:0!important;padding:.35rem!important;border-radius:8px;font-weight:800;font-size:.95rem}.playerDbForm .playerDbActionGrid .save{background:var(--uno-green)!important;color:#fff!important}.playerDbForm .playerSnapshot{display:grid;gap:.3rem}.playerDbForm .playerSnapshotTitle{font-size:.93rem;font-weight:750}.playerDbForm .playerSnapshotGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem}.playerDbForm .playerSnapshotGrid button{min-height:60px;padding:.35rem;border-radius:9px;border:2px solid #103c8b;background:#e8f2ff;color:#153d81;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}.playerDbForm .playerSnapshotGrid span{font-size:.85rem;font-weight:650}.playerDbForm .playerSnapshotGrid strong{font-size:1.3rem;line-height:1.15}</style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.195";
+const APP_VERSION="102926.196";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -884,7 +884,7 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 function render(){
  const a=document.querySelector("#app");let h="";
  if(page==="todo"){a.innerHTML=renderHeader("To-Do")+renderTodoPage();wireTodo();return}
- if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?(playerHistoryView==="totals"?"Total Games Played":playerHistoryView==="dates"?"Dates Played":"Game Detail"):playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details",playerHistoryMode&&!playerHistoryArchiveId?(findDirectory(playerDbEditName||"")?.player_name||playerDbEditName||""):"")+renderPlayerDatabase();wirePlayerDatabase();return}
+ if(page==="playerdb"){a.innerHTML=renderHeader(playerHistoryArchiveId?"Archived List":playerHistoryMode?(playerHistoryView==="total"?"Total Games Played":playerHistoryView==="holdem"?"Hold Em Games":playerHistoryView==="omaha"?"Omaha Games":playerHistoryView==="tournaments"?"Tournaments":playerHistoryView==="totals"?"Total Games Played":playerHistoryView==="dates"?"Dates Played":"Game Detail"):playerDbMode==="list"?"Player Database":playerDbMode==="add"?"Add Player":"Player Details",playerHistoryMode&&!playerHistoryArchiveId?(findDirectory(playerDbEditName||"")?.player_name||playerDbEditName||""):"")+renderPlayerDatabase();wirePlayerDatabase();return}
  if(page==="admin"){
  let adminHeader;
  if(archiveViewId){
@@ -1346,7 +1346,7 @@ function wireAdmin(){
   await openArchive(a.id);
  });
  const attendanceToggle=document.querySelector("#attendanceToggle");if(attendanceToggle)attendanceToggle.onclick=()=>{attendanceTop10Only=!attendanceTop10Only;render()};
- document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=async()=>{page="playerdb";playerDbFromAdmin=true;playerDbFromTop10=true;playerDbMode="edit";playerDbEditName=(directory.find(p=>String(p.player_id)===String(b.dataset.top10PlayerId))||{}).player_name||b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";playerLastPlayed=null;await loadPlayerLastPlayed(playerDbEditName);render()});
+ document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=async()=>{page="playerdb";playerDbFromAdmin=true;playerDbFromTop10=true;playerDbMode="edit";playerDbEditName=(directory.find(p=>String(p.player_id)===String(b.dataset.top10PlayerId))||{}).player_name||b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";playerLastPlayed=null;await Promise.all([loadPlayerLastPlayed(playerDbEditName),loadPlayerHistory(playerDbEditName)]);render()});
  document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
  document.querySelectorAll("[data-archive]").forEach(b=>b.onclick=()=>openArchive(b.dataset.archive));
  document.querySelectorAll("[data-archive-player]").forEach(b=>b.onclick=()=>openArchivedPlayerDetail(b.dataset.archivePlayer,b.dataset.archivePlayerId));
@@ -1400,7 +1400,11 @@ function lastPlayedText(){
  const g=playerLastPlayed.game==="Special Game"?(playerLastPlayed.special_game_name||"Special Game"):playerLastPlayed.game;
  return `${ds} — ${g}`;
 }
+function playerAttendedArchives(){const ids=new Set(playerHistoryRows.filter(x=>x.was_late||!x.was_alternate).map(x=>String(x.archive_id)));return playerHistory.filter(x=>ids.has(String(x.id)));}
+function playerSnapshot(){const rows=playerAttendedArchives();return {total:new Set(rows.map(x=>x.archive_date).filter(Boolean)).size,holdem:rows.filter(x=>x.game==="Hold Em").length,omaha:rows.filter(x=>x.game==="Omaha").length,tournaments:rows.filter(x=>x.game==="Tournament").length};}
+function playerAttendanceDates(kind){const rows=playerAttendedArchives().filter(x=>kind==="total"||x.game===({holdem:"Hold Em",omaha:"Omaha",tournaments:"Tournament"}[kind]));if(kind==="total"){const days=new Map();rows.forEach(a=>{if(a.archive_date){const v=days.get(a.archive_date)||[];v.push(a);days.set(a.archive_date,v)}});return [...days.entries()].sort((a,b)=>b[0].localeCompare(a[0])).map(([date,games])=>({date,details:[...new Set(games.map(x=>x.game==="Special Game"?(x.special_game_name||"Special Game"):x.game))].join(" · ")}));}return rows.sort((a,b)=>b.archive_date.localeCompare(a.archive_date)).map(a=>({date:a.archive_date,details:playerHistoryLabel(a)}));}
 function renderPlayerDatabase(){
+ if(playerHistoryMode&&["total","holdem","omaha","tournaments"].includes(playerHistoryView)){const kind=playerHistoryView;const title={total:"Total Games Played",holdem:"Hold Em Games",omaha:"Omaha Games",tournaments:"Tournaments"}[kind],rows=playerAttendanceDates(kind);return `<section class="content"><h2 style="margin:.15rem 0 .65rem">${title}</h2><div class="list">${rows.length?rows.map(x=>`<div class="playerDbRow" style="cursor:default"><span>${esc(new Date(x.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"}))}<small style="display:block;color:#555;margin-top:3px">${esc(x.details)}</small></span></div>`).join(""):'<div class="empty">No recorded attendance in this category.</div>'}</div></section>`;}
  if(playerHistoryArchiveId){
   const a=playerHistory.find(x=>String(x.id)===String(playerHistoryArchiveId));
   return `<section class="content"><div class="head"><div><h2>${a?esc(playerHistoryLabel(a)):"Archived List"}</h2><span class="count">${countLabel(playerHistoryArchivePlayers.length,"Player","Players")}</span></div></div><div class="list">${playerHistoryArchivePlayers.map(p=>`<button class="playerDbRow" data-history-archive-player="${esc(p.player_name)}" data-history-archive-player-id="${p.player_id??""}"><span>${esc(currentPlayerName(p))}</span></button>`).join("")}</div></section>`;
@@ -1439,11 +1443,12 @@ function renderPlayerDatabase(){
  const name=existing?.player_name||(playerDbMode==="add"?playerDbDraftName:""),he=existing?.hold_em_preferred_seat??"",om=existing?.omaha_preferred_seat??"",notes=existing?.notes||"",active=existing?.active!==false;
  return `<section class="content"><form id="playerDbForm" class="playerDbForm" autocomplete="off">
  <div class="fieldwrap"><div>Player Name ${existing?.player_id!=null?`(ID: ${String(existing.player_id).padStart(3,"0")})`:""}</div><input id="dbPlayerName" value="${esc(name)}" maxlength="80" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false">${existing?`<div class="lastPlayedInfo">Last Played: ${esc(lastPlayedText())}</div>`:""}</div>
-${existing?'<button type="button" class="big" id="dbGameDetail" style="min-height:52px;font-size:1rem">Game Data</button>':""}
+
  <div class="preferredSeatsLabel">Preferred Seats</div>
  <div class="preferredSeatsGrid"><div class="fieldwrap"><label for="dbHoldemSeat">Hold Em</label><input id="dbHoldemSeat" inputmode="numeric" value="${he}" autocomplete="off" placeholder="1–10"></div><div class="fieldwrap"><label for="dbOmahaSeat">Omaha</label><input id="dbOmahaSeat" inputmode="numeric" value="${om}" autocomplete="off" placeholder="1–9"></div></div>
  <div class="fieldwrap"><label for="dbNotes">Notes</label><textarea id="dbNotes" rows="2" class="dbNotes" maxlength="500" autocomplete="off" autocorrect="off" spellcheck="false">${esc(notes)}</textarea></div>
  ${error?`<p class="error">${esc(error)}</p>`:""}
+ ${existing?(()=>{const n=playerSnapshot();return `<div class="playerSnapshot"><div class="playerSnapshotTitle">Game Data</div><div class="playerSnapshotGrid"><button type="button" data-player-stat="total"><span>Total Played</span><strong>${n.total}</strong></button><button type="button" data-player-stat="holdem"><span>Hold Em</span><strong>${n.holdem}</strong></button><button type="button" data-player-stat="tournaments"><span>Tournaments</span><strong>${n.tournaments}</strong></button><button type="button" data-player-stat="omaha"><span>Omaha</span><strong>${n.omaha}</strong></button></div></div>`})():""}
  <div class="playerDbActionGrid"><button type="button" id="dbActive" class="${active?"statusActiveSelected":"statusUnselected"}">Active</button><button type="button" id="dbInactive" class="${!active?"statusInactiveSelected":"statusUnselected"}">Inactive</button>${existing?'<button type="button" class="dangerButton" id="dbDelete">Delete Player</button>':""}<button class="save">${existing?"Save Changes":"Save Player"}</button></div><input type="hidden" id="dbStatus" value="${active?"active":"inactive"}">
  </form></section>`;
 }
@@ -1463,6 +1468,7 @@ function wirePlayerDatabase(){
  const back=document.querySelector("#back");
  if(back)back.onclick=()=>{error="";
   if(playerHistoryArchiveId){playerHistoryArchiveId=null;playerHistoryArchivePlayers=[];playerHistoryView="dates";render();return}
+  if(playerHistoryMode&&["total","holdem","omaha","tournaments"].includes(playerHistoryView)){playerHistoryMode=false;playerHistoryView="menu";render();return}
   if(playerHistoryMode&&playerHistoryView!=="menu"){playerHistoryView="menu";render();return}
   if(playerHistoryMode){playerHistoryMode=false;playerHistoryView="menu";render();return}
   if(playerDbFromArchive){playerDbFromArchive=false;playerDbMode="list";playerDbEditName=null;page="admin";render();return}
@@ -1474,7 +1480,7 @@ function wirePlayerDatabase(){
  const search=document.querySelector("#dbSearch");if(search)search.oninput=()=>{playerDbSearch=search.value;const results=document.querySelector("#playerDbResults");if(results){results.innerHTML=playerDbResultsHtml();wirePlayerDbRows()}};
  wirePlayerDbRows();
  document.querySelectorAll("[data-history-archive-player]").forEach(b=>b.onclick=()=>openArchivedPlayerDetail(b.dataset.historyArchivePlayer,b.dataset.historyArchivePlayerId));
- const gd=document.querySelector("#dbGameDetail");if(gd)gd.onclick=async()=>{await loadPlayerHistory(playerDbEditName);playerHistoryMode=true;playerHistoryView="menu";playerHistoryArchiveId=null;render()};
+ document.querySelectorAll("[data-player-stat]").forEach(b=>b.onclick=()=>{playerHistoryMode=true;playerHistoryView=b.dataset.playerStat;playerHistoryArchiveId=null;render()});
  const phd=document.querySelector("#phDates");if(phd)phd.onclick=()=>{playerHistoryView="dates";render()};
  const pht=document.querySelector("#phTotals");if(pht)pht.onclick=()=>{playerHistoryView="totals";render()};
  document.querySelectorAll("[data-pharchive]").forEach(b=>b.onclick=()=>openPlayerHistoryArchive(b.dataset.pharchive));
