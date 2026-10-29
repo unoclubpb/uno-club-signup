@@ -669,7 +669,7 @@ header h1,header .headertext h1,header small,header .headertext small{color:#fff
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.197";
+const APP_VERSION="102926.198";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
@@ -1449,7 +1449,7 @@ function renderPlayerDatabase(){
  <div class="fieldwrap"><label for="dbNotes">Notes</label><textarea id="dbNotes" rows="2" class="dbNotes" maxlength="500" autocomplete="off" autocorrect="off" spellcheck="false">${esc(notes)}</textarea></div>
  ${error?`<p class="error">${esc(error)}</p>`:""}
  ${existing?(()=>{const n=playerSnapshot();return `<div class="playerSnapshot"><div class="playerSnapshotTitle">Game Data</div><div class="playerSnapshotGrid"><button type="button" data-player-stat="total"><span>Total Played</span><strong>${n.total}</strong></button><button type="button" data-player-stat="holdem"><span>Hold Em</span><strong>${n.holdem}</strong></button><button type="button" data-player-stat="tournaments"><span>Tournaments</span><strong>${n.tournaments}</strong></button><button type="button" data-player-stat="omaha"><span>Omaha</span><strong>${n.omaha}</strong></button></div></div>`})():""}
- <div class="playerDbActionGrid"><button type="button" id="dbActive" class="${active?"statusActiveSelected":"statusUnselected"}">Active</button><button type="button" id="dbInactive" class="${!active?"statusInactiveSelected":"statusUnselected"}">Inactive</button>${existing?'<button type="button" class="dangerButton" id="dbDelete">Delete Player</button>':""}<button class="save">${existing?"Save Changes":"Save Player"}</button></div><input type="hidden" id="dbStatus" value="${active?"active":"inactive"}">
+ <div class="playerDbActionGrid"><button type="button" id="dbInactive" class="${!active?"statusInactiveSelected":"statusUnselected"}">Inactive</button><button type="button" id="dbActive" class="${active?"statusActiveSelected":"statusUnselected"}">Active</button>${existing?'<button type="button" class="dangerButton" id="dbDelete">Delete Player</button>':""}<button class="save">${existing?"Save Changes":"Save Player"}</button></div><input type="hidden" id="dbStatus" value="${active?"active":"inactive"}">
  </form></section>`;
 }
 function playerDbFilteredRows(){
