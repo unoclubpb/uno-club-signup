@@ -50,7 +50,7 @@ header h1{font-size:16px!important;white-space:nowrap!important;overflow:visible
  overlay.hidden=false;
  document.getElementById('hubIdentityCard').addEventListener('submit',function(event){
   event.preventDefault();
-  const first=input.value.trim().split(/\\s+/)[0];
+  const first=input.value.trim().split(/\s+/)[0];
   if(!first){error.textContent='Please enter your first name.';return}
   try{localStorage.setItem(key,first);overlay.hidden=true;error.textContent=''}
   catch(e){error.textContent='Your browser could not save your name. Please enable site storage.'}
