@@ -672,7 +672,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.240";
+const APP_VERSION="102926.241";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
@@ -700,10 +700,10 @@ function arrivesAfter715(note){
 }
 const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 
-let day=null,game=null,page="main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
+let day=null,game=null,page=STAFF_MODE?"admin":"main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode="main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceTop10Only=false,tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
+let adminMode=STAFF_MODE?"staff":"main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceTop10Only=false,tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -781,7 +781,7 @@ async function load(){
 function renderHeader(title,subtitle=""){
  const staffSection=STAFF_MODE&&page==="admin"&&adminMode.startsWith("staff");
  const staffRoot=staffSection&&adminMode==="staff";
- return `<header class="listsBanner">${staffRoot?'<button type="button" class="hubLogoButton" id="backToHub" aria-label="Back to Uno Club Hub"><img src="./uno-club-hub-new.svg?v=5" alt="Uno Club Hub"></button>':page==="main"&&!day&&!game?'<button type="button" class="hubLogoButton" id="backToHub" aria-label="Back to Uno Club Hub"><img src="./uno-club-hub-new.svg?v=5" alt="Uno Club Hub"></button>':'<button class="back" id="back" aria-label="Back">←</button>'}<div class="headertext"><h1 class="${title==="Staff Management"?"staffManagementTitle":""}">${esc(title)}</h1>${subtitle?`<small>${esc(subtitle)}</small>`:""}</div><img class="headerlogo" id="homeLogo" src="${staffSection&&adminMode!=="staff"?"uno-club-staff-new.svg?v=5":"uno-club-lists-new.svg?v=5"}" alt="${staffSection?"Uno Club Staff":"Uno Club Lists"}"></header>`;
+ return `<header class="listsBanner">${staffRoot?'<button type="button" class="hubLogoButton" id="backToHub" aria-label="Back to Uno Club Hub"><img src="./uno-club-hub-new.svg?v=5" alt="Uno Club Hub"></button>':page==="main"&&!day&&!game?'<button type="button" class="hubLogoButton" id="backToHub" aria-label="Back to Uno Club Hub"><img src="./uno-club-hub-new.svg?v=5" alt="Uno Club Hub"></button>':'<button class="back" id="back" aria-label="Back">←</button>'}<div class="headertext"><h1 class="${title==="Staff Management"?"staffManagementTitle":""}">${esc(title)}</h1>${subtitle?`<small>${esc(subtitle)}</small>`:""}</div><img class="headerlogo" id="homeLogo" src="${staffSection?"uno-club-staff-new.svg?v=5":"uno-club-lists-new.svg?v=5"}" alt="${staffSection?"Uno Club Staff":"Uno Club Lists"}"></header>`;
 }
 
 const TABLE_SEAT_POSITIONS={
