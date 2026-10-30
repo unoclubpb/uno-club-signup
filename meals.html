@@ -4,7 +4,7 @@ body:has(#mealForm) #app{height:100%;height:100dvh;overflow:hidden;display:flex;
 body:has(#mealForm) main{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;width:100%;-webkit-overflow-scrolling:touch;padding-bottom:calc(55px + env(safe-area-inset-bottom))}
 header h1{font-size:16px!important;white-space:nowrap!important;min-width:0;letter-spacing:-.45px!important}@media(max-width:390px){header h1{font-size:14px!important}}@media(max-width:350px){header h1{font-size:12px!important}}header{background:#1e5acb!important;color:#fff!important}header h1{color:#fff!important}</style></head><body><div id="app"></div><script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const VERSION="102926.047";
+const VERSION="102926.048";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const hub=new URLSearchParams(location.search).get("hub")==="1";
 const app=document.getElementById("app");
@@ -44,4 +44,30 @@ document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=async()=>{if(!co
 document.querySelectorAll("[data-delidea]").forEach(b=>b.onclick=async()=>{if(!confirm("Delete this meal idea?"))return;const r=await sb.from("meal_ideas").delete().eq("id",b.dataset.delidea);if(r.error){error="Could not delete idea.";}else{mode="ideas";error="";}await loadData();render()})}
 function wireSuggest(input,box,getList){if(!input)return;const show=()=>{const q=key(input.value);box.replaceChildren();if(!q){box.style.display="none";return}getList().filter(x=>key(x).includes(q)&&key(x)!==q).slice(0,8).forEach(name=>{const b=document.createElement("button");b.type="button";b.textContent=name;b.onclick=()=>{input.value=name;box.style.display="none";input.focus();input.dispatchEvent(new Event("input"))};box.appendChild(b)});box.style.display=box.childElementCount?"block":"none"};input.addEventListener("input",show);input.addEventListener("focus",show);input.addEventListener("blur",()=>{input.value=title(input.value.trim());setTimeout(()=>box.style.display="none",150)})}
 async function boot(){await loadData();render()}boot().catch(e=>{app.textContent="Could not open Meal Planning. Please refresh.";console.error(e)});
+</script><script>
+/* Fit each banner title to its available width without wrapping. */
+(()=>{
+ const selector="header h1";
+ const fit=()=>{
+  document.querySelectorAll(selector).forEach(el=>{
+   if(!el.clientWidth)return;
+   el.style.setProperty('white-space','nowrap','important');
+   el.style.setProperty('font-size','28px','important');
+   let size=28;
+   while(size>12 && el.scrollWidth>el.clientWidth+1){
+    size-=1;
+    el.style.setProperty('font-size',size+'px','important');
+   }
+  });
+ };
+ let queued=false;
+ const schedule=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;fit()})};
+ const observer=new MutationObserver(schedule);
+ observer.observe(document.body,{childList:true,subtree:true,characterData:true});
+ const resize=new ResizeObserver(schedule);
+ document.querySelectorAll('header').forEach(h=>resize.observe(h));
+ window.addEventListener('resize',schedule);
+ document.fonts?.ready.then(schedule);
+ schedule();
+})();
 </script></body></html>
