@@ -672,7 +672,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.244";
+const APP_VERSION="102926.245";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -1827,5 +1827,31 @@ async function trimCompletedTodos(){const c=todos.filter(t=>t.completed_at).sort
 async function checkForUpdate(){try{const r=await fetch(window.location.pathname+"?updatecheck="+Date.now(),{cache:"no-store"}),h=await r.text(),m=h.match(/const APP_VERSION="([^"]+)"/);if(m&&m[1]!==APP_VERSION)window.location.replace(window.location.pathname+"?v="+encodeURIComponent(m[1]))}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkForUpdate()});window.addEventListener("pageshow",checkForUpdate);load().catch(e=>{console.error("Uno Club startup error",e);document.querySelector("#app").innerHTML='<div style="padding:24px;font-family:Arial,sans-serif"><h2>Unable to load Uno Club Lists</h2><p>Please try refreshing the page.</p><small>'+String(e?.message||e).replace(/[<>&]/g,"")+"</small></div>"});
 </script>
-</body>
+<script>
+/* Fit each banner title to its available width without wrapping. */
+(()=>{
+ const selector=".listsBanner .headertext h1";
+ const fit=()=>{
+  document.querySelectorAll(selector).forEach(el=>{
+   if(!el.clientWidth)return;
+   el.style.setProperty('white-space','nowrap','important');
+   el.style.setProperty('font-size','28px','important');
+   let size=28;
+   while(size>12 && el.scrollWidth>el.clientWidth+1){
+    size-=1;
+    el.style.setProperty('font-size',size+'px','important');
+   }
+  });
+ };
+ let queued=false;
+ const schedule=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;fit()})};
+ const observer=new MutationObserver(schedule);
+ observer.observe(document.body,{childList:true,subtree:true,characterData:true});
+ const resize=new ResizeObserver(schedule);
+ document.querySelectorAll('header').forEach(h=>resize.observe(h));
+ window.addEventListener('resize',schedule);
+ document.fonts?.ready.then(schedule);
+ schedule();
+})();
+</script></body>
 </html>
