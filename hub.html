@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0b"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Uno Club Hub"><title>Uno Club Hub — Test</title><link rel="manifest" href="./hub.webmanifest?v=3">
-<link rel="apple-touch-icon" sizes="180x180" href="./uno-club-hub-icon.png?v=2"><link rel="icon" type="image/png" href="./uno-club-hub-icon.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="./uno-club-hub-new.svg?v=4"><link rel="icon" type="image/svg+xml" href="./uno-club-hub-new.svg?v=4">
 <style>
 *{box-sizing:border-box}html{background:#f5f6f8;height:100%;overflow:hidden;overscroll-behavior:none}body{margin:0;height:100%;max-height:100dvh;overflow:hidden;overscroll-behavior:none;touch-action:pan-x;color:#111;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 header{height:118px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:#0b0b0b;color:#fff;padding:13px max(16px,calc((100vw - 620px)/2 + 16px))}
@@ -18,18 +18,18 @@ footer{position:fixed;left:50%;transform:translateX(-50%);width:max-content;max-
 @media(max-width:390px){header{height:118px}.brand{height:66px;width:66px}main{padding-top:14px}.tile{min-height:78px!important}}
 #embeddedLists{position:fixed;inset:0;background:#f5f6f8;z-index:500;display:none;flex-direction:column}#embeddedLists.active{display:flex}#hubReturn,#shoppingReturn,#mealsReturn{width:100%;height:44px;flex:none;background:#0b0b0b;color:white;border:0;font-size:16px;font-weight:700;text-align:left;padding:0 18px}#listsFrame,#shoppingFrame,#mealsFrame{display:block;width:100%;flex:1;min-height:0;border:0;background:#f5f6f8}#embeddedShopping{position:fixed;inset:0;background:#f5f6f8;z-index:500;display:none;flex-direction:column}#embeddedShopping.active{display:flex}#embeddedMeals{position:fixed;inset:0;background:#f5f6f8;z-index:500;display:none;flex-direction:column}#embeddedMeals.active{display:flex}
 </style></head>
-<body><header><h1>Uno Club Hub</h1></header>
+<body><header><img src="./uno-club-hub-new.svg?v=4" alt="Uno Club Hub" style="width:76px;height:76px;border-radius:12px;object-fit:contain;flex:none"><h1>Uno Club Hub</h1><span aria-hidden="true" style="width:76px;flex:none"></span></header>
 <main>
 <button class="tile" type="button" onclick="openLists()" aria-label="Open List Sign-Up"><span class="glyph" aria-hidden="true">☷</span><span class="info"><strong>List Sign-Up</strong><small>Lists and sign-ups</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" type="button" onclick="openShopping()" aria-label="Open Shopping"><span class="glyph" aria-hidden="true">🛒</span><span class="info"><strong>Shopping</strong><small>Shopping lists and stores</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" type="button" onclick="openMeals()" aria-label="Open Meal Planning"><span class="glyph" aria-hidden="true">♨</span><span class="info"><strong>Meal Planning</strong><small>Plan meals, history, and ideas</small></span><span class="chev" aria-hidden="true">›</span></button>
-<button class="tile" type="button" onclick="openStaff()" aria-label="Open Staff Management"><span class="glyph" aria-hidden="true"><img src="./uno-club-staff.svg" alt="" style="width:46px;height:46px;object-fit:contain;border-radius:9px"></span><span class="info"><strong>Staff Management</strong><small>Staff scheduling, coverage, and history</small></span><span class="chev" aria-hidden="true">›</span></button>
+<button class="tile" type="button" onclick="openStaff()" aria-label="Open Staff Management"><span class="glyph" aria-hidden="true"><img src="./uno-club-staff-new.svg" alt="" style="width:46px;height:46px;object-fit:contain;border-radius:9px"></span><span class="info"><strong>Staff Management</strong><small>Staff scheduling, coverage, and history</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" disabled><span class="glyph" aria-hidden="true">▣</span><span class="info"><strong>Tournament Remote</strong><small>Coming Soon</small></span><span aria-hidden="true">🔒</span></button>
-<footer>uno club hub v.102926.034</footer>
+<footer>uno club hub v.102926.035</footer>
 </main><div id="embeddedLists"><iframe id="listsFrame" title="Uno Club Lists" loading="eager" src="about:blank"></iframe></div><div id="embeddedMeals"><iframe id="mealsFrame" title="Uno Club Meal Planning" loading="eager" src="about:blank"></iframe></div><div id="embeddedShopping"><iframe id="shoppingFrame" title="Uno Club Shopping" loading="eager" src="about:blank"></iframe></div><script>
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.source!==document.getElementById('listsFrame').contentWindow)return;if(event.data&&event.data.type==='UNO_HUB_CLOSE_LISTS')closeLists();});
 
-const HUB_TEST_VERSION="102926.034";
+const HUB_TEST_VERSION="102926.035";
 let hubLastCheck=0,hubChecking=false;
 function hubIsOnMain(){return !document.getElementById('embeddedLists').classList.contains('active')&&!document.getElementById('embeddedShopping').classList.contains('active')&&!document.getElementById('embeddedMeals').classList.contains('active');}
 async function checkHubUpdates(force=false){
