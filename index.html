@@ -672,7 +672,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.246";
+const APP_VERSION="102926.247";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -877,7 +877,7 @@ function renderStaffHistory(){
  const p=staffMembers.find(x=>String(x.id)===String(staffHistoryId));
  const today=localISODate();
  const rows=staffDaysOff.filter(x=>(staffHistoryId==null||String(x.staff_id)===String(staffHistoryId))&&x.off_date<today).sort((a,b)=>b.off_date.localeCompare(a.off_date));
- return `<section class="content"><div class="head"><div><h2>${p?esc(p.name):"All Staff"}</h2><span class="count">Past Days Off</span></div></div><div class="list">${rows.length?rows.map(x=>`<div class="staffOffRow"><div class="staffOffInfo">${staffHistoryId==null?`<strong>${esc(x.staff_name||staffMembers.find(m=>String(m.id)===String(x.staff_id))?.name||"Staff Member")}</strong>`:""}<span>${esc(formatStaffDate(x.off_date))}</span>${x.note?`<span class="note">${esc(x.note)}</span>`:""}${x.coverage_needed?`<span class="coverageLine ${x.coverage_found&&x.covered_by?"coverageFound":"coverageNeeded"}">${x.coverage_found&&x.covered_by?`${esc(x.covered_by)} covered`:"Coverage was needed"}</span>`:""}</div></div>`).join(""):'<div class="empty">No past days off.</div>'}</div></section>`;
+ return `<section class="content"><div class="fieldwrap" style="margin-bottom:14px"><label for="staffHistoryFilter" style="display:block;font-weight:700;margin-bottom:6px">Staff Member</label><select id="staffHistoryFilter" style="width:100%;min-height:46px;padding:9px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#111;font-size:16px"><option value="">All Staff</option>${[...staffMembers].sort((a,b)=>a.name.localeCompare(b.name)).map(m=>`<option value="${esc(m.id)}" ${String(staffHistoryId)===String(m.id)?"selected":""}>${esc(m.name)}</option>`).join("")}</select></div><div class="head"><div><h2>${p?esc(p.name):"All Staff"}</h2><span class="count">Past Days Off</span></div></div><div class="list">${rows.length?rows.map(x=>`<div class="staffOffRow"><div class="staffOffInfo">${staffHistoryId==null?`<strong>${esc(x.staff_name||staffMembers.find(m=>String(m.id)===String(x.staff_id))?.name||"Staff Member")}</strong>`:""}<span>${esc(formatStaffDate(x.off_date))}</span>${x.note?`<span class="note">${esc(x.note)}</span>`:""}${x.coverage_needed?`<span class="coverageLine ${x.coverage_found&&x.covered_by?"coverageFound":"coverageNeeded"}">${x.coverage_found&&x.covered_by?`${esc(x.covered_by)} covered`:"Coverage was needed"}</span>`:""}</div></div>`).join(""):'<div class="empty">No past days off.</div>'}</div></section>`;
 }
 function renderAddDayOff(){
  const now=new Date(),editing=dayOffEditId?staffDaysOff.find(x=>String(x.id)===String(dayOffEditId)):null,base=editing?new Date(editing.off_date+"T12:00:00"):now,m=base.getMonth()+1,d=base.getDate(),y=base.getFullYear(),months=["January","February","March","April","May","June","July","August","September","October","November","December"],names=[...staffMembers].sort((a,b)=>a.name.localeCompare(b.name)),years=[...new Set([now.getFullYear(),now.getFullYear()+1,now.getFullYear()+2,y])].sort((a,b)=>a-b);
@@ -1225,6 +1225,7 @@ function renderAdminPage(){
 }
 function wireAdmin(){
  wireHomeLogo();
+ const staffHistoryFilter=document.querySelector("#staffHistoryFilter");if(staffHistoryFilter)staffHistoryFilter.onchange=()=>{staffHistoryId=staffHistoryFilter.value===""?null:staffHistoryFilter.value;render()};
  const back=document.querySelector("#back");
  if(back)back.onclick=()=>{
   if(archiveViewId){archiveViewId=null;archivePlayers=[];if(adminMode==="tournamentPast"){archiveGame="Tournament"}else if(adminMode==="tournamentTypeHistory"){archiveGame=null;archives=[]}render();return}
