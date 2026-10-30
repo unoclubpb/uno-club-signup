@@ -2,9 +2,9 @@
 html:has(#mealForm),body:has(#mealForm){height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none}
 body:has(#mealForm) #app{height:100%;height:100dvh;overflow:hidden;display:flex;flex-direction:column}
 body:has(#mealForm) main{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;width:100%;-webkit-overflow-scrolling:touch;padding-bottom:calc(55px + env(safe-area-inset-bottom))}
-</style></head><body><div id="app"></div><script type="module">
+header h1{font-size:16px!important;white-space:nowrap!important;min-width:0;letter-spacing:-.45px!important}@media(max-width:390px){header h1{font-size:14px!important}}@media(max-width:350px){header h1{font-size:12px!important}}</style></head><body><div id="app"></div><script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const VERSION="102926.045";
+const VERSION="102926.046";
 const sb=createClient("https://dugemciflvwboiyneufa.supabase.co","sb_publishable_8Cj40yK0IGPrhBHVPn2SNQ__-B8RHBK");
 const hub=new URLSearchParams(location.search).get("hub")==="1";
 const app=document.getElementById("app");
