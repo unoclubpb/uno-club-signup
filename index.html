@@ -672,9 +672,10 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.241";
+const APP_VERSION="102926.242";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
+const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
 if(HUB_EMBEDDED)document.body.classList.add("hubEmbedded");
 document.addEventListener("click",e=>{
  const link=e.target.closest("#backToHub");
@@ -700,7 +701,7 @@ function arrivesAfter715(note){
 }
 const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 
-let day=null,game=null,page=STAFF_MODE?"admin":"main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
+let day=null,game=null,page=STAFF_MODE?"admin":TODO_MODE?"todo":"main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
 let adminMode=STAFF_MODE?"staff":"main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceTop10Only=false,tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
@@ -776,12 +777,13 @@ async function load(){
  if(!thr.error)tournamentHistory=Array.isArray(thr.data)?thr.data:(thr.data?[thr.data]:[]);
  if(!tsr.error&&tsr.data)tournamentState=tsr.data;
   await loadStaffData();
- if(STAFF_MODE){page="admin";adminMode="staff"}render();
+ if(STAFF_MODE){page="admin";adminMode="staff"}else if(TODO_MODE){page="todo"}render();
 }
 function renderHeader(title,subtitle=""){
  const staffSection=STAFF_MODE&&page==="admin"&&adminMode.startsWith("staff");
  const staffRoot=staffSection&&adminMode==="staff";
- return `<header class="listsBanner">${staffRoot?'<button type="button" class="hubLogoButton" id="backToHub" aria-label="Back to Uno Club Hub"><img src="./uno-club-hub-new.svg?v=5" alt="Uno Club Hub"></button>':page==="main"&&!day&&!game?'<button type="button" class="hubLogoButton" id="backToHub" aria-label="Back to Uno Club Hub"><img src="./uno-club-hub-new.svg?v=5" alt="Uno Club Hub"></button>':'<button class="back" id="back" aria-label="Back">←</button>'}<div class="headertext"><h1 class="${title==="Staff Management"?"staffManagementTitle":""}">${esc(title)}</h1>${subtitle?`<small>${esc(subtitle)}</small>`:""}</div><img class="headerlogo" id="homeLogo" src="${staffSection?"uno-club-staff-new.svg?v=5":"uno-club-lists-new.svg?v=5"}" alt="${staffSection?"Uno Club Staff":"Uno Club Lists"}"></header>`;
+ const todoSection=TODO_MODE&&page==="todo";
+ return `<header class="listsBanner">${(staffRoot||todoSection)?'<button type="button" class="hubLogoButton" id="backToHub" aria-label="Back to Uno Club Hub"><img src="./uno-club-hub-new.svg?v=5" alt="Uno Club Hub"></button>':page==="main"&&!day&&!game?'<button type="button" class="hubLogoButton" id="backToHub" aria-label="Back to Uno Club Hub"><img src="./uno-club-hub-new.svg?v=5" alt="Uno Club Hub"></button>':'<button class="back" id="back" aria-label="Back">←</button>'}<div class="headertext"><h1 class="${title==="Staff Management"?"staffManagementTitle":""}">${esc(title)}</h1>${subtitle?`<small>${esc(subtitle)}</small>`:""}</div><img class="headerlogo" id="homeLogo" src="${staffSection?"uno-club-staff-new.svg?v=5":todoSection?"uno-club-todo-new.svg?v=1":"uno-club-lists-new.svg?v=5"}" alt="${staffSection?"Uno Club Staff":todoSection?"Uno Club To-Do":"Uno Club Lists"}"></header>`;
 }
 
 const TABLE_SEAT_POSITIONS={
@@ -909,7 +911,7 @@ function render(){
   const today=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
   h+=`<section class="menu listsMainMenu">${Object.keys(games).map(x=>`<button class="big day ${x===today?"tonight":""}" data-v="${x}"><span class="menuIcon" aria-hidden="true"><span class="calendarEmoji">📅<span class="calendarDate">${nextGameDate(x)}</span></span></span><span class="menuText">${x}${dayOffAlerts().filter(a=>a.off_date===(()=>{const now=new Date(),days={Sunday:0,Monday:1,Tuesday:2,Wednesday:3,Thursday:4,Friday:5,Saturday:6},delta=(days[x]-now.getDay()+7)%7,d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+delta);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`})()).map(a=>`<small class="dayCoverageAlert ${!a.coverage_needed?"off":a.coverage_found&&a.covered_by?"found":"needed"}">${esc(a.staff_name)} off.${!a.coverage_needed?" No coverage needed.":a.coverage_found&&a.covered_by?` Covered by ${esc(a.covered_by)}.`:" Need coverage."}</small>`).join("")}</span><span class="menuArrow" aria-hidden="true">›</span></button>`).join("")}
   <button class="big specialGameButton ${specialSettings?.game_date===`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}-${String(new Date().getDate()).padStart(2,"0")}`?"tonight":""}" id="specialGameButton"><span class="menuIcon" aria-hidden="true">${specialSettings?.game_date?`<span class="calendarEmoji">📅<span class="calendarDate">${Number(specialSettings.game_date.slice(8,10))}</span></span>`:"★"}</span><span class="menuText">${esc(specialName)}</span><span class="menuArrow" aria-hidden="true">›</span>${sc?`<span class="gamecount">${sc}</span>`:""}</button>
-  <button class="big todoMenuButton" id="todoMenuButton"><span class="menuIcon" aria-hidden="true">☑</span><span class="menuText">To-Do List</span><span class="menuArrow" aria-hidden="true">›</span></button><button class="big playerDatabaseButton" id="adminButton"><span class="menuIcon" aria-hidden="true">⚙</span><span class="menuText">Admin</span><span class="menuArrow" aria-hidden="true">›</span></button></section><div class="appVersion">uno club lists v.${APP_VERSION}</div>`;
+  <button class="big playerDatabaseButton" id="adminButton"><span class="menuIcon" aria-hidden="true">⚙</span><span class="menuText">Admin</span><span class="menuArrow" aria-hidden="true">›</span></button></section><div class="appVersion">uno club lists v.${APP_VERSION}</div>`;
  }else if(!game){
   h+=`<section class="menu tableGameMenu">${games[day].map(x=>{if(x==="Hold Em"||x==="Omaha")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssPokerTable(day,x)}</button>`;if(x==="Tournament")return `<button class="game gameImageButton dynamicTableButton" data-v="${x}" aria-label="${x}">${renderCssTournamentTable(day)}</button>`;return `<button class="big game" data-v="${x}">${x}<span class="gamecount">${gameCount(day,x)}</span></button>`}).join("")}</section>`;
  }else h+=renderPlayerPage();
@@ -1562,7 +1564,7 @@ async function deletePlayerDatabase(){
 }
 function wireHomeLogo(){
  const logo=document.querySelector("#homeLogo");
- if(logo)logo.onclick=()=>{if(STAFF_MODE&&page==="admin"&&adminMode.startsWith("staff")){adminMode="staff";dayOffEditId=null;error="";render();return}page="main";day=null;game=null;edit=null;todoEdit=null;specialEdit=false;playerDbMode="list";playerDbEditName=null;playerDbSearch="";playerDbDraftName="";error="";render()};
+ if(logo&&!TODO_MODE)logo.onclick=()=>{if(STAFF_MODE&&page==="admin"&&adminMode.startsWith("staff")){adminMode="staff";dayOffEditId=null;error="";render();return}page="main";day=null;game=null;edit=null;todoEdit=null;specialEdit=false;playerDbMode="list";playerDbEditName=null;playerDbSearch="";playerDbDraftName="";error="";render()};
 }
 function wire(){
  wireHomeLogo();
