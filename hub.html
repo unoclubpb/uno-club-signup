@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0b"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Uno Club Hub"><title>Uno Club Hub — Test</title><link rel="manifest" href="./hub.webmanifest?v=3">
-<link rel="apple-touch-icon" sizes="180x180" href="./uno-club-hub-new.svg?v=5"><link rel="icon" type="image/svg+xml" href="./uno-club-hub-new.svg?v=5">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0b"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Uno Club Hub"><title>Uno Club Hub — Test</title><link rel="manifest" href="./hub.webmanifest?v=4">
+<link rel="apple-touch-icon" sizes="180x180" href="./uno-club-hub-apple-touch.png?v=1"><link rel="icon" type="image/svg+xml" href="./uno-club-hub-new.svg?v=5">
 <style>
 *{box-sizing:border-box}html{background:#f5f6f8;height:100%;overflow:hidden;overscroll-behavior:none}body{margin:0;height:100%;max-height:100dvh;overflow:hidden;overscroll-behavior:none;touch-action:pan-x;color:#111;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 header{height:118px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:#0b0b0b;color:#fff;padding:13px max(16px,calc((100vw - 620px)/2 + 16px))}
@@ -26,11 +26,11 @@ header h1{font-size:16px!important;white-space:nowrap!important;overflow:visible
 <button class="tile" type="button" onclick="openStaff()" aria-label="Open Staff Management"><span class="glyph" aria-hidden="true"><svg viewBox="0 0 64 64" width="46" height="46" fill="none" stroke="#1760be" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="17" r="7"/><circle cx="13" cy="25" r="6"/><circle cx="51" cy="25" r="6"/><path d="M20 49v-6c0-8 5-13 12-13s12 5 12 13v6H20Z"/><path d="M15 37C8 37 5 42 5 49v5h12M49 37c7 0 10 5 10 12v5H47"/></svg></span><span class="info"><strong>Staff Management</strong><small>Staff scheduling and history</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" type="button" onclick="openTodo()" aria-label="Open To-Do List"><span class="glyph" aria-hidden="true"><svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="#1760be" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="36" height="38" rx="5"/><path d="m12 16 4 4 7-8M27 17h9M12 30l4 4 7-8M27 31h9"/></svg></span><span class="info"><strong style="color:#ffef00">To-Do List</strong><small style="color:#ffef00">Tasks, reminders<br>and completed items</small></span><span class="chev" aria-hidden="true">›</span></button>
 <button class="tile" disabled><span class="glyph" aria-hidden="true">▣</span><span class="info"><strong>Tournament Remote</strong><small>Coming Soon</small></span><span aria-hidden="true">🔒</span></button>
-<footer>uno club hub v.102926.047</footer>
+<footer>uno club hub v.102926.048</footer>
 </main><div id="embeddedLists"><iframe id="listsFrame" title="Uno Club Lists" loading="eager" src="about:blank"></iframe></div><div id="embeddedMeals"><iframe id="mealsFrame" title="Uno Club Meal Planning" loading="eager" src="about:blank"></iframe></div><div id="embeddedShopping"><iframe id="shoppingFrame" title="Uno Club Shopping" loading="eager" src="about:blank"></iframe></div><script>
 window.addEventListener('message',event=>{if(event.origin!==location.origin)return;if(event.source!==document.getElementById('listsFrame').contentWindow)return;if(event.data&&event.data.type==='UNO_HUB_CLOSE_LISTS')closeLists();});
 
-const HUB_TEST_VERSION="102926.047";
+const HUB_TEST_VERSION="102926.048";
 let hubLastCheck=0,hubChecking=false;
 function hubIsOnMain(){return !document.getElementById('embeddedLists').classList.contains('active')&&!document.getElementById('embeddedShopping').classList.contains('active')&&!document.getElementById('embeddedMeals').classList.contains('active');}
 async function checkHubUpdates(force=false){
