@@ -673,7 +673,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.249";
+const APP_VERSION="102926.250";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -1710,7 +1710,21 @@ function buildTextList(){
  if(lates.length){if(reg.length||alts.length)lines.push("");lines.push("Late Arrivals");lates.forEach(p=>{let s=`L. ${p.player_name}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)})}
  return lines.join("\n");
 }
-function textList(){if(current().length)window.location.href="sms:&body="+encodeURIComponent(buildTextList())}
+async function textList(){
+ if(!current().length)return;
+ const text=buildTextList();
+ if(navigator.share){
+  try{await navigator.share({text});return}
+  catch(e){if(e&&e.name==="AbortError")return}
+ }
+ try{
+  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(text);alert("Game list copied. Paste it into a text message or another app.");return}
+ }catch(e){}
+ const field=document.createElement("textarea");field.value=text;field.style.position="fixed";field.style.opacity="0";document.body.appendChild(field);field.select();
+ let copied=false;try{copied=document.execCommand("copy")}catch(e){}field.remove();
+ if(copied)alert("Game list copied. Paste it into a text message or another app.");
+ else prompt("Copy this game list:",text);
+}
 async function updateDirectory(name,seat){
  const existing=findDirectory(name);
  const payload={player_name:name,updated_at:new Date().toISOString()};if(!existing)payload.active=true;
