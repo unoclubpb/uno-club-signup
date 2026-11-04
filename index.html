@@ -673,7 +673,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.251";
+const APP_VERSION="102926.252";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -1067,7 +1067,7 @@ function renderArchiveHeader(secondLine){
 }
 async function loadTop10Players(){
  const [ap,ar]=await Promise.all([
-  sb.from("list_archive_players").select("archive_id,player_id,player_name"),
+  sb.from("list_archive_players").select("archive_id,player_id,player_name").not("arrived_at","is",null),
   sb.from("list_archives").select("id,archive_date,game")
  ]);
  if(ap.error||ar.error){top10Players=[];error="Could not load Top 10 Players.";return}
@@ -1395,7 +1395,7 @@ function playerHistoryLabel(a){
 }
 async function loadPlayerHistory(name){
  const dp=findDirectory(name);
- let aq=sb.from("list_archive_players").select("archive_id,was_alternate,was_late");
+ let aq=sb.from("list_archive_players").select("archive_id,arrived_at").not("arrived_at","is",null);
  aq=dp?.player_id?aq.eq("player_id",dp.player_id):aq.eq("player_name",name);
  const ap=await aq;
  if(ap.error){playerHistory=[];playerHistoryRows=[];return}
@@ -1411,7 +1411,7 @@ async function openPlayerHistoryArchive(id){
 }
 async function loadPlayerLastPlayed(name){
  const dp=findDirectory(name);
- let q=sb.from("list_archive_players").select("archive_id,was_alternate,was_late");
+ let q=sb.from("list_archive_players").select("archive_id,arrived_at").not("arrived_at","is",null);
  q=dp?.player_id?q.eq("player_id",dp.player_id):q.eq("player_name",name);
  const pr=await q;
  if(pr.error){playerLastPlayed=null;return}
@@ -1427,7 +1427,7 @@ function lastPlayedText(){
  const g=playerLastPlayed.game==="Special Game"?(playerLastPlayed.special_game_name||"Special Game"):playerLastPlayed.game;
  return `${ds} — ${g}`;
 }
-function playerAttendedArchives(){const ids=new Set(playerHistoryRows.filter(x=>x.was_late||!x.was_alternate).map(x=>String(x.archive_id)));return playerHistory.filter(x=>ids.has(String(x.id)));}
+function playerAttendedArchives(){const ids=new Set(playerHistoryRows.filter(x=>x.arrived_at).map(x=>String(x.archive_id)));return playerHistory.filter(x=>ids.has(String(x.id)));}
 function playerSnapshot(){const rows=playerAttendedArchives();return {total:new Set(rows.map(x=>x.archive_date).filter(Boolean)).size,holdem:rows.filter(x=>x.game==="Hold Em").length,omaha:rows.filter(x=>x.game==="Omaha").length,tournaments:rows.filter(x=>x.game==="Tournament").length};}
 function playerAttendanceDates(kind){const rows=playerAttendedArchives().filter(x=>kind==="total"||x.game===({holdem:"Hold Em",omaha:"Omaha",tournaments:"Tournament"}[kind]));if(kind==="total"){const days=new Map();rows.forEach(a=>{if(a.archive_date){const v=days.get(a.archive_date)||[];v.push(a);days.set(a.archive_date,v)}});return [...days.entries()].sort((a,b)=>b[0].localeCompare(a[0])).map(([date,games])=>({date,details:[...new Set(games.map(x=>x.game==="Special Game"?(x.special_game_name||"Special Game"):x.game))].join(" · ")}));}return rows.sort((a,b)=>b.archive_date.localeCompare(a.archive_date)).map(a=>({date:a.archive_date,details:playerHistoryLabel(a)}));}
 function renderPlayerDatabase(){
@@ -1441,9 +1441,10 @@ function renderPlayerDatabase(){
    return `<section class="menu"><button class="big game" id="phDates">Dates Played</button><button class="big game" id="phTotals">Total Games Played</button></section>`;
   }
   if(playerHistoryView==="dates"){
-   return `<section class="content"><div class="list">${playerHistory.length?playerHistory.map(a=>`<button class="playerDbRow" data-pharchive="${a.id}"><span>${esc(playerHistoryLabel(a))}</span></button>`).join(""):'<div class="empty">No archived games for this player yet.</div>'}</div></section>`;
+   const playedDates=playerAttendedArchives();
+   return `<section class="content"><div class="list">${playedDates.length?playedDates.map(a=>`<button class="playerDbRow" data-pharchive="${a.id}"><span>${esc(playerHistoryLabel(a))}</span></button>`).join(""):'<div class="empty">No archived games for this player yet.</div>'}</div></section>`;
   }
-  const playedIds=new Set(playerHistoryRows.filter(x=>x.was_late||!x.was_alternate).map(x=>String(x.archive_id)));
+  const playedIds=new Set(playerHistoryRows.filter(x=>x.arrived_at).map(x=>String(x.archive_id)));
   const played=playerHistory.filter(a=>playedIds.has(String(a.id)));
   const totals={"Hold Em":0,"Omaha":0,"Tournament":0,"Special Game":0};
   played.forEach(a=>{if(Object.prototype.hasOwnProperty.call(totals,a.game))totals[a.game]++});
