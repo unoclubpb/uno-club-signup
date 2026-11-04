@@ -673,7 +673,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.250";
+const APP_VERSION="102926.251";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -1220,7 +1220,7 @@ function renderAdminPage(){
  if(archiveViewId){
   const a=archives.find(x=>String(x.id)===String(archiveViewId));
   const clock=t=>t?new Date(t).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",timeZone:"America/New_York"}):"—";
-  return `<section class="content archiveDetail"><div class="archiveDetailHeading">${a?esc(new Date(a.archive_date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})):"Archived List"}</div><div class="archiveDetailGame">${a?esc(a.game==="Special Game"?(a.special_game_name||"Special Game"):a.game):""}</div><div class="archiveDetailTotal"><strong>${archivePlayers.length}</strong><span>Total Players</span></div><div class="archiveDetailPlayers">${archivePlayers.length?archivePlayers.map(p=>`<div class="archiveDetailPlayer"><button type="button" class="archivePlayerLink" data-archive-player="${esc(p.player_name)}" data-archive-player-id="${p.player_id??""}">${esc(currentPlayerName(p))}<span aria-hidden="true">›</span></button><div class="archiveDetailTimes"><span><small>Signed Up</small>${esc(clock(p.signup_at))}</span><span><small>Arrived</small>${esc(clock(p.arrived_at))}</span></div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
+  return `<section class="content archiveDetail"><div class="archiveDetailHeading">${a?esc(new Date(a.archive_date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})):"Archived List"}</div><div class="archiveDetailGame">${a?esc(a.game==="Special Game"?(a.special_game_name||"Special Game"):a.game):""}</div><div class="archiveDetailTotal"><strong>${archivePlayers.length}</strong><span>Total Players</span></div><div class="archiveDetailPlayers">${archivePlayers.length?archivePlayers.map(p=>`<div class="archiveDetailPlayer"><button type="button" class="archivePlayerLink" data-archive-player="${esc(p.player_name)}" data-archive-player-id="${p.player_id??""}">${esc(currentPlayerName(p))}<span aria-hidden="true">›</span></button><div class="archiveDetailTimes"><span><small>Signed Up</small>${esc(clock(p.signup_at))}</span><span><small>${p.arrived_at?"Arrived":"Status"}</small>${p.arrived_at?esc(clock(p.arrived_at)):"No Show"}</span></div></div>`).join(""):'<div class="empty">No players in this archive.</div>'}</div></section>`;
  }
  return renderArchiveListing();
 }
