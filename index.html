@@ -688,7 +688,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.255";
+const APP_VERSION="102926.256";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -1129,8 +1129,8 @@ function renderTop10Players(){
  const filters=`<div class="attendancePeriodBar" aria-label="Attendance date filters">
  <label class="attendancePeriodField"><span>All Time / Year</span><select id="attendancePeriodSelect" aria-label="All Time or annual attendance">${attendancePeriod==="month"?'<option value="month" selected>Month / Year</option>':""}<option value="all" ${attendancePeriod==="all"?"selected":""}>All Time</option>${years.map(y=>`<option value="${y}" ${attendancePeriod===y?"selected":""}>${y}</option>`).join("")}</select></label>
  <div class="attendanceMonthYearGroup ${attendancePeriod==="month"?"active":""}">
- <label class="attendancePeriodField"><span>Month</span><select id="attendanceMonthSelect" aria-label="Attendance month">${months.map((m,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${attendanceMonth===String(i+1).padStart(2,"0")?"selected":""}>${m}</option>`).join("")}</select></label>
- <label class="attendancePeriodField"><span>Year</span><select id="attendanceYearSelect" aria-label="Attendance month year">${yearOptions.map(y=>`<option value="${y}" ${attendanceYear===y?"selected":""}>${y}</option>`).join("")}</select></label>
+ <label class="attendancePeriodField"><span>Month</span><select id="attendanceMonthSelect" aria-label="Attendance month">${attendancePeriod!=="month"?'<option value="" selected>—</option>':""}${months.map((m,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${attendancePeriod==="month"&&attendanceMonth===String(i+1).padStart(2,"0")?"selected":""}>${m}</option>`).join("")}</select></label>
+ <label class="attendancePeriodField"><span>Year</span><select id="attendanceYearSelect" aria-label="Attendance month year">${attendancePeriod!=="month"?'<option value="" selected>—</option>':""}${yearOptions.map(y=>`<option value="${y}" ${attendancePeriod==="month"&&attendanceYear===y?"selected":""}>${y}</option>`).join("")}</select></label>
  </div></div><div class="attendancePeriodCaption">Showing: ${periodLabel}</div>`;
  return `<section class="content top10Wrap">${filters}${shown.length?`<table class="top10Table" data-sort-column="${attendanceSortColumn}"><thead><tr>${labels.map(([key,label])=>`<th aria-sort="${attendanceSortColumn===key?(attendanceSortDirection==="asc"?"ascending":"descending"):"none"}"><button type="button" class="attendanceSortHeading${attendanceSortColumn===key?" selected":""}" data-attendance-sort="${key}" aria-label="Sort by ${key==="total"?"total attendance":key==="holdem"?"Hold Em":key==="omaha"?"Omaha":key==="tournaments"?"tournaments":"name"}${attendanceSortColumn===key?", currently "+(attendanceSortDirection==="asc"?"ascending":"descending"):""}">${label}<span class="attendanceSortArrow" aria-hidden="true">${attendanceSortColumn===key?(attendanceSortDirection==="asc"?"↑":"↓"):""}</span></button></th>`).join("")}</tr></thead><tbody>${shown.map(p=>`<tr><td><button class="top10PlayerName" data-top10-player="${esc(p.name)}" data-top10-player-id="${p.player_id??""}">${esc(p.name)}</button></td><td>${p.total}</td><td>${p.holdem}</td><td>${p.omaha}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No attended games for this period.</div>'}</section>`;
 }
