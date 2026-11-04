@@ -1102,7 +1102,7 @@ function calculateAttendanceForPeriod(){
   const a=gamesById.get(String(p.archive_id));if(!a)return;
   const g=a.game;
   if(!["Tournament","Hold Em","Omaha","Special Game"].includes(g))return;
-  const normalizedName=String(p.player_name||"").trim().toLowerCase().replace(/\\s+/g," ");
+  const normalizedName=String(p.player_name||"").trim().toLowerCase().replace(/\s+/g," ");
   const key=p.player_id!=null?`id:${p.player_id}`:`name:${normalizedName}`;
   if(!totals.has(key))totals.set(key,{name:p.player_name||"",player_id:p.player_id,holdem:0,omaha:0,tournaments:0,special:0,total:0,days:new Set()});
   const t=totals.get(key);
@@ -1116,7 +1116,7 @@ function calculateAttendanceForPeriod(){
 }
 function renderTop10Players(){
  const labels=[["name","Name"],["total","ATT"],["holdem","H"],["omaha","O"],["tournaments","T"]];
- const years=[...new Set(attendanceArchiveGames.map(a=>String(a.archive_date||"").slice(0,4)).filter(y=>/^\\d{4}$/.test(y)))].sort((a,b)=>b.localeCompare(a));
+ const years=[...new Set(attendanceArchiveGames.map(a=>String(a.archive_date||"").slice(0,4)).filter(y=>/^\d{4}$/.test(y)))].sort((a,b)=>b.localeCompare(a));
  const currentYear=String(new Date().getFullYear());
  const yearOptions=[...new Set([...years,currentYear])].sort((a,b)=>b.localeCompare(a));
  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
