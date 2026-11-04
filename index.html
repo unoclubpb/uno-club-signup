@@ -683,12 +683,12 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 .attendancePeriodField select{width:100%;min-width:0;min-height:41px;padding:6px 4px;border:1px solid #bfc9d8;border-radius:7px;background:#fff;color:#172235;font-size:clamp(12px,3.2vw,15px)}
 .attendancePeriodCaption{font-size:12px;text-align:center;color:#536071;margin:2px 0 10px}
 @media(max-width:380px){.attendancePeriodBar{gap:5px;grid-template-columns:minmax(0,1.12fr) minmax(0,2fr)}.attendanceMonthYearGroup{gap:4px;padding:2px}.attendancePeriodField select{padding:4px 2px;font-size:12px}.attendancePeriodField>span{font-size:10px}}
-</style>
+.tournamentTypesScreen .tournamentTypeFormActions{display:flex;gap:8px;align-items:stretch}.tournamentTypesScreen .tournamentTypeFormActions .tournamentTypeAddButton{flex:1;min-width:0}.tournamentTypesScreen .tournamentTypeCancelButton{margin-top:12px;padding:0 14px;border:2px solid #111;border-radius:9px;background:#fff;color:#111;font-weight:800;cursor:pointer}.tournamentTypesScreen .tournamentTypeEditButton{flex:none;min-height:42px;padding:0 10px;border:2px solid #1760be;border-radius:9px;background:#e8f2ff;color:#144c9a;font-weight:800;cursor:pointer}.tournamentTypesScreen .tournamentTypeOpen{min-width:0;flex:1;text-align:left}\n</style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.256";
+const APP_VERSION="102926.257";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -720,7 +720,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page=STAFF_MODE?"admin":TODO_MODE?"todo":"main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode=STAFF_MODE?"staff":"main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceArchiveRows=[],attendanceArchiveGames=[],attendancePeriod="all",attendanceMonth=String(new Date().getMonth()+1).padStart(2,"0"),attendanceYear=String(new Date().getFullYear()),attendanceSortColumn="name",attendanceSortDirection="asc",tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
+let adminMode=STAFF_MODE?"staff":"main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceArchiveRows=[],attendanceArchiveGames=[],attendancePeriod="all",attendanceMonth=String(new Date().getMonth()+1).padStart(2,"0"),attendanceYear=String(new Date().getFullYear()),attendanceSortColumn="name",attendanceSortDirection="asc",tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,tournamentTypeEditId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -1204,14 +1204,15 @@ function renderTournamentAddPage(){
 function renderTournamentTypesPage(){
  return `<section class="content tournamentTypesScreen">
   <form id="tournamentTypeForm" autocomplete="off">
-   <label for="tournamentTypeName" class="tournamentTypeLabel">New Tournament Type</label>
-   <input id="tournamentTypeName" maxlength="100" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Enter tournament name...">
+   <label for="tournamentTypeName" class="tournamentTypeLabel">${tournamentTypeEditId!=null?"Edit Tournament Type":"New Tournament Type"}</label>
+   <input id="tournamentTypeName" maxlength="100" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Enter tournament name..." value="${esc(tournamentTypeEditId!=null?(tournamentTypes.find(t=>String(t.id)===String(tournamentTypeEditId))?.name||""):"")}">
    ${error?`<p class="error">${esc(error)}</p>`:""}
-   <button class="add tournamentSaveButton tournamentTypeAddButton">+ Add Tournament Type</button>
+   <div class="tournamentTypeFormActions"><button class="add tournamentSaveButton tournamentTypeAddButton">${tournamentTypeEditId!=null?"Save Changes":"+ Add Tournament Type"}</button>${tournamentTypeEditId!=null?'<button type="button" id="cancelTournamentTypeEdit" class="tournamentTypeCancelButton">Cancel</button>':""}</div>
   </form>
   <div class="head"><h2>Saved Tournament Types</h2></div>
   <div class="list tournamentTypeList">${tournamentTypes.length?tournamentTypes.map(t=>`<div class="tournamentTypeRow">
    <button type="button" class="tournamentTypeOpen" data-open-type="${t.id}">${esc(t.name)}<span class="tournamentTypeChevron" aria-hidden="true">›</span></button>
+   <button type="button" class="tournamentTypeEditButton" data-edit-type="${t.id}" aria-label="Edit ${esc(t.name)}">Edit</button>
    <button type="button" class="tournamentDelete" data-delete-type="${t.id}" data-type-name="${esc(t.name)}" aria-label="Delete tournament type"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></svg></button>
   </div>`).join(""):'<div class="empty">No tournament types saved yet.</div>'}</div>
  </section>`;
@@ -1272,7 +1273,7 @@ function wireAdmin(){
   if(archiveGame&&adminMode!=="tournamentPast"){archiveGame=null;archives=[];render();return}
   if(adminMode==="tournamentTypeHistory"){adminMode="tournamentTypes";tournamentTypeViewId=null;render();return}
   if(adminMode==="tournamentAdd"){adminMode="tournamentUpcoming";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
-  if(adminMode==="tournamentUpcoming"||adminMode==="tournamentPast"||adminMode==="tournamentTypes"){adminMode="tournamentHistory";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
+  if(adminMode==="tournamentUpcoming"||adminMode==="tournamentPast"||adminMode==="tournamentTypes"){tournamentTypeEditId=null;adminMode="tournamentHistory";tournamentEditId=null;tournamentDraft=null;tournamentReturnToAdd=false;error="";render();return}
   if(adminMode==="staffHistory"){adminMode=staffHistoryId==null?"staff":"staffManage";staffHistoryId=null;error="";render();return}
    if(adminMode==="staffAdd"&&dayOffEditId){dayOffEditId=null;adminMode="staffUpcoming";error="";render();return}
    if(adminMode==="staffUpcoming"||adminMode==="staffAdd"||adminMode==="staffManage"){dayOffEditId=null;adminMode="staff";error="";render();return}
@@ -1362,14 +1363,19 @@ function wireAdmin(){
  const typeForm=document.querySelector("#tournamentTypeForm");
  if(typeForm)typeForm.onsubmit=async e=>{
   e.preventDefault();error="";
-  const saved=await saveTournamentTypeName(document.querySelector("#tournamentTypeName")?.value||"");
-  if(saved.saved!==true){error=saved.reason==="invalid_name"?"Enter a tournament type.":"Could not save that tournament type.";render();return}
-  await loadTournamentTypes();
+  const name=document.querySelector("#tournamentTypeName")?.value||"";
+  const saved=tournamentTypeEditId!=null
+   ?await sb.rpc("save_tournament_type",{p_name:String(name).trim(),p_id:Number(tournamentTypeEditId)}).then(r=>r.error?{saved:false,reason:"error"}:(unwrapRpcData(r.data)||{}))
+   :await saveTournamentTypeName(name);
+  if(saved.saved!==true){error=saved.reason==="invalid_name"?"Enter a tournament type.":saved.reason==="duplicate"?"Another tournament type already has that name.":"Could not save that tournament type.";const input=document.querySelector("#tournamentTypeName");if(input){const message=document.createElement("p");message.className="error";message.textContent=error;input.insertAdjacentElement("afterend",message)}return}
+  tournamentTypeEditId=null;await loadTournamentTypes();
   if(tournamentReturnToAdd){tournamentDraft={...(tournamentDraft||{}),typeId:String(saved.id)};tournamentReturnToAdd=false;adminMode="tournamentAdd";render();return}
   render();
  };
 
  document.querySelectorAll("[data-open-type]").forEach(b=>b.onclick=()=>{tournamentTypeViewId=Number(b.dataset.openType);adminMode="tournamentTypeHistory";render()});
+ document.querySelectorAll("[data-edit-type]").forEach(b=>b.onclick=()=>{tournamentTypeEditId=Number(b.dataset.editType);error="";render();document.querySelector("#tournamentTypeName")?.focus()});
+ const cancelTypeEdit=document.querySelector("#cancelTournamentTypeEdit");if(cancelTypeEdit)cancelTypeEdit.onclick=()=>{tournamentTypeEditId=null;error="";render()};
 
  document.querySelectorAll("[data-delete-type]").forEach(b=>b.onclick=async()=>{
   const name=b.dataset.typeName||"this tournament type";
