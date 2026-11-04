@@ -673,12 +673,22 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 .top10Wrap .top10Table[data-sort-column="holdem"] :is(th,td):nth-child(3),
 .top10Wrap .top10Table[data-sort-column="omaha"] :is(th,td):nth-child(4),
 .top10Wrap .top10Table[data-sort-column="tournaments"] :is(th,td):nth-child(5){background:#e8f2ff;color:#103c8b;font-weight:900}
+
+/* Compact, single-row attendance period controls. */
+.attendancePeriodBar{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,2fr);align-items:end;gap:8px;margin:0 0 6px}
+.attendanceMonthYearGroup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;min-width:0;padding:3px;border:1px solid #d4dce8;border-radius:9px}
+.attendanceMonthYearGroup.active{border-color:#1e5acb}
+.attendancePeriodField{display:flex;flex-direction:column;gap:4px;min-width:0}
+.attendancePeriodField>span{font-size:11px;font-weight:700;white-space:nowrap}
+.attendancePeriodField select{width:100%;min-width:0;min-height:41px;padding:6px 4px;border:1px solid #bfc9d8;border-radius:7px;background:#fff;color:#172235;font-size:clamp(12px,3.2vw,15px)}
+.attendancePeriodCaption{font-size:12px;text-align:center;color:#536071;margin:2px 0 10px}
+@media(max-width:380px){.attendancePeriodBar{gap:5px;grid-template-columns:minmax(0,1.12fr) minmax(0,2fr)}.attendanceMonthYearGroup{gap:4px;padding:2px}.attendancePeriodField select{padding:4px 2px;font-size:12px}.attendancePeriodField>span{font-size:10px}}
 </style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.254";
+const APP_VERSION="102926.255";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -710,7 +720,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page=STAFF_MODE?"admin":TODO_MODE?"todo":"main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode=STAFF_MODE?"staff":"main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceSortColumn="name",attendanceSortDirection="asc",tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
+let adminMode=STAFF_MODE?"staff":"main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceArchiveRows=[],attendanceArchiveGames=[],attendancePeriod="all",attendanceMonth=String(new Date().getMonth()+1).padStart(2,"0"),attendanceYear=String(new Date().getFullYear()),attendanceSortColumn="name",attendanceSortDirection="asc",tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -1075,14 +1085,24 @@ async function loadTop10Players(){
   sb.from("list_archive_players").select("archive_id,player_id,player_name").not("arrived_at","is",null),
   sb.from("list_archives").select("id,archive_date,game")
  ]);
- if(ap.error||ar.error){top10Players=[];error="Could not load Top 10 Players.";return}
- const gamesById=new Map((ar.data||[]).map(a=>[String(a.id),a]));
+ if(ap.error||ar.error){top10Players=[];attendanceArchiveRows=[];attendanceArchiveGames=[];error="Could not load Players by Attendance.";return}
+ attendanceArchiveRows=ap.data||[];
+ attendanceArchiveGames=ar.data||[];
+ calculateAttendanceForPeriod();
+}
+function calculateAttendanceForPeriod(){
+ const gamesById=new Map(attendanceArchiveGames.filter(a=>{
+  if(!a.archive_date)return false;
+  if(attendancePeriod==="all")return true;
+  if(attendancePeriod==="month")return a.archive_date.startsWith(attendanceYear+"-"+attendanceMonth);
+  return a.archive_date.startsWith(attendancePeriod+"-");
+ }).map(a=>[String(a.id),a]));
  const totals=new Map();
- (ap.data||[]).forEach(p=>{
-  const a=gamesById.get(String(p.archive_id));if(!a||!a.archive_date)return;
+ attendanceArchiveRows.forEach(p=>{
+  const a=gamesById.get(String(p.archive_id));if(!a)return;
   const g=a.game;
   if(!["Tournament","Hold Em","Omaha","Special Game"].includes(g))return;
-  const normalizedName=String(p.player_name||"").trim().toLowerCase().replace(/\s+/g," ");
+  const normalizedName=String(p.player_name||"").trim().toLowerCase().replace(/\\s+/g," ");
   const key=p.player_id!=null?`id:${p.player_id}`:`name:${normalizedName}`;
   if(!totals.has(key))totals.set(key,{name:p.player_name||"",player_id:p.player_id,holdem:0,omaha:0,tournaments:0,special:0,total:0,days:new Set()});
   const t=totals.get(key);
@@ -1092,17 +1112,27 @@ async function loadTop10Players(){
   else t.special++;
   t.days.add(a.archive_date);
  });
- top10Players=[...totals.values()].map(t=>({...t,total:t.days.size,days:undefined,name:(directory.find(d=>t.player_id!=null&&String(d.player_id)===String(t.player_id))||{}).player_name||t.name}))
-  .sort((a,b)=>a.name.localeCompare(b.name));
+ top10Players=[...totals.values()].map(t=>({...t,total:t.days.size,days:undefined,name:(directory.find(d=>t.player_id!=null&&String(d.player_id)===String(t.player_id))||{}).player_name||t.name}));
 }
 function renderTop10Players(){
  const labels=[["name","Name"],["total","ATT"],["holdem","H"],["omaha","O"],["tournaments","T"]];
+ const years=[...new Set(attendanceArchiveGames.map(a=>String(a.archive_date||"").slice(0,4)).filter(y=>/^\\d{4}$/.test(y)))].sort((a,b)=>b.localeCompare(a));
+ const currentYear=String(new Date().getFullYear());
+ const yearOptions=[...new Set([...years,currentYear])].sort((a,b)=>b.localeCompare(a));
+ const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+ const periodLabel=attendancePeriod==="all"?"All Time":attendancePeriod==="month"?months[Number(attendanceMonth)-1]+" "+attendanceYear:attendancePeriod;
  const shown=[...top10Players].sort((a,b)=>{
   if(attendanceSortColumn==="name")return (attendanceSortDirection==="asc"?1:-1)*a.name.localeCompare(b.name,undefined,{sensitivity:"base",numeric:true});
   const diff=(Number(a[attendanceSortColumn])||0)-(Number(b[attendanceSortColumn])||0);
   return (attendanceSortDirection==="asc"?diff:-diff)||a.name.localeCompare(b.name,undefined,{sensitivity:"base",numeric:true});
  });
- return `<section class="content top10Wrap">${shown.length?`<table class="top10Table" data-sort-column="${attendanceSortColumn}"><thead><tr>${labels.map(([key,label])=>`<th aria-sort="${attendanceSortColumn===key?(attendanceSortDirection==="asc"?"ascending":"descending"):"none"}"><button type="button" class="attendanceSortHeading${attendanceSortColumn===key?" selected":""}" data-attendance-sort="${key}" aria-label="Sort by ${key==="total"?"total attendance":key==="holdem"?"Hold Em":key==="omaha"?"Omaha":key==="tournaments"?"tournaments":"name"}${attendanceSortColumn===key?", currently "+(attendanceSortDirection==="asc"?"ascending":"descending"):""}">${label}<span class="attendanceSortArrow" aria-hidden="true">${attendanceSortColumn===key?(attendanceSortDirection==="asc"?"↑":"↓"):""}</span></button></th>`).join("")}</tr></thead><tbody>${shown.map(p=>`<tr><td><button class="top10PlayerName" data-top10-player="${esc(p.name)}" data-top10-player-id="${p.player_id??""}">${esc(p.name)}</button></td><td>${p.total}</td><td>${p.holdem}</td><td>${p.omaha}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No archived game data yet.</div>'}</section>`;
+ const filters=`<div class="attendancePeriodBar" aria-label="Attendance date filters">
+ <label class="attendancePeriodField"><span>All Time / Year</span><select id="attendancePeriodSelect" aria-label="All Time or annual attendance">${attendancePeriod==="month"?'<option value="month" selected>Month / Year</option>':""}<option value="all" ${attendancePeriod==="all"?"selected":""}>All Time</option>${years.map(y=>`<option value="${y}" ${attendancePeriod===y?"selected":""}>${y}</option>`).join("")}</select></label>
+ <div class="attendanceMonthYearGroup ${attendancePeriod==="month"?"active":""}">
+ <label class="attendancePeriodField"><span>Month</span><select id="attendanceMonthSelect" aria-label="Attendance month">${months.map((m,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${attendanceMonth===String(i+1).padStart(2,"0")?"selected":""}>${m}</option>`).join("")}</select></label>
+ <label class="attendancePeriodField"><span>Year</span><select id="attendanceYearSelect" aria-label="Attendance month year">${yearOptions.map(y=>`<option value="${y}" ${attendanceYear===y?"selected":""}>${y}</option>`).join("")}</select></label>
+ </div></div><div class="attendancePeriodCaption">Showing: ${periodLabel}</div>`;
+ return `<section class="content top10Wrap">${filters}${shown.length?`<table class="top10Table" data-sort-column="${attendanceSortColumn}"><thead><tr>${labels.map(([key,label])=>`<th aria-sort="${attendanceSortColumn===key?(attendanceSortDirection==="asc"?"ascending":"descending"):"none"}"><button type="button" class="attendanceSortHeading${attendanceSortColumn===key?" selected":""}" data-attendance-sort="${key}" aria-label="Sort by ${key==="total"?"total attendance":key==="holdem"?"Hold Em":key==="omaha"?"Omaha":key==="tournaments"?"tournaments":"name"}${attendanceSortColumn===key?", currently "+(attendanceSortDirection==="asc"?"ascending":"descending"):""}">${label}<span class="attendanceSortArrow" aria-hidden="true">${attendanceSortColumn===key?(attendanceSortDirection==="asc"?"↑":"↓"):""}</span></button></th>`).join("")}</tr></thead><tbody>${shown.map(p=>`<tr><td><button class="top10PlayerName" data-top10-player="${esc(p.name)}" data-top10-player-id="${p.player_id??""}">${esc(p.name)}</button></td><td>${p.total}</td><td>${p.holdem}</td><td>${p.omaha}</td><td>${p.tournaments}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No attended games for this period.</div>'}</section>`;
 }
 
 function unwrapRpcData(data){return Array.isArray(data)&&data.length===1&&typeof data[0]==="object"&&!Array.isArray(data[0])?data[0]:data}
@@ -1254,7 +1284,7 @@ function wireAdmin(){
  const pp=document.querySelector("#adminPlayers");if(pp)pp.onclick=()=>{page="playerdb";playerDbFromAdmin=true;playerDbFromTop10=false;playerDbMode="list";playerDbSearch="";playerDbDraftName="";playerHistoryMode=false;render()};
  const tp=document.querySelector("#thermostatPassword");if(tp)tp.onclick=()=>{if(tp.dataset.revealed)return;tp.dataset.revealed="1";const originalMarkup=tp.innerHTML;tp.classList.add("thermostatCodeRevealed");tp.innerHTML=`<span class="thermostatCodeDigits">2673</span>`;setTimeout(()=>{tp.innerHTML=originalMarkup;tp.classList.remove("thermostatCodeRevealed");delete tp.dataset.revealed},10000)};
  const aa=document.querySelector("#adminArchives");if(aa)aa.onclick=()=>{adminMode="archives";archiveGame=null;archiveViewId=null;archives=[];archivePlayers=[];render()};
- const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";attendanceSortColumn="name";attendanceSortDirection="asc";await loadTop10Players();render()};
+ const tt=document.querySelector("#adminTop10");if(tt)tt.onclick=async()=>{adminMode="top10";attendancePeriod="all";attendanceMonth=String(new Date().getMonth()+1).padStart(2,"0");attendanceYear=String(new Date().getFullYear());attendanceSortColumn="name";attendanceSortDirection="asc";await loadTop10Players();render()};
  const th=document.querySelector("#adminTournamentHistory");if(th)th.onclick=async()=>{error="";adminMode="tournamentHistory";await loadTournamentData();render()};
   const ss=document.querySelector("#adminStaffSchedule");if(ss)ss.onclick=async()=>{error="";await loadStaffData();adminMode="staff";render()};const su=document.querySelector("#staffUpcoming");if(su)su.onclick=()=>{error="";adminMode="staffUpcoming";render()};
   const sa=document.querySelector("#staffAddDayOff");if(sa)sa.onclick=()=>{error="";dayOffSaved=false;dayOffEditId=null;adminMode="staffAdd";render()};
@@ -1378,6 +1408,12 @@ function wireAdmin(){
   archiveGame="Tournament";archives=rows;archiveViewId=a.id;
   await openArchive(a.id);
  });
+ const attendancePeriodSelect=document.querySelector("#attendancePeriodSelect");
+ if(attendancePeriodSelect)attendancePeriodSelect.onchange=()=>{attendancePeriod=attendancePeriodSelect.value;calculateAttendanceForPeriod();render()};
+ const attendanceMonthSelect=document.querySelector("#attendanceMonthSelect");
+ if(attendanceMonthSelect)attendanceMonthSelect.onchange=()=>{attendanceMonth=attendanceMonthSelect.value;attendancePeriod="month";calculateAttendanceForPeriod();render()};
+ const attendanceYearSelect=document.querySelector("#attendanceYearSelect");
+ if(attendanceYearSelect)attendanceYearSelect.onchange=()=>{attendanceYear=attendanceYearSelect.value;attendancePeriod="month";calculateAttendanceForPeriod();render()};
  document.querySelectorAll("[data-attendance-sort]").forEach(b=>b.onclick=()=>{const column=b.dataset.attendanceSort;if(attendanceSortColumn===column)attendanceSortDirection=attendanceSortDirection==="asc"?"desc":"asc";else{attendanceSortColumn=column;attendanceSortDirection=column==="name"?"asc":"desc"}render()});
  document.querySelectorAll("[data-top10-player]").forEach(b=>b.onclick=async()=>{page="playerdb";playerDbFromAdmin=true;playerDbFromTop10=true;playerDbMode="edit";playerDbEditName=(directory.find(p=>String(p.player_id)===String(b.dataset.top10PlayerId))||{}).player_name||b.dataset.top10Player;playerHistoryMode=false;playerHistoryView="menu";playerLastPlayed=null;await Promise.all([loadPlayerLastPlayed(playerDbEditName),loadPlayerHistory(playerDbEditName)]);render()});
  document.querySelectorAll("[data-agame]").forEach(b=>b.onclick=async()=>{archiveGame=b.dataset.agame;await loadArchives(archiveGame);render()});
