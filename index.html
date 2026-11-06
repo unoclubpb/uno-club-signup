@@ -688,7 +688,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.259";
+const APP_VERSION="102926.260";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -1044,7 +1044,7 @@ function renderTodoHistory(t){
  const history=Array.isArray(t.edit_history)?t.edit_history:[];
  if(!history.length)return "";
  const expanded=String(todoHistoryOpen)===String(t.id);
- return `<div class="todoHistoryWrap"><button type="button" class="todoEditedButton" data-todo-history="${t.id}" aria-expanded="${expanded}">Edited${expanded?" ▴":" ▾"}</button>${expanded?`<div class="todoHistoryPanel"><strong>Edit History</strong><div class="todoHistoryCurrent"><small>Current version</small><div>${esc(t.note)}</div></div>${[...history].reverse().map((h,i)=>`<div class="todoHistoryVersion"><small>Previous version ${history.length-i} — Changed ${formatDateTime(h.edited_at)}${h.edited_by?" by "+esc(h.edited_by):""}</small><div>${esc(h.note)}</div></div>`).join("")}</div>`:""}</div>`;
+ return `<div class="todoHistoryWrap"><button type="button" class="todoEditedButton" data-todo-history="${t.id}" aria-expanded="${expanded}">Edited${expanded?" ▴":" ▾"}</button>${expanded?`<div class="todoHistoryPanel"><strong>Edit History</strong>${[...history].reverse().map((h,i)=>`<div class="todoHistoryVersion"><small>Previous version ${history.length-i} — Changed ${formatDateTime(h.edited_at)}${h.edited_by?" by "+esc(h.edited_by):""}</small><div>${esc(h.note)}</div></div>`).join("")}</div>`:""}</div>`;
 }
 function renderTodoPage(){
  if(!getTodoUser())return `<section class="content"><form id="todoIdentityForm" autocomplete="off"><div class="fieldwrap"><div>Your Name</div><input id="todoIdentityName" maxlength="60" autocomplete="name" autocapitalize="words" required placeholder="Enter your name"></div><button class="add todoAddButton" type="submit">Continue to To-Do List</button></form>${error?`<p class="error">${esc(error)}</p>`:""}</section>`;
