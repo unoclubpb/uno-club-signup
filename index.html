@@ -683,12 +683,12 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 .attendancePeriodField select{width:100%;min-width:0;min-height:41px;padding:6px 4px;border:1px solid #bfc9d8;border-radius:7px;background:#fff;color:#172235;font-size:clamp(12px,3.2vw,15px)}
 .attendancePeriodCaption{font-size:12px;text-align:center;color:#536071;margin:2px 0 10px}
 @media(max-width:380px){.attendancePeriodBar{gap:5px;grid-template-columns:minmax(0,1.12fr) minmax(0,2fr)}.attendanceMonthYearGroup{gap:4px;padding:2px}.attendancePeriodField select{padding:4px 2px;font-size:12px}.attendancePeriodField>span{font-size:10px}}
-.tournamentTypesScreen .tournamentTypeFormActions{display:flex;gap:8px;align-items:stretch}.tournamentTypesScreen .tournamentTypeFormActions .tournamentTypeAddButton{flex:1;min-width:0}.tournamentTypesScreen .tournamentTypeCancelButton{margin-top:12px;padding:0 14px;border:2px solid #111;border-radius:9px;background:#fff;color:#111;font-weight:800;cursor:pointer}.tournamentTypesScreen .tournamentTypeEditButton{flex:none;min-height:42px;padding:0 10px;border:2px solid #1760be;border-radius:9px;background:#e8f2ff;color:#144c9a;font-weight:800;cursor:pointer}.tournamentTypesScreen .tournamentTypeOpen{min-width:0;flex:1;text-align:left}\n</style>
+.tournamentTypesScreen .tournamentTypeFormActions{display:flex;gap:8px;align-items:stretch}.tournamentTypesScreen .tournamentTypeFormActions .tournamentTypeAddButton{flex:1;min-width:0}.tournamentTypesScreen .tournamentTypeCancelButton{margin-top:12px;padding:0 14px;border:2px solid #111;border-radius:9px;background:#fff;color:#111;font-weight:800;cursor:pointer}.tournamentTypesScreen .tournamentTypeEditButton{flex:none;min-height:42px;padding:0 10px;border:2px solid #1760be;border-radius:9px;background:#e8f2ff;color:#144c9a;font-weight:800;cursor:pointer}.tournamentTypesScreen .tournamentTypeOpen{min-width:0;flex:1;text-align:left}\n.todoHistoryWrap{margin-top:4px}.todoEditedButton{border:1px solid #1e5acb;background:#e8f2ff;color:#144c9a;border-radius:7px;padding:4px 9px;font-size:12px;font-weight:800;cursor:pointer}.todoHistoryPanel{margin-top:7px;border:1px solid #c9d5e6;border-radius:9px;background:#f7faff;padding:10px;display:grid;gap:9px;font-size:13px;overflow-wrap:anywhere}.todoHistoryPanel strong{color:#123b80}.todoHistoryPanel small{display:block;font-size:11px;color:#52627a;margin-bottom:3px}.todoHistoryVersion{border-top:1px solid #d9e1ed;padding-top:8px}.todoHistoryCurrent{font-weight:700}.todoHistoryPanel div{white-space:pre-wrap}\n</style>
 </head>
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.258";
+const APP_VERSION="102926.259";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -718,7 +718,7 @@ function arrivesAfter715(note){
 const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 
 let day=null,game=null,page=STAFF_MODE?"admin":TODO_MODE?"todo":"main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
-let edit=null,todoEdit=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
+let edit=null,todoEdit=null,todoHistoryOpen=null,todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
 let adminMode=STAFF_MODE?"staff":"main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceArchiveRows=[],attendanceArchiveGames=[],attendancePeriod="all",attendanceMonth=String(new Date().getMonth()+1).padStart(2,"0"),attendanceYear=String(new Date().getFullYear()),attendanceSortColumn="name",attendanceSortDirection="asc",tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,tournamentTypeEditId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
 
@@ -1040,14 +1040,20 @@ function showChop(){
  const b=document.querySelector("#back");if(b)b.onclick=render;
 }
 function getTodoUser(){try{return (localStorage.getItem("unoClubTodoUser")||"").trim()}catch(e){return ""}}
+function renderTodoHistory(t){
+ const history=Array.isArray(t.edit_history)?t.edit_history:[];
+ if(!history.length)return "";
+ const expanded=String(todoHistoryOpen)===String(t.id);
+ return `<div class="todoHistoryWrap"><button type="button" class="todoEditedButton" data-todo-history="${t.id}" aria-expanded="${expanded}">Edited${expanded?" ▴":" ▾"}</button>${expanded?`<div class="todoHistoryPanel"><strong>Edit History</strong><div class="todoHistoryCurrent"><small>Current version</small><div>${esc(t.note)}</div></div>${[...history].reverse().map((h,i)=>`<div class="todoHistoryVersion"><small>Previous version ${history.length-i} — Changed ${formatDateTime(h.edited_at)}${h.edited_by?" by "+esc(h.edited_by):""}</small><div>${esc(h.note)}</div></div>`).join("")}</div>`:""}</div>`;
+}
 function renderTodoPage(){
  if(!getTodoUser())return `<section class="content"><form id="todoIdentityForm" autocomplete="off"><div class="fieldwrap"><div>Your Name</div><input id="todoIdentityName" maxlength="60" autocomplete="name" autocapitalize="words" required placeholder="Enter your name"></div><button class="add todoAddButton" type="submit">Continue to To-Do List</button></form>${error?`<p class="error">${esc(error)}</p>`:""}</section>`;
  const active=todos.filter(t=>!t.completed_at).sort((a,b)=>todoNewestFirst?new Date(b.created_at)-new Date(a.created_at):new Date(a.created_at)-new Date(b.created_at));
  const completed=todos.filter(t=>t.completed_at).sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at)).slice(0,25);
  return `<section class="content"><form id="todoForm" autocomplete="off"><div class="fieldwrap"><div>To-Do Item</div><textarea id="unoEntryE" maxlength="500" autocomplete="new-password"></textarea></div><button class="add todoAddButton">Add To-Do Item</button></form>
  ${error?`<p class="error">${esc(error)}</p>`:""}<div class="todoSectionTitle"><div class="todoTitleRow"><h2>To-Do</h2><button type="button" class="todoSortToggle" id="todoSortToggle" aria-label="Reverse To-Do sort order" title="${todoNewestFirst?"Newest first":"Oldest first"}">${todoNewestFirst?"↓ Sort: Newest First":"↑ Sort: Oldest First"}</button></div><span class="count">${countLabel(active.length,"Item","Items")}</span></div><div class="list">
- ${!active.length?'<div class="empty">Nothing currently needs to be done.</div>':active.map(t=>`<div class="todoRow"><div class="todoInfo">${String(todoEdit)===String(t.id)?`<div class="todoEditor"><textarea id="unoEntryF">${esc(t.note)}</textarea><div class="todoEditButtons"><button class="save" data-todo-save="${t.id}">Save</button><button class="cancel" id="todoEditCancel">Cancel</button></div></div>`:`<button class="todoEditable" data-todo-edit="${t.id}">${esc(t.note)}</button>`}<div class="todoTime">Entered: ${formatDateTime(t.created_at)}${t.entered_by?` — By: ${esc(t.entered_by)}`:""}</div></div><button class="todoCompleteButton" data-complete="${t.id}" aria-label="Mark completed">✓</button><button class="del" data-delete-active="${t.id}" aria-label="Delete without completing"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></svg></button></div>`).join("")}</div>
- <div class="todoSectionTitle"><h2>Completed</h2><span class="count">Most recent 25</span></div><div class="list">${!completed.length?'<div class="empty">No completed items yet.</div>':completed.map(t=>`<div class="todoRow completedRow"><div class="todoInfo"><span class="completedBadge">COMPLETED</span><div class="completedText">${esc(t.note)}</div><div class="todoTime">Entered: ${formatDateTime(t.created_at)}${t.entered_by?` — By: ${esc(t.entered_by)}`:""}</div><div class="todoTime">Completed: ${formatDateTime(t.completed_at)}</div>${t.completed_by?`<div class="todoTime">Completed by: ${esc(t.completed_by)}</div>`:""}</div><button class="del" data-delete-completed="${t.id}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></svg></button></div>`).join("")}</div></section>`;
+ ${!active.length?'<div class="empty">Nothing currently needs to be done.</div>':active.map(t=>`<div class="todoRow"><div class="todoInfo">${String(todoEdit)===String(t.id)?`<div class="todoEditor"><textarea id="unoEntryF">${esc(t.note)}</textarea><div class="todoEditButtons"><button class="save" data-todo-save="${t.id}">Save</button><button class="cancel" id="todoEditCancel">Cancel</button></div></div>`:`<button class="todoEditable" data-todo-edit="${t.id}">${esc(t.note)}</button>`}<div class="todoTime">Entered: ${formatDateTime(t.created_at)}${t.entered_by?` — By: ${esc(t.entered_by)}`:""}</div>${renderTodoHistory(t)}</div><button class="todoCompleteButton" data-complete="${t.id}" aria-label="Mark completed">✓</button><button class="del" data-delete-active="${t.id}" aria-label="Delete without completing"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></svg></button></div>`).join("")}</div>
+ <div class="todoSectionTitle"><h2>Completed</h2><span class="count">Most recent 25</span></div><div class="list">${!completed.length?'<div class="empty">No completed items yet.</div>':completed.map(t=>`<div class="todoRow completedRow"><div class="todoInfo"><span class="completedBadge">COMPLETED</span><div class="completedText">${esc(t.note)}</div><div class="todoTime">Entered: ${formatDateTime(t.created_at)}${t.entered_by?` — By: ${esc(t.entered_by)}`:""}</div><div class="todoTime">Completed: ${formatDateTime(t.completed_at)}</div>${t.completed_by?`<div class="todoTime">Completed by: ${esc(t.completed_by)}</div>`:""}${renderTodoHistory(t)}</div><button class="del" data-delete-completed="${t.id}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></svg></button></div>`).join("")}</div></section>`;
 }
 
 
@@ -1707,6 +1713,7 @@ function wireTodo(){
  document.querySelectorAll("[data-complete]").forEach(b=>b.onclick=()=>completeTodo(b.dataset.complete));
  document.querySelectorAll("[data-delete-active]").forEach(b=>b.onclick=()=>deleteActiveTodo(b.dataset.deleteActive));
  document.querySelectorAll("[data-todo-edit]").forEach(b=>b.onclick=()=>{todoEdit=b.dataset.todoEdit;render()});
+ document.querySelectorAll("[data-todo-history]").forEach(b=>b.onclick=()=>{todoHistoryOpen=String(todoHistoryOpen)===String(b.dataset.todoHistory)?null:b.dataset.todoHistory;render()});
  document.querySelectorAll("[data-todo-save]").forEach(b=>b.onclick=()=>saveTodoEdit(b.dataset.todoSave));
  const c=document.querySelector("#todoEditCancel");if(c)c.onclick=()=>{todoEdit=null;render()};
  document.querySelectorAll("[data-delete-completed]").forEach(b=>b.onclick=()=>deleteCompletedTodo(b.dataset.deleteCompleted));
@@ -1887,7 +1894,20 @@ async function save(id){
  players=players.map(x=>String(x.id)===String(id)?r.data:x);await touchList();edit=null;error="";render()
 }
 async function addTodo(e){e.preventDefault();const note=document.querySelector("#unoEntryE").value.trim();if(!note)return;const enteredBy=getTodoUser();if(!enteredBy){error="Please enter your name first.";render();return}const r=await sb.from("todo_items").insert({note,entered_by:enteredBy}).select().single();if(r.error)error="Could not add the To-Do item.";else todos.push(r.data);render()}
-async function saveTodoEdit(id){const note=document.querySelector("#unoEntryF").value.trim();if(!note){error="To-Do item cannot be blank.";render();return}const r=await sb.from("todo_items").update({note}).eq("id",id).is("completed_at",null).select().single();if(r.error)error="Could not save the To-Do item.";else{todos=todos.map(t=>String(t.id)===String(id)?r.data:t);todoEdit=null}render()}
+async function saveTodoEdit(id){
+ const note=document.querySelector("#unoEntryF")?.value.trim();
+ if(!note){error="To-Do item cannot be blank.";render();return}
+ const existing=todos.find(t=>String(t.id)===String(id));
+ if(!existing)return;
+ if(note===existing.note){todoEdit=null;render();return}
+ const editedBy=getTodoUser();
+ if(!editedBy){error="Please enter your name before editing.";render();return}
+ const r=await sb.from("todo_items").update({note,last_edited_by:editedBy}).eq("id",id).eq("note",existing.note).is("completed_at",null).select().single();
+ if(r.error)error="Could not save the To-Do item.";
+ else if(!r.data){error="This item was changed elsewhere. Reload the list before editing again.";todoEdit=null;}
+ else{todos=todos.map(t=>String(t.id)===String(id)?r.data:t);todoEdit=null;todoHistoryOpen=String(id)}
+ render();
+}
 async function completeTodo(id){const item=todos.find(t=>String(t.id)===String(id));const completedBy=getTodoUser();if(!completedBy){error="Please enter your name first.";render();return}if(!item||!confirm(`Mark this item completed?\n\n${item.note}`))return;const r=await sb.from("todo_items").update({completed_at:new Date().toISOString(),completed_by:completedBy}).eq("id",id).select().single();if(r.error)error="Could not complete that item.";else todos=todos.map(t=>String(t.id)===String(id)?r.data:t);await trimCompletedTodos();render()}
 async function deleteActiveTodo(id){const item=todos.find(t=>String(t.id)===String(id));if(!item||!confirm(`Are you sure you want to delete this item without marking it completed?\n\n${item.note}`))return;const r=await sb.from("todo_items").delete().eq("id",id).is("completed_at",null);if(r.error)error="Could not delete that To-Do item.";else todos=todos.filter(t=>String(t.id)!==String(id));render()}
 async function deleteCompletedTodo(id){const item=todos.find(t=>String(t.id)===String(id));if(!item||!confirm(`Permanently delete this completed item?\n\n${item.note}`))return;const r=await sb.from("todo_items").delete().eq("id",id).not("completed_at","is",null);if(r.error)error="Could not delete that completed item.";else todos=todos.filter(t=>String(t.id)!==String(id));render()}
