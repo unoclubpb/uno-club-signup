@@ -701,7 +701,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.263";
+const APP_VERSION="102926.264";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -733,7 +733,7 @@ const late=n=>/\b(?:late|later)\b/i.test(n||"")||arrivesAfter715(n);
 let day=null,game=null,page=STAFF_MODE?"admin":TODO_MODE?"todo":"main",players=[],todos=[],specialSettings=null,listUpdates=[],directory=[];
 let edit=null,todoEdit=null,todoHistoryOpen=null,todoCompletedOpen=false,todoCompletedMode="recent",todoCompletedTerm="",todoCompletedAuthor="",todoCompletedFrom="",todoCompletedTo="",todoNewestFirst=false,specialEdit=false,error="",addPlayerDraft=null,pendingDelete=null,deleteTimer=null;
 let playerDbMode="list",playerDbEditName=null,playerDbSearch="",playerDbDraftName="";
-let adminMode=STAFF_MODE?"staff":"main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceArchiveRows=[],attendanceArchiveGames=[],attendancePeriod="all",attendanceMonth=String(new Date().getMonth()+1).padStart(2,"0"),attendanceYear=String(new Date().getFullYear()),attendanceSortColumn="name",attendanceSortDirection="asc",tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,tournamentTypeEditId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null,tournamentState={rebuys_over:false,in_money:false,bust_sequence:[],chop_saved:false,chop_player_ids:[],chop_points_each:null},tournamentUndoConfirmed=false;
+let adminMode=STAFF_MODE?"staff":"main",archiveGame=null,archiveViewId=null,archives=[],archivePlayers=[],archiveCounts={},archiveYear="all",archiveSort="newest",top10Players=[],attendanceArchiveRows=[],attendanceArchiveGames=[],attendancePeriod="all",attendanceMonth=String(new Date().getMonth()+1).padStart(2,"0"),attendanceYear=String(new Date().getFullYear()),attendanceSortColumn="name",attendanceSortDirection="asc",tournamentTypes=[],tournamentHistory=[],tournamentEditId=null,tournamentDraft=null,tournamentReturnToAdd=false,tournamentTypeViewId=null,tournamentTypeEditId=null,playerDbFromAdmin=false,playerDbFromTop10=false,playerDbFromArchive=false,playerHistoryMode=false,playerHistoryView="menu",playerHistory=[],playerHistoryRows=[],playerHistoryArchiveId=null,playerHistoryArchivePlayers=[],playerLastPlayed=null,staffMembers=[],staffDaysOff=[],staffHistoryId=null,dayOffSaved=false,dayOffEditId=null;
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const formatPlayerName=s=>String(s||"").trim().toLowerCase().replace(/\b([a-z])/g,c=>c.toUpperCase());
@@ -798,14 +798,13 @@ async function loadAllTodoItems(){
  }
 }
 async function load(){
- const [pr,tr,sr,ur,dr,thr,tsr]=await Promise.all([
+ const [pr,tr,sr,ur,dr,thr]=await Promise.all([
   sb.from("signup_players").select("*").order("created_at").order("id"),
   loadAllTodoItems(),
   sb.from("special_game_settings").select("*").eq("id",1).maybeSingle(),
   sb.from("list_updates").select("*"),
   sb.from("player_directory").select("*").order("player_name"),
-  sb.rpc("get_tournament_history"),
-  sb.from("tournament_live_state").select("*").eq("id",1).maybeSingle()
+  sb.rpc("get_tournament_history")
  ]);
  if(pr.error)error="Could not load the player list.";else players=pr.data||[];
  if(tr.error)error="Could not load the To-Do list.";else todos=tr.data||[];
@@ -813,7 +812,6 @@ async function load(){
  listUpdates=ur.error?[]:(ur.data||[]);
  directory=dr.error?[]:(dr.data||[]);
  if(!thr.error)tournamentHistory=Array.isArray(thr.data)?thr.data:(thr.data?[thr.data]:[]);
- if(!tsr.error&&tsr.data)tournamentState=tsr.data;
   await loadStaffData();
  if(STAFF_MODE){page="admin";adminMode="staff"}else if(TODO_MODE){page="todo"}render();
 }
@@ -968,9 +966,7 @@ function renderSpecialPage(){
 }
 function renderPlayerPage(isSpecial=false){
  const sh=shown(),regular=sh.filter(p=>!p.alt&&!p.isLate),alts=sh.filter(p=>p.alt),lates=sh.filter(p=>p.isLate),rc=regular.length,seatLimit=maxPreferredSeat(game),lateMode=!isSpecial&&isLateArrivalTime(),attendance=attendanceFor(day,game);
- if(game==="Tournament"&&tournamentState.rebuys_over)return renderTournamentFinish();
- const now=new Date(),atlantaTime=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"long",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(now),timePart=k=>atlantaTime.find(p=>p.type===k)?.value,showRebuys=game==="Tournament"&&day==="Wednesday"&&timePart("weekday")==="Wednesday"&&(Number(timePart("hour"))*60+Number(timePart("minute"))>=21*60+30);
- return `<section class="content">${showRebuys?'<button class="big" style="width:100%;background:#c62828;color:#fff;margin-bottom:1rem" id="rebuysOverButton">Are rebuys over?</button>':""}
+ return `<section class="content">
  ${isSpecial?(specialEdit?specialSettingsForm(true):`<div class="specialInfo"><button class="specialNameEdit" id="specialNameEdit">${esc(specialSettings.game_name)}</button> · ${specialSettings.total_seats} Seats</div>`):""}
  <form id="form" autocomplete="off">
  <div class="fieldwrap"><div>Player Name</div><input id="unoEntryA" autocomplete="new-password" autocorrect="off" autocapitalize="words" spellcheck="false"><div id="nameSuggestions" class="suggestions"></div></div>
@@ -988,80 +984,6 @@ function renderPlayerPage(isSpecial=false){
  </div><button class="arrivalCheck ${p.arrived||p.isLate?"checked":""}" data-arrived="${p.id}" aria-label="${p.arrived||p.isLate?"Mark expected":"Mark arrived"}">✓</button><button class="del" data-del="${p.id}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></svg></button></div>`).join("")}</div></section>
 `;
 }
-function ordinal(n){const v=n%100;return n+((v>=11&&v<=13)?"th":n%10===1?"st":n%10===2?"nd":n%10===3?"rd":"th")}
-function tournamentRemaining(){return current().filter(p=>p.tournament_active!==false&&!p.tournament_place).sort((a,b)=>currentPlayerName(a).localeCompare(currentPlayerName(b)))}
-function tournamentPoints(place,outright=false){if(place<1||place>9)return 1;const base=11-place;return place===1&&outright?base+2:base}
-function tournamentBustSequence(){return Array.isArray(tournamentState.bust_sequence)?tournamentState.bust_sequence:[]}
-function renderTournamentFinish(){
- const active=tournamentRemaining(),placed=current().filter(p=>p.tournament_place).sort((a,b)=>a.tournament_place-b.tournament_place),seq=tournamentBustSequence();
- if(tournamentState.chop_saved){
-  const ids=(tournamentState.chop_player_ids||[]).map(String),choppers=current().filter(p=>ids.includes(String(p.id))),each=Number(tournamentState.chop_points_each||0),total=each*choppers.length;
-  return '<section class="content"><h2 style="text-align:center">Tournament Finished</h2><div class="list">'+choppers.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+each.toFixed(2)+'</strong></div>').join('')+'</div><p style="text-align:center;font-weight:900;margin-top:1.25rem">Total Points Available: '+total.toFixed(2)+'</p><p style="text-align:center;font-weight:900">Each Player Receives: '+each.toFixed(2)+'</p><p style="text-align:center">Tournament complete. Results will remain available until the scheduled archive.</p></section>';
- }
- return '<section class="content"><div style="display:flex;gap:.55rem;justify-content:center;margin-bottom:.8rem">'+(seq.length?'<button class="clear" id="undoBustButton">Undo Last Bust Out</button>':'')+'</div>'+(active.length===9?'<p style="text-align:center;font-weight:900">Final Table — 9 Players</p>':'')+(error?'<p class="error">'+esc(error)+'</p>':'')+'<div class="list">'+(active.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><button class="del" style="width:auto;padding:.55rem .75rem" data-bust="'+p.id+'">Bust Out</button></div>').join('')||'<div class="empty">No players remaining.</div>')+placed.map(p=>{return '<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+ordinal(p.tournament_place)+' Place</strong></div>'}).join('')+'</div></section>'
-}
-async function confirmRebuysOver(){
- if(!confirm("Are you sure rebuys are over?"))return;
- const missing=current().filter(p=>p.arrived!==true&&p.is_late!==true);
- if(missing.length){error="All players need to be marked as arrived or removed if they did not show up.";render();return}
- const ids=current().map(p=>p.id);
- if(ids.length){const pr=await sb.from("signup_players").update({tournament_active:true,tournament_place:null}).in("id",ids);if(pr.error){error="Could not start tournament results.";render();return}players=players.map(p=>ids.includes(p.id)?{...p,tournament_active:true,tournament_place:null}:p)}
- const r=await sb.from("tournament_live_state").update({rebuys_over:true,in_money:false,bust_sequence:[],updated_at:new Date().toISOString()}).eq("id",1).select().single();
- if(r.error){error="Could not start tournament results.";render();return}tournamentState=r.data;tournamentUndoConfirmed=false;error="";render()
-}
-async function bustTournamentPlayer(id){
- const p=players.find(x=>String(x.id)===String(id));if(!p)return;
- const remaining=tournamentRemaining(),place=remaining.length<=9?remaining.length:null;
- const msg=place?"Are you sure "+currentPlayerName(p)+" finished in "+ordinal(place)+" place?":"Are you sure you want to bust out "+currentPlayerName(p)+"?";
- if(!confirm(msg))return;
- const r=await sb.from("signup_players").update({tournament_active:false,tournament_place:place}).eq("id",id).select().single();
- if(r.error){error="Could not save the bust out.";render();return}
- players=players.map(x=>String(x.id)===String(id)?r.data:x);
- let seq=[...tournamentBustSequence(),Number(id)];
- const sr=await sb.from("tournament_live_state").update({bust_sequence:seq,updated_at:new Date().toISOString()}).eq("id",1).select().single();
- if(!sr.error)tournamentState=sr.data;
- const left=tournamentRemaining();
- if(left.length===1){const w=left[0],wr=await sb.from("signup_players").update({tournament_active:false,tournament_place:1}).eq("id",w.id).select().single();if(!wr.error)players=players.map(x=>String(x.id)===String(w.id)?wr.data:x)}
- error="";render()
-}
-async function undoTournamentBust(){
- const seq=tournamentBustSequence();if(!seq.length)return;
- if(!tournamentUndoConfirmed){if(!confirm("Are you sure you want to undo the last bust out?"))return;tournamentUndoConfirmed=true}
- const id=seq[seq.length-1],p=players.find(x=>String(x.id)===String(id));if(!p)return;
- const remaining=tournamentRemaining();
- if(remaining.length===0||remaining.every(x=>x.tournament_place)){const winner=current().find(x=>x.tournament_place===1);if(winner){const wr=await sb.from("signup_players").update({tournament_active:true,tournament_place:null}).eq("id",winner.id).select().single();if(!wr.error)players=players.map(x=>String(x.id)===String(winner.id)?wr.data:x)}}
- const r=await sb.from("signup_players").update({tournament_active:true,tournament_place:null}).eq("id",id).select().single();
- if(r.error){error="Could not undo that bust out.";render();return}
- players=players.map(x=>String(x.id)===String(id)?r.data:x);
- const next=seq.slice(0,-1),sr=await sb.from("tournament_live_state").update({bust_sequence:next,updated_at:new Date().toISOString()}).eq("id",1).select().single();
- if(!sr.error)tournamentState=sr.data;
- if(!next.length)tournamentUndoConfirmed=false;
- error="";render()
-}
-function showChop(){
- const choppers=tournamentRemaining();
- if(choppers.length<2)return;
- const names=choppers.map(p=>currentPlayerName(p)).join("\n");
- if(!confirm("Are you sure these players are chopping?\n\n"+names))return;
- const count=choppers.length;
- let total=0;
- for(let place=1;place<=count;place++)total+=11-place;
- const each=total/count;
- const a=document.querySelector("#app");
- a.innerHTML=renderHeader("Point Chop","Wednesday Tournament")+'<section class="content"><div class="list">'+choppers.map(p=>'<div class="row"><div class="info"><strong>'+esc(currentPlayerName(p))+'</strong></div><strong>'+each.toFixed(2)+' Points</strong></div>').join('')+'</div><p style="text-align:center;font-weight:900;margin-top:1.25rem">Total Points Available: '+total.toFixed(2)+'</p><p style="text-align:center;font-weight:900">Each Player Receives: '+each.toFixed(2)+' Points</p><p class="error" style="text-align:center">TEST ONLY — Nothing has been saved yet.</p><div style="display:flex;gap:.75rem;justify-content:center;margin-top:1rem"><button class="clear" id="undoChopPreviewButton">Undo</button><button class="add" id="saveChopPreviewButton">Save</button></div></section>';
- wireHomeLogo();
- const undo=document.querySelector("#undoChopPreviewButton");if(undo)undo.onclick=render;
- const save=document.querySelector("#saveChopPreviewButton");if(save)save.onclick=async()=>{
-  const ids=choppers.map(p=>Number(p.id));
-  const pr=await sb.from("signup_players").update({tournament_active:false,tournament_points:Number(each.toFixed(2))}).in("id",ids);
-  if(pr.error){alert("Could not save the point chop.");return}
-  const sr=await sb.from("tournament_live_state").update({chop_saved:true,chop_player_ids:ids,chop_points_each:Number(each.toFixed(2)),updated_at:new Date().toISOString()}).eq("id",1).select().single();
-  if(sr.error){alert("Could not finish saving the point chop.");return}
-  tournamentState=sr.data;players=players.map(p=>ids.includes(Number(p.id))?{...p,tournament_active:false,tournament_points:Number(each.toFixed(2))}:p);render();
- };
- const b=document.querySelector("#back");if(b)b.onclick=render;
-}
-function getTodoUser(){try{return (localStorage.getItem("unoClubTodoUser")||"").trim()}catch(e){return ""}}
 function renderTodoHistory(t){
  const history=Array.isArray(t.edit_history)?t.edit_history:[];
  if(!history.length)return "";
@@ -1671,10 +1593,6 @@ function wire(){
  const adm=document.querySelector("#adminButton");if(adm)adm.onclick=()=>{page="admin";adminMode="main";archiveGame=null;archiveViewId=null;error="";render()};
  const doa=document.querySelector("#dayOffAlertButton");if(doa)doa.onclick=async()=>{error="";await loadStaffData();page="admin";adminMode="staffUpcoming";archiveGame=null;archiveViewId=null;render()};
  wirePlayerControls();
- const rb=document.querySelector("#rebuysOverButton");if(rb)rb.onclick=confirmRebuysOver;
- const ch=document.querySelector("#chopButton");if(ch)ch.onclick=showChop;
- const ub=document.querySelector("#undoBustButton");if(ub)ub.onclick=undoTournamentBust;
- document.querySelectorAll("[data-bust]").forEach(x=>x.onclick=()=>bustTournamentPlayer(x.dataset.bust));
  const b=document.querySelector("#back");if(b)b.onclick=()=>{error="";if(game)game=null;else if(day)day=null;else page="main";render()};
 }
 function wireSpecial(){
