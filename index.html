@@ -984,6 +984,7 @@ function renderPlayerPage(isSpecial=false){
  </div><button class="arrivalCheck ${p.arrived||p.isLate?"checked":""}" data-arrived="${p.id}" aria-label="${p.arrived||p.isLate?"Mark expected":"Mark arrived"}">✓</button><button class="del" data-del="${p.id}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 15H6L5 6m5 4v7m4-7v7"/></svg></button></div>`).join("")}</div></section>
 `;
 }
+function getTodoUser(){try{return (localStorage.getItem("unoClubTodoUser")||"").trim()}catch(e){return ""}}
 function renderTodoHistory(t){
  const history=Array.isArray(t.edit_history)?t.edit_history:[];
  if(!history.length)return "";
