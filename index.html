@@ -696,6 +696,8 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 .todoCompletedSearchActions button{flex:1;min-height:40px;border-radius:8px;border:1px solid #144c9a;background:#1e5acb;color:#fff;font-weight:800}
 .todoCompletedSearchActions button+button{background:#fff;color:#144c9a}
 .todoCompletedResultCount{text-align:center;font-size:12px;color:#5c6676}
+
+.clubNotesPage{display:grid;gap:12px}.clubNoteForm{display:grid;gap:11px;padding:14px;border:1px solid #d5dce6;background:#fff;border-radius:12px}.clubNoteForm h2{font-size:1.15rem;margin:0}.clubNoteForm label{display:grid;gap:5px;font-size:14px;font-weight:800}.clubNoteForm input,.clubNoteForm textarea{width:100%;min-width:0;border:1px solid #b8c4d4;border-radius:8px;padding:10px;font-size:16px;min-height:44px;background:#fff;color:#111}.clubNoteForm textarea{resize:vertical}.clubNotesIdentity{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13px;color:#4b5563}.clubNotesIdentity button{margin-left:auto;border:1px solid #bfc8d8;border-radius:7px;padding:6px 8px;background:#fff;color:#1347a0;font-weight:750}.clubNoteCard{border:1px solid #d6dce6;border-radius:10px;background:#fff;padding:13px;display:grid;gap:9px;overflow-wrap:anywhere}.clubNoteCard h3{margin:0;font-size:17px}.clubNoteCard p{margin:0;white-space:pre-wrap;font-size:15px}.clubNoteMeta{font-size:12px;color:#536071}.clubNoteActions{display:flex;gap:8px;align-items:center}.clubNoteActions button{flex:1;min-height:40px;border:1px solid #103c8b;border-radius:8px;color:#fff;background:#1e5acb;font-weight:800}.clubNoteActions .clubNoteDelete{background:#fff;color:#b42318;border-color:#b42318}.clubNoteActions .clubNoteCancel{background:#fff;color:#333;border-color:#aaa}.clubNoteHistoryToggle,.clubNoteDeletedToggle{justify-self:start;border:1px solid #1e5acb;border-radius:8px;padding:7px 10px;background:#e8f2ff;color:#144c9a;font-weight:800}.clubNoteDeletedToggle{width:100%;margin-top:8px;text-align:left;min-height:45px}.clubNoteHistoryList{display:grid;gap:8px;border:1px solid #ced8e7;padding:10px;border-radius:8px;background:#f7faff}.clubNoteHistoryEvent{font-size:13px;border-bottom:1px solid #dbe3ed;padding-bottom:8px}.clubNoteHistoryEvent:last-child{border:0;padding:0}.clubNoteHistoryPrevious{display:grid;gap:3px;margin-top:7px;white-space:pre-wrap}.clubNoteHistoryPrevious small{font-size:11px;color:#536071}.deletedClubNote{opacity:.82}
 </style>
 </head>
 <body><div id="app"></div>
@@ -1294,6 +1296,42 @@ function wireAdmin(){
   const ss=document.querySelector("#adminStaffSchedule");if(ss)ss.onclick=async()=>{error="";await loadStaffData();adminMode="staff";render()};const su=document.querySelector("#staffUpcoming");if(su)su.onclick=()=>{error="";adminMode="staffUpcoming";render()};
   const sa=document.querySelector("#staffAddDayOff");if(sa)sa.onclick=()=>{error="";dayOffSaved=false;dayOffEditId=null;adminMode="staffAdd";render()};
   const sm=document.querySelector("#staffManage");if(sm)sm.onclick=()=>{error="";adminMode="staffManage";render()};const sh=document.querySelector("#staffAllHistory");if(sh)sh.onclick=()=>{error="";staffHistoryId=null;adminMode="staffHistory";render()};
+
+ const clubEntry=document.querySelector("#staffClubNotes");
+ if(clubEntry)clubEntry.onclick=async()=>{error="";adminMode="staffNotes";clubNoteEditId=null;clubNoteHistoryId=null;await loadClubNotes();render()};
+ const clubIdentity=document.querySelector("#clubNotesIdentityForm");
+ if(clubIdentity)clubIdentity.onsubmit=e=>{e.preventDefault();const name=document.querySelector("#clubNotesIdentityName")?.value.trim();if(!name)return;try{localStorage.setItem("unoClubClubNotesUser",name)}catch(err){error="Could not save your name.";render();return}error="";render()};
+ const clubChangeUser=document.querySelector("#clubNotesChangeUser");
+ if(clubChangeUser)clubChangeUser.onclick=()=>{try{localStorage.removeItem("unoClubClubNotesUser")}catch(err){}clubNoteEditId=null;render()};
+ const clubForm=document.querySelector("#clubNotesForm");
+ if(clubForm)clubForm.onsubmit=async e=>{
+  e.preventDefault();
+  const title=document.querySelector("#clubNoteTitle")?.value.trim(),body=document.querySelector("#clubNoteBody")?.value.trim(),user=getClubNotesUser();
+  if(!title||!body||!user)return;
+  const existing=clubNotes.find(n=>String(n.id)===String(clubNoteEditId));
+  if(existing&&existing.title===title&&existing.body===body){clubNoteEditId=null;render();return}
+  const result=existing
+   ?await sb.from("club_notes").update({title,body,last_edited_by:user}).eq("id",existing.id).eq("title",existing.title).eq("body",existing.body).is("deleted_at",null).select().single()
+   :await sb.from("club_notes").insert({title,body,entered_by:user}).select().single();
+  if(result.error){error="Could not save the Club Note. Please reload and try again.";render();return}
+  clubNoteEditId=null;error="";await loadClubNotes();render();
+ };
+ const clubCancel=document.querySelector("#clubNoteCancelEdit");
+ if(clubCancel)clubCancel.onclick=()=>{clubNoteEditId=null;error="";render()};
+ document.querySelectorAll("[data-club-edit]").forEach(b=>b.onclick=()=>{
+  clubNoteEditId=b.dataset.clubEdit;error="";render();document.querySelector("#clubNoteTitle")?.focus();window.scrollTo({top:0,behavior:"smooth"})
+ });
+ document.querySelectorAll("[data-club-delete]").forEach(b=>b.onclick=async()=>{
+  const n=clubNotes.find(x=>String(x.id)===String(b.dataset.clubDelete));
+  if(!n||!confirm("Delete this Club Note? It will remain in Deleted Notes with a record of who deleted it and when."))return;
+  const result=await sb.from("club_notes").update({deleted_at:new Date().toISOString(),deleted_by:getClubNotesUser()}).eq("id",n.id).is("deleted_at",null).select().single();
+  if(result.error){error="Could not delete the Club Note.";render();return}
+  if(String(clubNoteEditId)===String(n.id))clubNoteEditId=null;
+  error="";await loadClubNotes();render();
+ });
+ document.querySelectorAll("[data-club-history]").forEach(b=>b.onclick=()=>{clubNoteHistoryId=String(clubNoteHistoryId)===String(b.dataset.clubHistory)?null:b.dataset.clubHistory;render()});
+ const clubDeleted=document.querySelector("#clubNotesDeletedToggle");
+ if(clubDeleted)clubDeleted.onclick=()=>{clubNotesShowDeleted=!clubNotesShowDeleted;render()};
   const sf=document.querySelector("#staffForm");if(sf)sf.onsubmit=async e=>{e.preventDefault();error="";const name=formatPlayerName(document.querySelector("#staffName").value);if(!name){error="Enter a staff member name.";render();return}const r=await sb.from("staff_members").insert({name}).select().single();if(r.error){error=r.error.code==="23505"?"That staff member is already listed.":"Could not save the staff member.";render();return}await loadStaffData();adminMode="staffManage";render()};
   document.querySelectorAll("[data-staff-history]").forEach(b=>b.onclick=()=>{staffHistoryId=Number(b.dataset.staffHistory);error="";adminMode="staffHistory";render()});
   document.querySelectorAll("[data-delete-staff]").forEach(b=>b.onclick=async()=>{const p=staffMembers.find(x=>String(x.id)===String(b.dataset.deleteStaff));if(!p||!confirm(`Delete ${p.name} from the staff list? Past days off will be kept.`))return;const r=await sb.from("staff_members").delete().eq("id",p.id);if(r.error){error="Could not delete the staff member.";render();return}await loadStaffData();render()});
