@@ -703,7 +703,7 @@ button.staffDelete,button.del[data-del],button.del[data-delete-active],button.de
 <body><div id="app"></div>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const APP_VERSION="102926.265";
+const APP_VERSION="102926.266";
 const HUB_EMBEDDED=new URLSearchParams(location.search).get("hub")==="1";
 const STAFF_MODE=new URLSearchParams(location.search).get("staff")==="1";
 const TODO_MODE=new URLSearchParams(location.search).get("todo")==="1";
@@ -1799,10 +1799,11 @@ async function deleteSpecialGame(){
 }
 
 function buildTextList(){
- const sh=shown(),reg=sh.filter(p=>!p.alt&&!p.isLate),alts=sh.filter(p=>p.alt),lates=sh.filter(p=>p.isLate),lines=[game==="Special Game"&&specialSettings?`Uno Club – ${specialSettings.game_name}`:`Uno Club – ${day} ${game}`,""];
- reg.forEach(p=>{let s=`${p.num}. ${p.player_name}`;if(game!=="Tournament"&&p.preferred_seat)s+=` — Preferred Seat ${p.preferred_seat}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)});
- if(alts.length){if(reg.length)lines.push("");lines.push("Alternates");alts.forEach(p=>{let s=`A. ${p.player_name}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)})}
- if(lates.length){if(reg.length||alts.length)lines.push("");lines.push("Late Arrivals");lates.forEach(p=>{let s=`L. ${p.player_name}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)})}
+ const byName=(a,b)=>currentPlayerName(a).localeCompare(currentPlayerName(b),undefined,{sensitivity:"base",numeric:true});
+ const sh=shown(),reg=sh.filter(p=>!p.alt&&!p.isLate).sort(byName),alts=sh.filter(p=>p.alt).sort(byName),lates=sh.filter(p=>p.isLate).sort(byName),lines=[game==="Special Game"&&specialSettings?`Uno Club – ${specialSettings.game_name}`:`Uno Club – ${day} ${game}`,""];
+ reg.forEach((p,i)=>{let s=`${i+1}. ${currentPlayerName(p)}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)});
+ if(alts.length){if(reg.length)lines.push("");lines.push("Alternates");alts.forEach(p=>{let s=`A. ${currentPlayerName(p)}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)})}
+ if(lates.length){if(reg.length||alts.length)lines.push("");lines.push("Late Arrivals");lates.forEach(p=>{let s=`L. ${currentPlayerName(p)}`;if(p.notes)s+=` — Note: ${p.notes}`;lines.push(s)})}
  return lines.join("\n");
 }
 async function textList(){
